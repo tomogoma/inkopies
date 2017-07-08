@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.views
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.FragmentShoppingListsListBinding
 import ke.co.definition.inkopies.model.Model
 import ke.co.definition.inkopies.model.beans.ShoppingList
+
 
 class ShoppingListsListFragment : Fragment() {
 
@@ -30,11 +32,13 @@ class ShoppingListsListFragment : Fragment() {
         binding.shoppingLists.layoutManager = lm
         val adapter = ShoppingListsListAdapter(null)
         binding.shoppingLists.adapter = adapter
+        val did = DividerItemDecoration(context, lm.orientation)
+        binding.shoppingLists.addItemDecoration(did)
 
         model.getProfiles(context, ShoppingList::class.java, { sls ->
             kotlin.run {
                 if (sls.isEmpty()) {
-                    NewShoppingListDialogActivity.start(activity)
+                    NewShoppingListDialogActivity.startForReason(activity, R.string.first_shopping_list)
                     return@run
                 }
                 adapter.setShoppingLists(sls)

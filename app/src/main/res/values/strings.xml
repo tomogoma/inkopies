@@ -4,4 +4,6 @@
     <string name="list_name_e_g_groceries">List name e.g. groceries</string>
     <string name="create_list_title">Create List</string>
     <string name="field_required">This field is required</string>
+    <string name="shopping_lists_title">Shopping Lists</string>
+    <string name="new_shopping_list_title">New Shopping List</string>
 </resources>

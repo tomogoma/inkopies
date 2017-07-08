@@ -9,6 +9,7 @@ import ke.co.definition.inkopies.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
+
     companion object {
         fun start(a: AppCompatActivity) {
             val i = Intent(a, MainActivity::class.java)
@@ -18,7 +19,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        setSupportActionBar(binding.toolbar)
+        binding.fab.setOnClickListener { _ -> NewShoppingListDialogActivity.start(this) }
         supportFragmentManager.beginTransaction()
                 .add(R.id.frame, ShoppingListsListFragment.instantiate())
                 .commit()

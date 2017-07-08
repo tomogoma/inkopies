@@ -20,9 +20,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".views.MainActivity"/>
+        <activity
+            android:name=".views.MainActivity"
+            android:label="@string/shopping_lists_title"/>
         <activity
             android:name=".views.NewShoppingListDialogActivity"
+            android:label="@string/new_shopping_list_title"
             android:theme="@style/Dialog"/>
     </application>
 

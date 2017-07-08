@@ -16,8 +16,17 @@ class NewShoppingListDialogActivity : AppCompatActivity() {
     private var binding: ActivityNewShoppingListDialogBinding? = null
 
     companion object {
+
+        private val EXTRA_REASON: String = NewShoppingListDialogActivity::class.java.name
+
         fun start(a: Activity) {
             val i = Intent(a, NewShoppingListDialogActivity::class.java)
+            a.startActivity(i)
+        }
+
+        fun startForReason(a: Activity, reasonResource: Int) {
+            val i = Intent(a, NewShoppingListDialogActivity::class.java)
+            i.putExtra(NewShoppingListDialogActivity.EXTRA_REASON, reasonResource)
             a.startActivity(i)
         }
     }
@@ -26,6 +35,11 @@ class NewShoppingListDialogActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_new_shopping_list_dialog)
         binding?.shoppingList = ShoppingList()
+        val reasonResource = intent.getIntExtra(EXTRA_REASON, -1)
+        if (reasonResource > 0) {
+            binding?.reason?.setText(reasonResource)
+            binding?.reason?.visibility = View.VISIBLE
+        }
     }
 
     fun createShoppingList(v: View) {
@@ -33,6 +47,7 @@ class NewShoppingListDialogActivity : AppCompatActivity() {
             return
         }
         Model.newShoppingList((binding as ActivityNewShoppingListDialogBinding).shoppingList)
+        finish()
     }
 
     fun validate(): Boolean {
