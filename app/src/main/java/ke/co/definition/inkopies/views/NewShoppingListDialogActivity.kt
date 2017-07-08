@@ -14,7 +14,6 @@ import ke.co.definition.inkopies.model.beans.ShoppingList
 class NewShoppingListDialogActivity : AppCompatActivity() {
 
     private var binding: ActivityNewShoppingListDialogBinding? = null
-    private val slm: Model = Model()
 
     companion object {
         fun start(a: Activity) {
@@ -26,10 +25,10 @@ class NewShoppingListDialogActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_new_shopping_list_dialog)
-        binding!!.shoppingList = ShoppingList("")
+        binding?.shoppingList = ShoppingList()
     }
 
     fun createShoppingList(v: View) {
-        slm.newShoppingList((binding as ActivityNewShoppingListDialogBinding).shoppingList)
+        Model.newShoppingList((binding as ActivityNewShoppingListDialogBinding).shoppingList)
     }
 }
