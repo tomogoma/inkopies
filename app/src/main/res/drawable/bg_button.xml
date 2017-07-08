@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+       android:insetBottom="@dimen/space_xsmall"
+       android:insetLeft="@dimen/space_xsmall"
+       android:insetRight="@dimen/space_xsmall"
+       android:insetTop="@dimen/space_xsmall"
+    >
+    <selector xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
+            android:state_focused="true"
+            android:state_pressed="true">
+            <shape android:shape="rectangle">
+                <corners android:radius="@dimen/space_xxsmall"/>
+                <solid android:color="@color/colorAccentDark"/>
+                <padding
+                    android:bottom="@dimen/space_xxsmall"
+                    android:left="@dimen/space_small"
+                    android:right="@dimen/space_small"
+                    android:top="@dimen/space_xxsmall"/>
+            </shape>
+        </item>
+        <item
+            android:state_focused="false"
+            android:state_pressed="true">
+            <shape android:shape="rectangle">
+                <corners android:radius="@dimen/space_xxsmall"/>
+                <solid android:color="@color/colorAccent"/>
+                <padding
+                    android:bottom="@dimen/space_xxsmall"
+                    android:left="@dimen/space_small"
+                    android:right="@dimen/space_small"
+                    android:top="@dimen/space_xxsmall"/>
+            </shape>
+        </item>
+        <!--<item-->
+        <!--android:state_focused="true"-->
+        <!--android:state_pressed="false">-->
+        <!--<shape android:shape="rectangle">-->
+        <!--<corners android:radius="@dimen/space_xxsmall"/>-->
+        <!--<solid android:color="@color/colorAccent"/>-->
+        <!--<padding-->
+        <!--android:bottom="@dimen/space_xxsmall"-->
+        <!--android:left="@dimen/space_small"-->
+        <!--android:right="@dimen/space_small"-->
+        <!--android:top="@dimen/space_xxsmall"/>-->
+        <!--</shape>-->
+        <!--</item>-->
+        <item>
+            <shape android:shape="rectangle">
+                <corners android:radius="@dimen/space_xxsmall"/>
+                <solid android:color="@color/colorAccentLight"/>
+                <padding
+                    android:bottom="@dimen/space_xxsmall"
+                    android:left="@dimen/space_small"
+                    android:right="@dimen/space_small"
+                    android:top="@dimen/space_xxsmall"/>
+            </shape>
+        </item>
+    </selector>
+</inset>

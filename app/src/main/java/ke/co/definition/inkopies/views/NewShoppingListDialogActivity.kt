@@ -29,6 +29,17 @@ class NewShoppingListDialogActivity : AppCompatActivity() {
     }
 
     fun createShoppingList(v: View) {
+        if (!validate()) {
+            return
+        }
         Model.newShoppingList((binding as ActivityNewShoppingListDialogBinding).shoppingList)
+    }
+
+    fun validate(): Boolean {
+        if (binding?.shoppingList?.name == null) {
+            binding?.name?.error = getString(R.string.field_required)
+            return false
+        }
+        return true
     }
 }
