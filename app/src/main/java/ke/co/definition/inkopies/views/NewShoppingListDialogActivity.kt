@@ -6,6 +6,7 @@ import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityNewShoppingListDialogBinding
 import ke.co.definition.inkopies.model.Model
@@ -34,27 +35,41 @@ class NewShoppingListDialogActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_new_shopping_list_dialog)
-        binding?.shoppingList = ShoppingList()
+        binding!!.shoppingList = ShoppingList()
         val reasonResource = intent.getIntExtra(EXTRA_REASON, -1)
         if (reasonResource > 0) {
-            binding?.reason?.setText(reasonResource)
-            binding?.reason?.visibility = View.VISIBLE
+            binding!!.reason.setText(reasonResource)
+            binding!!.reason.visibility = View.VISIBLE
+        }
+        binding!!.name.setOnEditorActionListener { v, actID, _ ->
+            if (actID == EditorInfo.IME_ACTION_DONE) {
+                createShoppingList(v)
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
         }
     }
 
     fun createShoppingList(v: View) {
-        if (!validate()) {
-            return
+        validate { valid ->
+            if (!valid) return@validate
+            // TODO(AsyncTask)
+            // TODO(checkSuccessful)
+            Model.newShoppingList(binding!!.shoppingList)
+            finish()
         }
-        Model.newShoppingList((binding as ActivityNewShoppingListDialogBinding).shoppingList)
-        finish()
     }
 
-    fun validate(): Boolean {
-        if (binding?.shoppingList?.name == null) {
+    fun validate(completeCallBack: (valid: Boolean) -> Unit) {
+        val sl = binding!!.shoppingList
+        if (sl.name == null) {
             binding?.name?.error = getString(R.string.field_required)
-            return false
+            completeCallBack(false)
+            return
         }
-        return true
+        Model.shoppingListNameExists(sl, { exists ->
+            if (exists) binding!!.name.error = getString(R.string.name_used)
+            completeCallBack(!exists)
+        })
     }
 }

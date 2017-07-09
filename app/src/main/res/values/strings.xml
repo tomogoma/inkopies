@@ -6,4 +6,5 @@
     <string name="field_required">This field is required</string>
     <string name="shopping_lists_title">Shopping Lists</string>
     <string name="new_shopping_list_title">New Shopping List</string>
+    <string name="name_used">This name has already been used</string>
 </resources>
