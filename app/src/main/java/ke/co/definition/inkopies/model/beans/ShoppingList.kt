@@ -10,11 +10,12 @@ import ke.co.definition.inkopies.model.db.DB
  */
 
 @Table(database = DB::class)
-class ShoppingList : Profile() {
+class ShoppingList : Nameable() {
+
     enum class Mode {
         PLANNING, SHOPPING
     }
 
-    @PrimaryKey var name: String? = null
+    @PrimaryKey override var name: String? = null
     @NotNull var currMode: Mode? = Mode.PLANNING
 }

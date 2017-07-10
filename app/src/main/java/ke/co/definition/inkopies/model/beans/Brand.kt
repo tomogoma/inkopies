@@ -7,8 +7,8 @@ import com.raizlabs.android.dbflow.annotation.Table
 import ke.co.definition.inkopies.model.db.DB
 
 @Table(database = DB::class)
-class Brand : Profile() {
-    @Column var name: String? = null
-    @ForeignKey(stubbedRelationship = true) @NotNull var item: Item? = null
-    @ForeignKey(stubbedRelationship = true) @NotNull var measuringUnit: MeasuringUnit? = item?.measuringUnit
+class Brand : Nameable() {
+    @Column override var name: String? = null
+    @ForeignKey(stubbedRelationship = true) @NotNull var item: Item? = Item()
+    @ForeignKey(stubbedRelationship = true) @NotNull var measuringUnit: MeasuringUnit? = item!!.measuringUnit
 }

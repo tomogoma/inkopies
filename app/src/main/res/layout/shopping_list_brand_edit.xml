@@ -29,8 +29,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/brand_e_g_colgate"
-                    android:text="@={slBrand.brand.name}"
+                    android:imeOptions="actionNext"
                     android:inputType="textCapWords"
+                    android:maxLines="1"
+                    android:text="@={slBrand.brand.name}"
                     tools:text="Colgate MultiActive"/>
             </android.support.design.widget.TextInputLayout>
 
@@ -44,8 +46,10 @@
                     android:id="@+id/itemName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textCapWords"
                     android:hint="@string/name_e_g_toothpaste_required"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapWords"
+                    android:maxLines="1"
                     android:text="@={slBrand.brand.item.name}"
                     tools:text="Toothpaste"/>
             </android.support.design.widget.TextInputLayout>
@@ -69,8 +73,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:hint="@string/quantity"
-                        android:minWidth="64dp"
+                        android:imeOptions="actionNext"
                         android:inputType="number"
+                        android:maxLines="1"
+                        android:minWidth="64dp"
                         android:text="@={slBrand.quantityStr}"
                         tools:text="1"/>
                 </android.support.design.widget.TextInputLayout>
@@ -93,6 +99,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:hint="@string/measuring_unit_e_g_kg"
+                        android:imeOptions="actionNext"
+                        android:maxLines="1"
                         android:minWidth="142dp"
                         android:text="@={slBrand.brand.measuringUnit.name}"
                         tools:text="4-pack"/>
@@ -120,7 +128,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:hint="@string/unit_price"
+                        android:imeOptions="actionNext"
                         android:inputType="numberDecimal"
+                        android:maxLines="1"
                         android:text="@={slBrand.unitPriceStr}"
                         tools:text="500.00Ksh"/>
                 </android.support.design.widget.TextInputLayout>

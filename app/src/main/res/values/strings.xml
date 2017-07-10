@@ -15,4 +15,7 @@
     <string name="measuring_unit_e_g_kg">Measuring unit e.g. Kg</string>
     <string name="unit_price">Unit price</string>
     <string name="delete">Delete</string>
+    <string name="done">Done</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
 </resources>

@@ -39,7 +39,7 @@ class ShoppingListsListAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.shoppingList = shoppingLists!![position]
         holder.binding.root.setOnClickListener { _ ->
-            ShoppingListActivity.start(activity, holder.binding.shoppingList.localID!!)
+            ShoppingListActivity.start(activity, holder.binding.shoppingList)
         }
     }
 

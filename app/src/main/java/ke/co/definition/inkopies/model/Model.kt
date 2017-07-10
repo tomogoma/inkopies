@@ -38,11 +38,88 @@ class Model {
                     .execute()
         }
 
+        fun shoppingListNameExists(sl: ShoppingList): Boolean {
+            return !SQLite.select(ShoppingList_Table.localID)
+                    .from(ShoppingList::class.java)
+                    .where(ShoppingList_Table.name.eq(sl.name))
+                    .queryList()
+                    .isEmpty()
+        }
+
+        fun measuringUnitNameExists(sl: MeasuringUnit): Boolean {
+            return !SQLite.select(MeasuringUnit_Table.localID)
+                    .from(MeasuringUnit::class.java)
+                    .where(MeasuringUnit_Table.name.eq(sl.name))
+                    .queryList()
+                    .isEmpty()
+        }
+
+        fun itemNameExists(sl: Item): Boolean {
+            return !SQLite.select(Item_Table.localID)
+                    .from(Item::class.java)
+                    .where(Item_Table.name.eq(sl.name))
+                    .queryList()
+                    .isEmpty()
+        }
+
+        fun brandNameExists(sl: Brand): Boolean {
+            return !SQLite.select(Brand_Table.localID)
+                    .from(Brand::class.java)
+                    .where(Brand_Table.name.eq(sl.name))
+                    .queryList()
+                    .isEmpty()
+        }
+
         /**
          * newShoppingList synchronously saves @link{ShoppingList} into the db.
          */
         fun newShoppingList(sl: ShoppingList): Boolean {
+            if (shoppingListNameExists(sl)) {
+                return false
+            }
             return sl.save()
+        }
+
+        fun newShoppingListBrand(slb: ShoppingListBrand): Boolean {
+            val mu = slb.brand!!.measuringUnit ?: slb.brand!!.item!!.measuringUnit
+            if (mu != null) {
+                newMeasuringUnit(mu)
+            }
+            newItem(slb.brand!!.item!!)
+            newBrand(slb.brand!!)
+            newShoppingList(slb.shoppingList!!)
+            if (slb.exists()) {
+                return false
+            }
+            return slb.save()
+        }
+
+        fun deleteShoppingListBrand(slb: ShoppingListBrand): Boolean {
+            if (!slb.exists()) {
+                return false
+            }
+            return slb.delete()
+        }
+
+        fun newBrand(br: Brand): Boolean {
+            if (!br.name.isNullOrBlank() && brandNameExists(br)) {
+                return false
+            }
+            return br.save()
+        }
+
+        fun newItem(it: Item): Boolean {
+            if (it.name.isNullOrBlank() || itemNameExists(it)) {
+                return false
+            }
+            return it.save()
+        }
+
+        fun newMeasuringUnit(mu: MeasuringUnit): Boolean {
+            if (mu.name.isNullOrBlank() || measuringUnitNameExists(mu)) {
+                return false
+            }
+            return mu.save()
         }
 
         /**
