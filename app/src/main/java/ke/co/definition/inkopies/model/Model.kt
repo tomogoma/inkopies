@@ -3,10 +3,10 @@ package ke.co.definition.inkopies.model
 import android.content.Context
 import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.runtime.FlowContentObserver
+import com.raizlabs.android.dbflow.sql.language.SQLOperator
 import com.raizlabs.android.dbflow.sql.language.SQLite
-import ke.co.definition.inkopies.model.beans.Profile
-import ke.co.definition.inkopies.model.beans.ShoppingList
-import ke.co.definition.inkopies.model.beans.ShoppingList_Table
+import ke.co.definition.inkopies.model.beans.*
+import java.util.*
 
 /**
  * Created by tomogoma on 08/07/17.
@@ -48,9 +48,10 @@ class Model {
         /**
          * getProfiles asynchronously fetches {@link Profile}s from the db.
          */
-        fun <T : Profile> getProfiles(cls: Class<T>, resultCallback: (res: List<T>) -> Unit) {
+        fun <T : Profile> getProfiles(cls: Class<T>, vararg where: SQLOperator, resultCallback: (res: List<T>) -> Unit) {
             SQLite.select()
                     .from(cls)
+                    .where(*where)
                     .async()
                     .queryResultCallback { _, res ->
                         run {
@@ -75,10 +76,15 @@ class Model {
      * to re-fetch on db-update. You MUST call destroy whenever your context is destroyed
      * after calling this method.
      */
-    fun <T : Profile> getProfiles(ctx: Context, cls: Class<T>, resultCallback: (res: List<T>) -> Unit) {
-        getProfiles(cls, resultCallback)
+    fun <T : Profile> getProfiles(ctx: Context, cls: Class<T>, vararg where: SQLOperator, resultCallback: (res: List<T>) -> Unit) {
+        getProfiles(cls, *where, resultCallback = resultCallback)
         contentObserver.registerForContentChanges(ctx, cls)
-        contentObserver.addOnTableChangedListener { _, _ -> getProfiles(cls, resultCallback) }
+        contentObserver.addOnTableChangedListener { _, _ -> getProfiles(cls, *where, resultCallback = resultCallback) }
+    }
+
+    fun getShoppingListBrands(ctx: Context, shoppingListID: UUID, resultCallback: (res: List<ShoppingListBrand>) -> Unit) {
+        val where = ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID)
+        getProfiles(ctx, ShoppingListBrand::class.java, where, resultCallback = resultCallback)
     }
 
     fun destroy(ctx: Context) {

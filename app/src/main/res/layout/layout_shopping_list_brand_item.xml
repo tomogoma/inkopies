@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:bind="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="slBrand"
+            type="ke.co.definition.inkopies.model.beans.ShoppingListBrand"/>
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/view"
+            layout="@layout/shopping_list_brand"
+            bind:slBrand="@{slBrand}"/>
+
+        <include
+            android:id="@+id/edit"
+            layout="@layout/shopping_list_brand_edit"
+            bind:slBrand="@{slBrand}"/>
+
+    </LinearLayout>
+</layout>

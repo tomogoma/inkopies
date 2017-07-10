@@ -52,6 +52,8 @@ dependencies {
     compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
     compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
     compile "com.github.Raizlabs.DBFlow:dbflow-kotlinextensions:${dbflow_version}"
+    // others
+    compile 'com.google.android:flexbox:0.3.0'
 }
 repositories {
     mavenCentral()

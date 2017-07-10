@@ -30,12 +30,12 @@ class ShoppingListsListFragment : Fragment() {
         binding.shoppingLists.setHasFixedSize(true)
         val lm = LinearLayoutManager(context)
         binding.shoppingLists.layoutManager = lm
-        val adapter = ShoppingListsListAdapter(null)
+        val adapter = ShoppingListsListAdapter(activity, null)
         binding.shoppingLists.adapter = adapter
         val did = DividerItemDecoration(context, lm.orientation)
         binding.shoppingLists.addItemDecoration(did)
 
-        model.getProfiles(context, ShoppingList::class.java, { sls ->
+        model.getProfiles(context, ShoppingList::class.java, resultCallback = { sls ->
             kotlin.run {
                 if (sls.isEmpty()) {
                     NewShoppingListDialogActivity.startForReason(activity, R.string.first_shopping_list)

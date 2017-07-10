@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.views
 
+import android.app.Activity
 import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -13,9 +14,12 @@ import ke.co.definition.inkopies.model.beans.ShoppingList
  * Created by tomogoma on 08/07/17.
  */
 
-class ShoppingListsListAdapter(private var shoppingLists: List<ShoppingList>?) : RecyclerView.Adapter<ShoppingListsListAdapter.ViewHolder>() {
+class ShoppingListsListAdapter(
+        private var activity: Activity,
+        private var shoppingLists: List<ShoppingList>?
+) : RecyclerView.Adapter<ShoppingListsListAdapter.ViewHolder>() {
 
-    class ViewHolder(var layout: FragmentShoppingListsItemBinding) : RecyclerView.ViewHolder(layout.root)
+    class ViewHolder(var binding: FragmentShoppingListsItemBinding) : RecyclerView.ViewHolder(binding.root)
 
     fun setShoppingLists(shoppingLists: List<ShoppingList>) {
         this.shoppingLists = shoppingLists
@@ -33,10 +37,13 @@ class ShoppingListsListAdapter(private var shoppingLists: List<ShoppingList>?) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.layout.shoppingList = shoppingLists!![position]
+        holder.binding.shoppingList = shoppingLists!![position]
+        holder.binding.root.setOnClickListener { _ ->
+            ShoppingListActivity.start(activity, holder.binding.shoppingList.localID!!)
+        }
     }
 
     override fun getItemCount(): Int {
-        return shoppingLists?.size  ?: 0
+        return shoppingLists?.size ?: 0
     }
 }

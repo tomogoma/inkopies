@@ -1,9 +1,8 @@
 package ke.co.definition.inkopies.model.beans
 
-import com.raizlabs.android.dbflow.annotation.Column
 import com.raizlabs.android.dbflow.annotation.NotNull
+import com.raizlabs.android.dbflow.annotation.PrimaryKey
 import com.raizlabs.android.dbflow.annotation.Table
-import com.raizlabs.android.dbflow.annotation.Unique
 import ke.co.definition.inkopies.model.db.DB
 
 /**
@@ -11,4 +10,11 @@ import ke.co.definition.inkopies.model.db.DB
  */
 
 @Table(database = DB::class)
-data class ShoppingList(@Column @NotNull @Unique var name: String? = null) : Profile()
+class ShoppingList : Profile() {
+    enum class Mode {
+        PLANNING, SHOPPING
+    }
+
+    @PrimaryKey var name: String? = null
+    @NotNull var currMode: Mode? = Mode.PLANNING
+}

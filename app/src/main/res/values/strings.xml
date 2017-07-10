@@ -7,4 +7,12 @@
     <string name="shopping_lists_title">Shopping Lists</string>
     <string name="new_shopping_list_title">New Shopping List</string>
     <string name="name_used">This name has already been used</string>
+    <string name="times_sign">X</string>
+    <string name="at_sign">"@"</string>
+    <string name="brand_e_g_colgate">Brand e.g. colgate</string>
+    <string name="name_e_g_toothpaste_required">Name e.g. toothpaste*</string>
+    <string name="quantity">Quantity</string>
+    <string name="measuring_unit_e_g_kg">Measuring unit e.g. Kg</string>
+    <string name="unit_price">Unit price</string>
+    <string name="delete">Delete</string>
 </resources>

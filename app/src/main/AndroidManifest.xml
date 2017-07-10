@@ -10,7 +10,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".views.SplashScreenActivity"
             android:theme="@style/SplashTheme">
@@ -27,6 +26,13 @@
             android:name=".views.NewShoppingListDialogActivity"
             android:label="@string/new_shopping_list_title"
             android:theme="@style/Dialog"/>
+        <activity
+            android:name=".views.ShoppingListActivity"
+            android:parentActivityName=".views.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ke.co.definition.inkopies.views.MainActivity"/>
+        </activity>
     </application>
 
 </manifest>
