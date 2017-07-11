@@ -220,7 +220,7 @@ class Model {
         SQLite.select()
                 .from(ShoppingListBrand::class.java)
                 .where(where)
-                .orderBy(ShoppingListBrand_Table.status, true)
+                .orderBy(ShoppingListBrand_Table.status, false)
                 .async()
                 .queryResultCallback { _, res ->
                     run {
@@ -234,10 +234,6 @@ class Model {
                     throw RuntimeException(error)
                 }
                 .execute()
-        contentObserver.registerForContentChanges(ctx, ShoppingListBrand::class.java)
-        contentObserver.addOnTableChangedListener { _, _ ->
-            getShoppingListBrands(ctx, shoppingListID, resultCallback)
-        }
     }
 
     fun destroy(ctx: Context) {
