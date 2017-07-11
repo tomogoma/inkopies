@@ -132,18 +132,6 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
         binding.view.root.visibility = View.VISIBLE
     }
 
-    private fun updateShoppingListBrandOnCheckChanged(checked: Boolean, slbv: ShoppingListBrandView, position: Int) {
-        shoppingListBrands.removeAt(position)
-        var newPos = shoppingListBrands.size
-        if (checked) {
-            shoppingListBrands.add(0, slbv)
-            newPos = 0
-        } else {
-            shoppingListBrands.add(slbv)
-        }
-        notifyItemChanged(newPos)
-    }
-
     private fun updateShoppingListBrand(slbv: ShoppingListBrandView, position: Int) {
         if (!validateShoppingListBrand(slbv.slb)) {
             slbv.state = STATE_VIEW
