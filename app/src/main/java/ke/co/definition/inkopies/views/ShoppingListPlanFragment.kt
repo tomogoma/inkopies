@@ -48,7 +48,7 @@ class ShoppingListPlanFragment : Fragment() {
         binding.items.setHasFixedSize(true)
         val lm = LinearLayoutManager(context)
         binding.items.layoutManager = lm
-        adapter = ShoppingListBrandAdapter(sl)
+        adapter = ShoppingListBrandAdapter(sl, context)
         val did = DividerItemDecoration(context, lm.orientation)
         binding.items.addItemDecoration(did)
         binding.items.adapter = adapter

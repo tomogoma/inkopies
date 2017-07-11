@@ -1,10 +1,13 @@
 package ke.co.definition.inkopies.views
 
+import android.content.Context
 import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.LayoutShoppingListBrandItemBinding
 import ke.co.definition.inkopies.databinding.ShoppingListBrandEditBinding
@@ -13,11 +16,12 @@ import ke.co.definition.inkopies.model.beans.ShoppingList
 import ke.co.definition.inkopies.model.beans.ShoppingListBrand
 import java.util.*
 
+
 /**
  * Created by tomogoma on 08/07/17.
  */
 
-class ShoppingListBrandAdapter(private var sl: ShoppingList)
+class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context: Context)
     : RecyclerView.Adapter<ShoppingListBrandAdapter.ViewHolder>() {
 
     companion object {
@@ -85,9 +89,11 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
         highlightAllOnFocus(binding.edit)
 
         binding.edit.submit.setOnClickListener { _ ->
+            hideKeyboard(binding.edit.submit)
             updateShoppingListBrand(slbM, getPosition(slbM))
         }
         binding.edit.delete.setOnClickListener { _ ->
+            hideKeyboard(binding.edit.submit)
             Model.deleteShoppingListBrand(binding.slBrand)
             val position = slbMappers.indices.first { slbMappers[it].slb.id == slbM.slb.id }
             slbMappers.removeAt(position)
@@ -102,6 +108,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
         highlightAllOnFocus(binding.edit)
 
         binding.edit.submit.setOnClickListener { _ ->
+            hideKeyboard(binding.edit.submit)
             val position = getPosition(slbM)
             if (!validateShoppingListBrand(binding.slBrand)) {
                 slbMappers.removeAt(position)
@@ -117,6 +124,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
             }
         }
         binding.edit.delete.setOnClickListener { _ ->
+            hideKeyboard(binding.edit.submit)
             val position = getPosition(slbM)
             slbMappers.removeAt(position)
             notifyItemRemoved(position)
@@ -142,6 +150,18 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
         binding.view.unitPrice.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
     }
 
+    private fun hideKeyboard(v: View) {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(v.windowToken, 0)
+    }
+
+    private fun showKeyboard(v: TextView) {
+        v.isFocusable = true
+        v.requestFocus()
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(v, 0)
+    }
+
     private fun getPosition(slbM: SLBMapper) = slbMappers.indices.first {
         slbMappers[it].slb.localID == slbM.slb.localID
     }
@@ -155,13 +175,15 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
     private fun showEditView(focusView: Int, binding: LayoutShoppingListBrandItemBinding) {
         binding.view.root.visibility = View.GONE
         binding.edit.root.visibility = View.VISIBLE
-        when (focusView) {
-            R.id.brandName -> binding.edit.brandName.requestFocus()
-            R.id.itemName -> binding.edit.itemName.requestFocus()
-            R.id.quantity -> binding.edit.quantity.requestFocus()
-            R.id.measuringUnit -> binding.edit.measuringUnit.requestFocus()
-            R.id.unitPrice -> binding.edit.unitPrice.requestFocus()
+        val view = when (focusView) {
+            R.id.brandName -> binding.edit.brandName
+            R.id.quantity -> binding.edit.quantity
+            R.id.measuringUnit -> binding.edit.measuringUnit
+            R.id.unitPrice -> binding.edit.unitPrice
+            R.id.itemName -> binding.edit.itemName
+            else -> binding.edit.itemName
         }
+        showKeyboard(view)
     }
 
     private fun showViewView(binding: LayoutShoppingListBrandItemBinding) {
