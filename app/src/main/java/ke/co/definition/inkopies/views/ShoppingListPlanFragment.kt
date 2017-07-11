@@ -33,6 +33,10 @@ class ShoppingListPlanFragment : Fragment() {
         }
     }
 
+    interface PriceSettable {
+        fun setPrice(total_selected: Pair<Float, Float>)
+    }
+
     private var model: Model? = null
     private var adapter: ShoppingListBrandAdapter? = null
 
@@ -53,6 +57,10 @@ class ShoppingListPlanFragment : Fragment() {
         binding.items.addItemDecoration(did)
         binding.items.adapter = adapter
 
+        adapter!!.setOnPriceChangeListener { newPrices ->
+            (activity as PriceSettable).setPrice(newPrices)
+        }
+
         model!!.getShoppingListBrands(context, sl.localID!!, resultCallback = { res ->
             val r: MutableList<ShoppingListBrand> = res as MutableList
             if (r.isEmpty()) {
@@ -62,6 +70,13 @@ class ShoppingListPlanFragment : Fragment() {
             adapter?.setShoppingListBrands(r)
         })
         return binding.root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        if (activity !is PriceSettable) {
+            throw RuntimeException("Activity needs to implement PriceSettable interface")
+        }
     }
 
     fun newShoppingListBrand() {

@@ -9,7 +9,7 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListBinding
 import ke.co.definition.inkopies.model.beans.ShoppingList
 
-class ShoppingListActivity : AppCompatActivity() {
+class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.PriceSettable {
 
     companion object {
 
@@ -22,21 +22,28 @@ class ShoppingListActivity : AppCompatActivity() {
         }
     }
 
+    private var binding: ActivityShoppingListBinding? = null
     private var currFragment: ShoppingListPlanFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = DataBindingUtil.setContentView<ActivityShoppingListBinding>(this, R.layout.activity_shopping_list)
-        setSupportActionBar(binding.toolbar)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_shopping_list)
+        setSupportActionBar(binding!!.toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        binding.fab.setOnClickListener { _ ->
+        binding!!.fab.setOnClickListener { _ ->
             currFragment?.newShoppingListBrand()
         }
         val sl = intent.getSerializableExtra(EXTRA_SHOPPING_LIST) as ShoppingList
         currFragment = ShoppingListPlanFragment.initialize(sl)
+        binding!!.title.text = sl.name
         supportFragmentManager.beginTransaction()
                 .add(R.id.frame, currFragment)
                 .commit()
+    }
+
+    override fun setPrice(total_selected: Pair<Float, Float>) {
+        val totalPriceStr = getString(R.string.total_price_title_fmt)
+        binding!!.toolbarStartText.text = String.format(totalPriceStr, total_selected.second)
     }
 
 }
