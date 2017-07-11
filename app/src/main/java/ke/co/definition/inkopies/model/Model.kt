@@ -62,10 +62,20 @@ class Model {
                     ?.localID
         }
 
-        fun brandNameExists(sl: Brand): UUID? {
+        fun brandNameForItemExists(sl: Brand): UUID? {
             return SQLite.select(Brand_Table.localID)
                     .from(Brand::class.java)
-                    .where(Brand_Table.name.eq(sl.name))
+                    .where(Brand_Table.item_localID.eq(sl.item!!.localID))
+                    .and(Brand_Table.name.eq(sl.name))
+                    .querySingle()
+                    ?.localID
+        }
+
+        fun shoppingListBrandForBrandExists(slb: ShoppingListBrand): UUID? {
+            return SQLite.select(ShoppingListBrand_Table.localID)
+                    .from(ShoppingListBrand::class.java)
+                    .where(ShoppingListBrand_Table.brand_localID.eq(slb.brand!!.localID))
+                    .or(ShoppingListBrand_Table.localID.eq(slb.localID))
                     .querySingle()
                     ?.localID
         }
@@ -93,7 +103,10 @@ class Model {
             newItem(slb.brand!!.item!!)
             newBrand(slb.brand!!)
             newShoppingList(slb.shoppingList!!)
-            if (slb.exists()) {
+            val localID = shoppingListBrandForBrandExists(slb)
+            if (localID != null) {
+                slb.localID = localID
+                slb.update()
                 return false
             }
             return slb.save()
@@ -110,9 +123,10 @@ class Model {
             if (br.name == null) {
                 br.name = ""
             }
-            val localID = brandNameExists(br)
+            val localID = brandNameForItemExists(br)
             if (localID != null) {
                 br.localID = localID
+                br.update()
                 return false
             }
             return br.save()

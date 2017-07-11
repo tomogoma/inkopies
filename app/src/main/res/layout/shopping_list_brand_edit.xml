@@ -131,7 +131,7 @@
                         android:imeOptions="actionNext"
                         android:inputType="numberDecimal"
                         android:maxLines="1"
-                        android:text="@={slBrand.unitPriceStr}"
+                        android:text="@={slBrand.brand.unitPriceStr}"
                         tools:text="500.00Ksh"/>
                 </android.support.design.widget.TextInputLayout>
 
