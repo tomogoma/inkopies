@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.LayoutShoppingListBrandItemBinding
+import ke.co.definition.inkopies.databinding.ShoppingListBrandEditBinding
 import ke.co.definition.inkopies.model.Model
 import ke.co.definition.inkopies.model.beans.ShoppingList
 import ke.co.definition.inkopies.model.beans.ShoppingListBrand
@@ -24,26 +25,28 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
         private val STATE_VIEW: Int = 1
         private val STATE_NEW: Int = 2
         private val STATE_EDIT: Int = 3
+
+        private val DEFAULT_FOCUS_VIEW = R.id.itemName
     }
 
     class ViewHolder(var binding: LayoutShoppingListBrandItemBinding) : RecyclerView.ViewHolder(binding.root)
 
-    private class ShoppingListBrandView(var state: Int, var slb: ShoppingListBrand)
+    private class SLBMapper(var state: Int, var slb: ShoppingListBrand, var focusView: Int)
 
-    private val shoppingListBrands: MutableList<ShoppingListBrandView> = LinkedList()
+    private val slbMappers: MutableList<SLBMapper> = LinkedList()
 
     fun setShoppingListBrands(brands: List<ShoppingListBrand>) {
-        shoppingListBrands.clear()
+        slbMappers.clear()
         for (brand in brands) {
-            this.shoppingListBrands.add(ShoppingListBrandView(STATE_VIEW, brand))
+            this.slbMappers.add(SLBMapper(STATE_VIEW, brand, DEFAULT_FOCUS_VIEW))
         }
         notifyDataSetChanged()
     }
 
     fun newShoppingListBrand() {
         val slb = ShoppingListBrand(sl)
-        val slbv = ShoppingListBrandView(STATE_NEW, slb)
-        shoppingListBrands.add(0, slbv)
+        val slbM = SLBMapper(STATE_NEW, slb, DEFAULT_FOCUS_VIEW)
+        slbMappers.add(0, slbM)
         notifyItemInserted(0)
     }
 
@@ -58,73 +61,107 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val slbv = shoppingListBrands[position]
-        slbv.slb.shoppingList = sl
-        slbv.slb.brand!!.load()
-        slbv.slb.brand!!.item!!.load()
-        (slbv.slb.brand!!.measuringUnit ?: slbv.slb.brand!!.item!!.measuringUnit)?.load()
-        holder.binding.slBrand = slbv.slb
-        when (slbv.state) {
-            STATE_NEW -> bindNewSLB(slbv, holder.binding, position)
-            STATE_EDIT -> bindEditSLB(slbv, holder.binding, position)
-            STATE_VIEW -> bindViewSLB(slbv, holder.binding, position)
+        val slbM = slbMappers[position]
+        slbM.slb.shoppingList = sl
+        slbM.slb.brand!!.load()
+        slbM.slb.brand!!.item!!.load()
+        (slbM.slb.brand!!.measuringUnit ?: slbM.slb.brand!!.item!!.measuringUnit)?.load()
+        holder.binding.slBrand = slbM.slb
+        when (slbM.state) {
+            STATE_NEW -> bindNewSLB(slbM, holder.binding)
+            STATE_EDIT -> bindEditSLB(slbM, holder.binding)
+            STATE_VIEW -> bindViewSLB(slbM, holder.binding)
         }
     }
 
     override fun getItemCount(): Int {
-        return shoppingListBrands.size
+        return slbMappers.size
     }
 
-    private fun bindEditSLB(slbv: ShoppingListBrandView, binding: LayoutShoppingListBrandItemBinding, position: Int) {
+    private fun bindEditSLB(slbM: SLBMapper, binding: LayoutShoppingListBrandItemBinding) {
         binding.edit.delete.setText(R.string.delete)
         binding.edit.submit.setText(R.string.done)
-        showEditView(binding)
+        showEditView(slbM.focusView, binding)
+        highlightAllOnFocus(binding.edit)
 
         binding.edit.submit.setOnClickListener { _ ->
-            updateShoppingListBrand(slbv, position)
+            updateShoppingListBrand(slbM, getPosition(slbM))
         }
         binding.edit.delete.setOnClickListener { _ ->
             Model.deleteShoppingListBrand(binding.slBrand)
-            shoppingListBrands.removeAt(position)
+            val position = slbMappers.indices.first { slbMappers[it].slb.id == slbM.slb.id }
+            slbMappers.removeAt(position)
             notifyItemRemoved(position)
         }
     }
 
-    private fun bindNewSLB(slbv: ShoppingListBrandView, binding: LayoutShoppingListBrandItemBinding, position: Int) {
+    private fun bindNewSLB(slbM: SLBMapper, binding: LayoutShoppingListBrandItemBinding) {
         binding.edit.delete.setText(R.string.cancel)
         binding.edit.submit.setText(R.string.add)
-        showEditView(binding)
+        showEditView(slbM.focusView, binding)
+        highlightAllOnFocus(binding.edit)
 
         binding.edit.submit.setOnClickListener { _ ->
+            val position = getPosition(slbM)
             if (!validateShoppingListBrand(binding.slBrand)) {
-                shoppingListBrands.removeAt(position)
+                slbMappers.removeAt(position)
                 notifyItemRemoved(position)
                 return@setOnClickListener
             }
             if (Model.newShoppingListBrand(binding.slBrand)) {
-                slbv.state = STATE_VIEW
+                slbM.state = STATE_VIEW
                 notifyItemChanged(position)
             } else {
-                shoppingListBrands.removeAt(position)
+                slbMappers.removeAt(position)
                 notifyItemRemoved(position)
             }
         }
         binding.edit.delete.setOnClickListener { _ ->
-            shoppingListBrands.removeAt(position)
+            val position = getPosition(slbM)
+            slbMappers.removeAt(position)
             notifyItemRemoved(position)
         }
     }
 
-    private fun bindViewSLB(slbv: ShoppingListBrandView, binding: LayoutShoppingListBrandItemBinding, position: Int) {
+    private fun bindViewSLB(slbM: SLBMapper, binding: LayoutShoppingListBrandItemBinding) {
         showViewView(binding)
-        binding.view.checkbox.setOnCheckedChangeListener { _, checked ->
-            updateShoppingListBrand(slbv, position)
+        binding.view.checkbox.setOnClickListener { _ ->
+            val position = getPosition(slbM)
+            updateShoppingListBrand(slbM, position)
+            slbMappers.removeAt(position)
+            notifyItemRemoved(position)
+            val p = slbMappers.indices.firstOrNull { !slbMappers[it].slb.isStatusBoxChecked() }
+                    ?: slbMappers.size
+            slbMappers.add(p, slbM)
+            notifyItemInserted(p)
         }
+        binding.view.brandName.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
+        binding.view.itemName.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
+        binding.view.quantity.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
+        binding.view.measuringUnit.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
+        binding.view.unitPrice.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
     }
 
-    private fun showEditView(binding: LayoutShoppingListBrandItemBinding) {
+    private fun getPosition(slbM: SLBMapper) = slbMappers.indices.first {
+        slbMappers[it].slb.localID == slbM.slb.localID
+    }
+
+    private fun editableClicked(slbM: SLBMapper, position: Int, v: View) {
+        slbM.state = STATE_EDIT
+        slbM.focusView = v.id
+        notifyItemChanged(position)
+    }
+
+    private fun showEditView(focusView: Int, binding: LayoutShoppingListBrandItemBinding) {
         binding.view.root.visibility = View.GONE
         binding.edit.root.visibility = View.VISIBLE
+        when (focusView) {
+            R.id.brandName -> binding.edit.brandName.requestFocus()
+            R.id.itemName -> binding.edit.itemName.requestFocus()
+            R.id.quantity -> binding.edit.quantity.requestFocus()
+            R.id.measuringUnit -> binding.edit.measuringUnit.requestFocus()
+            R.id.unitPrice -> binding.edit.unitPrice.requestFocus()
+        }
     }
 
     private fun showViewView(binding: LayoutShoppingListBrandItemBinding) {
@@ -132,18 +169,26 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
         binding.view.root.visibility = View.VISIBLE
     }
 
-    private fun updateShoppingListBrand(slbv: ShoppingListBrandView, position: Int) {
-        if (!validateShoppingListBrand(slbv.slb)) {
-            slbv.state = STATE_VIEW
+    private fun highlightAllOnFocus(binding: ShoppingListBrandEditBinding) {
+        binding.brandName.setSelectAllOnFocus(true)
+        binding.itemName.setSelectAllOnFocus(true)
+        binding.quantity.setSelectAllOnFocus(true)
+        binding.measuringUnit.setSelectAllOnFocus(true)
+        binding.unitPrice.setSelectAllOnFocus(true)
+    }
+
+    private fun updateShoppingListBrand(slbM: SLBMapper, position: Int) {
+        if (!validateShoppingListBrand(slbM.slb)) {
+            slbM.state = STATE_VIEW
             return
         }
-        val successDeleted = Model.updateShoppingListBrand(slbv.slb)
-        slbv.state = STATE_VIEW
+        val successDeleted = Model.updateShoppingListBrand(slbM.slb)
+        slbM.state = STATE_VIEW
         if (!successDeleted.first) {
             // TODO
         }
         if (successDeleted.second) {
-            shoppingListBrands.removeAt(position)
+            slbMappers.removeAt(position)
             notifyItemRemoved(position)
             return
         }
