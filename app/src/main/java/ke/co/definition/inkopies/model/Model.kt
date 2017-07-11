@@ -38,43 +38,48 @@ class Model {
                     .execute()
         }
 
-        fun shoppingListNameExists(sl: ShoppingList): Boolean {
-            return !SQLite.select(ShoppingList_Table.localID)
+        fun shoppingListNameExists(sl: ShoppingList): UUID? {
+            return SQLite.select(ShoppingList_Table.localID)
                     .from(ShoppingList::class.java)
                     .where(ShoppingList_Table.name.eq(sl.name))
-                    .queryList()
-                    .isEmpty()
+                    .querySingle()
+                    ?.localID
         }
 
-        fun measuringUnitNameExists(sl: MeasuringUnit): Boolean {
-            return !SQLite.select(MeasuringUnit_Table.localID)
+        fun measuringUnitNameExists(sl: MeasuringUnit): UUID? {
+            return SQLite.select(MeasuringUnit_Table.localID)
                     .from(MeasuringUnit::class.java)
                     .where(MeasuringUnit_Table.name.eq(sl.name))
-                    .queryList()
-                    .isEmpty()
+                    .querySingle()
+                    ?.localID
         }
 
-        fun itemNameExists(sl: Item): Boolean {
-            return !SQLite.select(Item_Table.localID)
+        fun itemNameExists(sl: Item): UUID? {
+            return SQLite.select(Item_Table.localID)
                     .from(Item::class.java)
                     .where(Item_Table.name.eq(sl.name))
-                    .queryList()
-                    .isEmpty()
+                    .querySingle()
+                    ?.localID
         }
 
-        fun brandNameExists(sl: Brand): Boolean {
-            return !SQLite.select(Brand_Table.localID)
+        fun brandNameExists(sl: Brand): UUID? {
+            return SQLite.select(Brand_Table.localID)
                     .from(Brand::class.java)
                     .where(Brand_Table.name.eq(sl.name))
-                    .queryList()
-                    .isEmpty()
+                    .querySingle()
+                    ?.localID
         }
 
         /**
          * newShoppingList synchronously saves @link{ShoppingList} into the db.
          */
         fun newShoppingList(sl: ShoppingList): Boolean {
-            if (shoppingListNameExists(sl)) {
+            if (sl.name.isNullOrBlank()) {
+                throw RuntimeException("ShoppingList name was null or blank")
+            }
+            val localID = shoppingListNameExists(sl)
+            if (localID != null) {
+                sl.localID = localID
                 return false
             }
             return sl.save()
@@ -102,21 +107,36 @@ class Model {
         }
 
         fun newBrand(br: Brand): Boolean {
-            if (!br.name.isNullOrBlank() && brandNameExists(br)) {
+            if (br.name == null) {
+                br.name = ""
+            }
+            val localID = brandNameExists(br)
+            if (localID != null) {
+                br.localID = localID
                 return false
             }
             return br.save()
         }
 
         fun newItem(it: Item): Boolean {
-            if (it.name.isNullOrBlank() || itemNameExists(it)) {
+            if (it.name.isNullOrBlank()) {
+                throw RuntimeException("Item name was null or blank")
+            }
+            val localID = itemNameExists(it)
+            if (localID != null) {
+                it.localID = localID
                 return false
             }
             return it.save()
         }
 
         fun newMeasuringUnit(mu: MeasuringUnit): Boolean {
-            if (mu.name.isNullOrBlank() || measuringUnitNameExists(mu)) {
+            if (mu.name == null) {
+                mu.name = ""
+            }
+            val localID = measuringUnitNameExists(mu)
+            if (localID != null) {
+                mu.localID = localID
                 return false
             }
             return mu.save()
