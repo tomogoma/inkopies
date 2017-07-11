@@ -59,51 +59,15 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val slbv = shoppingListBrands[position]
-        holder.binding.edit.submit.setOnClickListener { view ->
-            if (validateShoppingListBrand(holder.binding.slBrand)) {
-                shoppingListBrands.removeAt(position)
-                notifyItemRemoved(position)
-                return@setOnClickListener
-            }
-            if (Model.newShoppingListBrand(holder.binding.slBrand) || slbv.state == STATE_EDIT) {
-                slbv.state = STATE_VIEW
-                notifyItemChanged(position)
-            } else {
-                shoppingListBrands.removeAt(position)
-                notifyItemRemoved(position)
-            }
-        }
-        holder.binding.edit.delete.setOnClickListener { view ->
-            if (slbv.state == STATE_EDIT) {
-                Model.deleteShoppingListBrand(holder.binding.slBrand)
-            }
-            shoppingListBrands.removeAt(position)
-            notifyItemRemoved(position)
-        }
+        slbv.slb.shoppingList = sl
+        slbv.slb.brand!!.load()
+        slbv.slb.brand!!.item!!.load()
+        (slbv.slb.brand!!.measuringUnit ?: slbv.slb.brand!!.item!!.measuringUnit)?.load()
         holder.binding.slBrand = slbv.slb
-        holder.binding.slBrand.brand!!.load()
-        holder.binding.slBrand.brand!!.item!!.load()
-        (holder.binding.slBrand.brand!!.measuringUnit ?:
-                holder.binding.slBrand.brand!!.item!!.measuringUnit)?.load()
         when (slbv.state) {
-            STATE_NEW -> {
-                holder.binding.edit.delete.setText(R.string.cancel)
-                holder.binding.edit.submit.setText(R.string.add)
-                holder.binding.view.root.visibility = View.GONE
-                holder.binding.edit.root.visibility = View.VISIBLE
-            }
-            STATE_EDIT -> {
-                holder.binding.edit.delete.setText(R.string.delete)
-                holder.binding.edit.submit.setText(R.string.done)
-                holder.binding.view.root.visibility = View.GONE
-                holder.binding.edit.root.visibility = View.VISIBLE
-            }
-            else -> {
-                holder.binding.edit.delete.setText(R.string.delete)
-                holder.binding.edit.submit.setText(R.string.done)
-                holder.binding.edit.root.visibility = View.GONE
-                holder.binding.view.root.visibility = View.VISIBLE
-            }
+            STATE_NEW -> bindNewSLB(slbv, holder.binding, position)
+            STATE_EDIT -> bindEditSLB(slbv, holder.binding, position)
+            STATE_VIEW -> bindViewSLB(slbv, holder.binding, position)
         }
     }
 
@@ -111,7 +75,94 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList)
         return shoppingListBrands.size
     }
 
+    private fun bindEditSLB(slbv: ShoppingListBrandView, binding: LayoutShoppingListBrandItemBinding, position: Int) {
+        binding.edit.delete.setText(R.string.delete)
+        binding.edit.submit.setText(R.string.done)
+        showEditView(binding)
+
+        binding.edit.submit.setOnClickListener { _ ->
+            updateShoppingListBrand(slbv, position)
+        }
+        binding.edit.delete.setOnClickListener { _ ->
+            Model.deleteShoppingListBrand(binding.slBrand)
+            shoppingListBrands.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
+
+    private fun bindNewSLB(slbv: ShoppingListBrandView, binding: LayoutShoppingListBrandItemBinding, position: Int) {
+        binding.edit.delete.setText(R.string.cancel)
+        binding.edit.submit.setText(R.string.add)
+        showEditView(binding)
+
+        binding.edit.submit.setOnClickListener { _ ->
+            if (!validateShoppingListBrand(binding.slBrand)) {
+                shoppingListBrands.removeAt(position)
+                notifyItemRemoved(position)
+                return@setOnClickListener
+            }
+            if (Model.newShoppingListBrand(binding.slBrand)) {
+                slbv.state = STATE_VIEW
+                notifyItemChanged(position)
+            } else {
+                shoppingListBrands.removeAt(position)
+                notifyItemRemoved(position)
+            }
+        }
+        binding.edit.delete.setOnClickListener { _ ->
+            shoppingListBrands.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
+
+    private fun bindViewSLB(slbv: ShoppingListBrandView, binding: LayoutShoppingListBrandItemBinding, position: Int) {
+        showViewView(binding)
+        binding.view.checkbox.setOnCheckedChangeListener { _, checked ->
+            updateShoppingListBrand(slbv, position)
+        }
+    }
+
+    private fun showEditView(binding: LayoutShoppingListBrandItemBinding) {
+        binding.view.root.visibility = View.GONE
+        binding.edit.root.visibility = View.VISIBLE
+    }
+
+    private fun showViewView(binding: LayoutShoppingListBrandItemBinding) {
+        binding.edit.root.visibility = View.GONE
+        binding.view.root.visibility = View.VISIBLE
+    }
+
+    private fun updateShoppingListBrandOnCheckChanged(checked: Boolean, slbv: ShoppingListBrandView, position: Int) {
+        shoppingListBrands.removeAt(position)
+        var newPos = shoppingListBrands.size
+        if (checked) {
+            shoppingListBrands.add(0, slbv)
+            newPos = 0
+        } else {
+            shoppingListBrands.add(slbv)
+        }
+        notifyItemChanged(newPos)
+    }
+
+    private fun updateShoppingListBrand(slbv: ShoppingListBrandView, position: Int) {
+        if (!validateShoppingListBrand(slbv.slb)) {
+            slbv.state = STATE_VIEW
+            return
+        }
+        val successDeleted = Model.updateShoppingListBrand(slbv.slb)
+        slbv.state = STATE_VIEW
+        if (!successDeleted.first) {
+            // TODO
+        }
+        if (successDeleted.second) {
+            shoppingListBrands.removeAt(position)
+            notifyItemRemoved(position)
+            return
+        }
+        notifyItemChanged(position)
+    }
+
     private fun validateShoppingListBrand(slb: ShoppingListBrand): Boolean {
-        return slb.brand!!.item!!.name.isNullOrBlank() || slb.quantity!! < 0
+        return !slb.brand!!.item!!.name.isNullOrBlank() && slb.quantity!! > 0
     }
 }

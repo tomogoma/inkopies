@@ -18,7 +18,9 @@
         <com.google.android.flexbox.FlexboxLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/icon_diameter"
+            app:alignItems="center">
 
             <TextView
                 android:id="@+id/brandName"
@@ -34,13 +36,22 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/text_padding"
                 android:text="@{slBrand.brand.item.name}"
+                app:layout_flexGrow="1"
                 tools:text="Toothpaste"/>
+
+            <CheckBox
+                android:id="@+id/checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="@{slBrand.statusBoxChecked}"
+                android:focusable="true"/>
         </com.google.android.flexbox.FlexboxLayout>
 
         <com.google.android.flexbox.FlexboxLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/icon_diameter"
             app:alignItems="center"
             app:justifyContent="space_between">
 
@@ -91,12 +102,6 @@
                     android:text="@{slBrand.brand.unitPriceStr}"
                     tools:text="500.00Ksh"/>
             </LinearLayout>
-
-            <android.support.design.widget.CheckableImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:focusable="true"
-                android:src="@drawable/ic_add_shopping_cart_18dp"/>
         </com.google.android.flexbox.FlexboxLayout>
     </LinearLayout>
 </layout>

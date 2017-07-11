@@ -10,6 +10,6 @@ import com.raizlabs.android.dbflow.annotation.Database
 class DB {
     companion object {
         const val NAME = "InkopiesDB"
-        const val VERSION = 17
+        const val VERSION = 19
     }
 }

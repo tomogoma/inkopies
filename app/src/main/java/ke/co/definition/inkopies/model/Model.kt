@@ -112,6 +112,28 @@ class Model {
             return slb.save()
         }
 
+        /**
+         * returns <updateSuccess, hasDeletedAnEntry>
+         */
+        fun updateShoppingListBrand(slb: ShoppingListBrand): Pair<Boolean, Boolean> {
+            val mu = slb.brand!!.measuringUnit ?: slb.brand!!.item!!.measuringUnit
+            if (mu != null) {
+                newMeasuringUnit(mu)
+            }
+            newItem(slb.brand!!.item!!)
+            newBrand(slb.brand!!)
+            newShoppingList(slb.shoppingList!!)
+            val localID = shoppingListBrandForBrandExists(slb)
+            if (localID != null && localID != slb.localID) {
+                if (!slb.delete()) {
+                    return Pair(false, false)
+                }
+                slb.localID = localID
+                return Pair(slb.update(), true)
+            }
+            return Pair(slb.update(), false)
+        }
+
         fun deleteShoppingListBrand(slb: ShoppingListBrand): Boolean {
             if (!slb.exists()) {
                 return false
@@ -195,7 +217,27 @@ class Model {
 
     fun getShoppingListBrands(ctx: Context, shoppingListID: UUID, resultCallback: (res: List<ShoppingListBrand>) -> Unit) {
         val where = ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID)
-        getProfiles(ctx, ShoppingListBrand::class.java, where, resultCallback = resultCallback)
+        SQLite.select()
+                .from(ShoppingListBrand::class.java)
+                .where(where)
+                .orderBy(ShoppingListBrand_Table.status, true)
+                .async()
+                .queryResultCallback { _, res ->
+                    run {
+                        res.use { r ->
+                            val sls = r.toList()
+                            resultCallback(sls)
+                        }
+                    }
+                }
+                .error { _, error ->
+                    throw RuntimeException(error)
+                }
+                .execute()
+        contentObserver.registerForContentChanges(ctx, ShoppingListBrand::class.java)
+        contentObserver.addOnTableChangedListener { _, _ ->
+            getShoppingListBrands(ctx, shoppingListID, resultCallback)
+        }
     }
 
     fun destroy(ctx: Context) {
