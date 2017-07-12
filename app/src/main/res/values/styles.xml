@@ -6,6 +6,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="buttonStyle">@style/Button</item>
         <item name="android:textSize">@dimen/text_size_normal</item>
+        <item name="android:textColorPrimary">@color/white</item>
     </style>
 
     <style name="Dialog" parent="Theme.AppCompat.Light.Dialog.MinWidth">
