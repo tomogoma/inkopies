@@ -20,162 +20,96 @@ class Model {
         }
 
         /**
-         * shoppingListExists asynchronously checks and returns true if the
-         * @link{ShoppingList.name} exists.
+         * upsertShoppingList synchronously saves @link{ShoppingList} into the db.
          */
-        fun shoppingListNameExists(sl: ShoppingList, hasShoppingListCallBack: (has: Boolean) -> Unit) {
-            SQLite.select(ShoppingList_Table.localID)
-                    .from(ShoppingList::class.java)
-                    .where(ShoppingList_Table.name.eq(sl.name))
-                    .async()
-                    .queryResultCallback({ _, res ->
-                        res.use { r ->
-                            val sls = r.toList()
-                            hasShoppingListCallBack(!sls.isEmpty())
-                        }
-                    })
-                    .error { _, error -> throw RuntimeException(error) }
-                    .execute()
-        }
-
-        fun shoppingListNameExists(sl: ShoppingList): UUID? {
-            return SQLite.select(ShoppingList_Table.localID)
-                    .from(ShoppingList::class.java)
-                    .where(ShoppingList_Table.name.eq(sl.name))
-                    .querySingle()
-                    ?.localID
-        }
-
-        fun measuringUnitNameExists(sl: MeasuringUnit): UUID? {
-            return SQLite.select(MeasuringUnit_Table.localID)
-                    .from(MeasuringUnit::class.java)
-                    .where(MeasuringUnit_Table.name.eq(sl.name))
-                    .querySingle()
-                    ?.localID
-        }
-
-        fun itemNameExists(sl: Item): UUID? {
-            return SQLite.select(Item_Table.localID)
-                    .from(Item::class.java)
-                    .where(Item_Table.name.eq(sl.name))
-                    .querySingle()
-                    ?.localID
-        }
-
-        fun brandNameForItemExists(sl: Brand): UUID? {
-            return SQLite.select(Brand_Table.localID)
-                    .from(Brand::class.java)
-                    .where(Brand_Table.item_localID.eq(sl.item!!.localID))
-                    .and(Brand_Table.name.eq(sl.name))
-                    .querySingle()
-                    ?.localID
-        }
-
-        fun shoppingListBrandForBrandExists(slb: ShoppingListBrand): UUID? {
-            return SQLite.select(ShoppingListBrand_Table.localID)
-                    .from(ShoppingListBrand::class.java)
-                    .where(ShoppingListBrand_Table.brand_localID.eq(slb.brand!!.localID))
-                    .or(ShoppingListBrand_Table.localID.eq(slb.localID))
-                    .querySingle()
-                    ?.localID
-        }
-
-        /**
-         * newShoppingList synchronously saves @link{ShoppingList} into the db.
-         */
-        fun newShoppingList(sl: ShoppingList): Boolean {
+        fun upsertShoppingList(sl: ShoppingList) {
             if (sl.name.isNullOrBlank()) {
                 throw RuntimeException("ShoppingList name was null or blank")
             }
             val localID = shoppingListNameExists(sl)
+            val res: Boolean
             if (localID != null) {
                 sl.localID = localID
-                return false
+                res = sl.update()
+            } else {
+                res = sl.save()
             }
-            return sl.save()
+            if (!res) {
+                throw RuntimeException("Unable to upsert ShoppingList")
+            }
         }
 
-        fun newShoppingListBrand(slb: ShoppingListBrand): Boolean {
-            val mu = slb.brand!!.measuringUnit ?: slb.brand!!.item!!.measuringUnit
-            if (mu != null) {
-                newMeasuringUnit(mu)
-            }
-            newItem(slb.brand!!.item!!)
-            newBrand(slb.brand!!)
-            newShoppingList(slb.shoppingList!!)
+        fun insertShoppingListBrand(slb: ShoppingListBrand) {
+            upsertBrand(slb.brand!!)
+            upsertShoppingList(slb.shoppingList!!)
             val localID = shoppingListBrandForBrandExists(slb)
+            val res: Boolean
             if (localID != null) {
                 slb.localID = localID
-                slb.update()
-                return false
+                res = slb.update()
+            } else {
+                res = slb.save()
             }
-            return slb.save()
+            if (!res) {
+                throw RuntimeException("Unable to insert ShoppingListBrand")
+            }
         }
 
         /**
          * returns <updateSuccess, hasDeletedAnEntry>
          */
-        fun updateShoppingListBrand(slb: ShoppingListBrand): Pair<Boolean, Boolean> {
-            val mu = slb.brand!!.measuringUnit ?: slb.brand!!.item!!.measuringUnit
-            if (mu != null) {
-                newMeasuringUnit(mu)
-            }
-            newItem(slb.brand!!.item!!)
-            newBrand(slb.brand!!)
-            newShoppingList(slb.shoppingList!!)
+        fun updateShoppingListBrand(slb: ShoppingListBrand): Boolean {
+            upsertBrand(slb.brand!!)
+            upsertShoppingList(slb.shoppingList!!)
             val localID = shoppingListBrandForBrandExists(slb)
+            val res: Boolean
+            var hadDeleted = false
             if (localID != null && localID != slb.localID) {
                 if (!slb.delete()) {
-                    return Pair(false, false)
+                    throw RuntimeException("Unable to delete (found existing" +
+                            " with name, tried to delete current in order to " +
+                            "update current instead)")
                 }
+                hadDeleted = true
                 slb.localID = localID
-                return Pair(slb.update(), true)
+                res = slb.update()
+            } else {
+                res = slb.update()
             }
-            return Pair(slb.update(), false)
+            if (!res) {
+                throw RuntimeException("Unable to update ShoppingListBrand")
+            }
+            return hadDeleted
         }
 
-        fun deleteShoppingListBrand(slb: ShoppingListBrand): Boolean {
+        fun deleteShoppingListBrand(slb: ShoppingListBrand) {
             if (!slb.exists()) {
-                return false
+                return
             }
-            return slb.delete()
+            if (!slb.delete()) {
+                throw RuntimeException("Unable to delete ShoppingListBrand")
+            }
         }
 
-        fun newBrand(br: Brand): Boolean {
+        fun upsertBrand(br: Brand) {
             if (br.name == null) {
                 br.name = ""
             }
+            newItem(br.item!!)
+            if (br.measuringUnit != null) {
+                newMeasuringUnit(br.measuringUnit!!)
+            }
             val localID = brandNameForItemExists(br)
+            val res: Boolean
             if (localID != null) {
                 br.localID = localID
-                br.update()
-                return false
+                res = br.update()
+            } else {
+                res = br.save()
             }
-            return br.save()
-        }
-
-        fun newItem(it: Item): Boolean {
-            if (it.name.isNullOrBlank()) {
-                throw RuntimeException("Item name was null or blank")
+            if (!res) {
+                throw RuntimeException("Unable to upsert Brand")
             }
-            val localID = itemNameExists(it)
-            if (localID != null) {
-                it.localID = localID
-                return false
-            }
-            return it.save()
-        }
-
-        fun newMeasuringUnit(mu: MeasuringUnit): Boolean {
-            if (mu.name == null) {
-                mu.name = ""
-            }
-            val localID = measuringUnitNameExists(mu)
-            if (localID != null) {
-                mu.localID = localID
-                return false
-            }
-            return mu.save()
         }
 
         /**
@@ -199,6 +133,127 @@ class Model {
                     }
                     .execute()
         }
+
+        fun getShoppingListBrands(mode: ShoppingList.Mode, shoppingListID: UUID, resultCallback: (res: List<ShoppingListBrand>) -> Unit) {
+            val where = when (mode) {
+                ShoppingList.Mode.SHOPPING -> arrayOf(
+                        ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID),
+                        ShoppingListBrand_Table.status.greaterThanOrEq(ShoppingListBrand.STATUS_SCHEDULED)
+                )
+                else -> arrayOf(
+                        ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID)
+                )
+            }
+            SQLite.select()
+                    .from(ShoppingListBrand::class.java)
+                    .where(*where)
+                    .orderBy(ShoppingListBrand_Table.status, false)
+                    .async()
+                    .queryResultCallback { _, res ->
+                        run {
+                            res.use { r ->
+                                val sls = r.toList()
+                                resultCallback(sls)
+                            }
+                        }
+                    }
+                    .error { _, error ->
+                        throw RuntimeException(error)
+                    }
+                    .execute()
+        }
+
+        /**
+         * shoppingListExists asynchronously checks and returns true if the
+         * @link{ShoppingList.name} exists.
+         */
+        fun shoppingListNameExists(sl: ShoppingList, hasShoppingListCallBack: (has: Boolean) -> Unit) {
+            SQLite.select(ShoppingList_Table.localID)
+                    .from(ShoppingList::class.java)
+                    .where(ShoppingList_Table.name.eq(sl.name))
+                    .async()
+                    .queryResultCallback({ _, res ->
+                        res.use { r ->
+                            val sls = r.toList()
+                            hasShoppingListCallBack(!sls.isEmpty())
+                        }
+                    })
+                    .error { _, error -> throw RuntimeException(error) }
+                    .execute()
+        }
+
+        private fun newItem(it: Item) {
+            if (it.name.isNullOrBlank()) {
+                throw RuntimeException("Item name was null or blank")
+            }
+            if (it.measuringUnit != null) {
+                newMeasuringUnit(it.measuringUnit!!)
+            }
+            val localID = itemNameExists(it)
+            if (localID != null) {
+                it.localID = localID
+                return
+            }
+            if (!it.save()) {
+                throw RuntimeException("Unable to save new Item")
+            }
+        }
+
+        private fun newMeasuringUnit(mu: MeasuringUnit) {
+            if (mu.name == null) {
+                mu.name = ""
+            }
+            val localID = measuringUnitNameExists(mu)
+            if (localID != null) {
+                mu.localID = localID
+                return
+            }
+            if (!mu.save()) {
+                throw RuntimeException("Unable to save new MeasuringUnit")
+            }
+        }
+
+        private fun shoppingListNameExists(sl: ShoppingList): UUID? {
+            return SQLite.select(ShoppingList_Table.localID)
+                    .from(ShoppingList::class.java)
+                    .where(ShoppingList_Table.name.eq(sl.name))
+                    .querySingle()
+                    ?.localID
+        }
+
+        private fun measuringUnitNameExists(sl: MeasuringUnit): UUID? {
+            return SQLite.select(MeasuringUnit_Table.localID)
+                    .from(MeasuringUnit::class.java)
+                    .where(MeasuringUnit_Table.name.eq(sl.name))
+                    .querySingle()
+                    ?.localID
+        }
+
+        private fun itemNameExists(sl: Item): UUID? {
+            return SQLite.select(Item_Table.localID)
+                    .from(Item::class.java)
+                    .where(Item_Table.name.eq(sl.name))
+                    .querySingle()
+                    ?.localID
+        }
+
+        private fun brandNameForItemExists(sl: Brand): UUID? {
+            return SQLite.select(Brand_Table.localID)
+                    .from(Brand::class.java)
+                    .where(Brand_Table.item_localID.eq(sl.item!!.localID))
+                    .and(Brand_Table.name.eq(sl.name))
+                    .querySingle()
+                    ?.localID
+        }
+
+        private fun shoppingListBrandForBrandExists(slb: ShoppingListBrand): UUID? {
+            return SQLite.select(ShoppingListBrand_Table.localID)
+                    .from(ShoppingListBrand::class.java)
+                    .where(ShoppingListBrand_Table.brand_localID.eq(slb.brand!!.localID))
+                    .or(ShoppingListBrand_Table.localID.eq(slb.localID))
+                    .querySingle()
+                    ?.localID
+        }
     }
 
     val contentObserver: FlowContentObserver = FlowContentObserver()
@@ -213,27 +268,6 @@ class Model {
         getProfiles(cls, *where, resultCallback = resultCallback)
         contentObserver.registerForContentChanges(ctx, cls)
         contentObserver.addOnTableChangedListener { _, _ -> getProfiles(cls, *where, resultCallback = resultCallback) }
-    }
-
-    fun getShoppingListBrands(ctx: Context, shoppingListID: UUID, resultCallback: (res: List<ShoppingListBrand>) -> Unit) {
-        val where = ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID)
-        SQLite.select()
-                .from(ShoppingListBrand::class.java)
-                .where(where)
-                .orderBy(ShoppingListBrand_Table.status, false)
-                .async()
-                .queryResultCallback { _, res ->
-                    run {
-                        res.use { r ->
-                            val sls = r.toList()
-                            resultCallback(sls)
-                        }
-                    }
-                }
-                .error { _, error ->
-                    throw RuntimeException(error)
-                }
-                .execute()
     }
 
     fun destroy(ctx: Context) {

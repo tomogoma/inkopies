@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/goShopping"
+        android:icon="@drawable/ic_add_shopping_cart"
+        android:title="@string/go_shopping_title"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/checkout"
+        android:icon="@drawable/ic_payment"
+        android:title="@string/check_out_title"
+        app:showAsAction="ifRoom"/>
+</menu>

@@ -138,14 +138,10 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
                 notifyItemRemoved(position)
                 return@setOnClickListener
             }
-            if (Model.newShoppingListBrand(binding.slBrand)) {
-                slbM.state = STATE_VIEW
-                notifyItemChanged(position)
-                onPriceChange?.invoke(getTotalPrices())
-            } else {
-                slbMappers.removeAt(position)
-                notifyItemRemoved(position)
-            }
+            Model.insertShoppingListBrand(binding.slBrand)
+            slbM.state = STATE_VIEW
+            notifyItemChanged(position)
+            onPriceChange?.invoke(getTotalPrices())
         }
         binding.edit.delete.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
@@ -229,16 +225,13 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             slbM.state = STATE_VIEW
             return
         }
-        val successDeleted = Model.updateShoppingListBrand(slbM.slb)
-        slbM.state = STATE_VIEW
-        if (!successDeleted.first) {
-            // TODO
-        }
-        if (successDeleted.second) {
+        val deleted = Model.updateShoppingListBrand(slbM.slb)
+        if (deleted) {
             slbMappers.removeAt(position)
             notifyItemRemoved(position)
             return
         }
+        slbM.state = STATE_VIEW
         notifyItemChanged(position)
     }
 

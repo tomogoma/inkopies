@@ -19,4 +19,6 @@
     <string name="add">Add</string>
     <string name="cancel">Cancel</string>
     <string name="total_price_title_fmt">Total Price: %s</string>
+    <string name="go_shopping_title">Go Shopping</string>
+    <string name="check_out_title">Check Out</string>
 </resources>

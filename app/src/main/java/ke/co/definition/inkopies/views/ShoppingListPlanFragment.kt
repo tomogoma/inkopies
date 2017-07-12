@@ -37,12 +37,10 @@ class ShoppingListPlanFragment : Fragment() {
         fun setPrice(total_selected: Pair<Float, Float>)
     }
 
-    private var model: Model? = null
-    private var adapter: ShoppingListBrandAdapter? = null
+    private lateinit var adapter: ShoppingListBrandAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        model = Model()
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -57,18 +55,12 @@ class ShoppingListPlanFragment : Fragment() {
         binding.items.addItemDecoration(did)
         binding.items.adapter = adapter
 
-        adapter!!.setOnPriceChangeListener { newPrices ->
+        adapter.setOnPriceChangeListener { newPrices ->
             (activity as PriceSettable).setPrice(newPrices)
         }
 
-        model!!.getShoppingListBrands(context, sl.localID!!, resultCallback = { res ->
-            val r: MutableList<ShoppingListBrand> = res as MutableList
-            if (r.isEmpty()) {
-                adapter?.newShoppingListBrand()
-                return@getShoppingListBrands
-            }
-            adapter?.setShoppingListBrands(r)
-        })
+        loadList(sl)
+
         return binding.root
     }
 
@@ -80,11 +72,17 @@ class ShoppingListPlanFragment : Fragment() {
     }
 
     fun newShoppingListBrand() {
-        adapter?.newShoppingListBrand()
+        adapter.newShoppingListBrand()
     }
 
-    override fun onDestroy() {
-        model!!.destroy(context)
-        super.onDestroy()
+    fun loadList(sl: ShoppingList) {
+        Model.getShoppingListBrands(sl.currMode!!, sl.localID!!, resultCallback = { res ->
+            val r: MutableList<ShoppingListBrand> = res as MutableList
+            if (r.isEmpty()) {
+                adapter.newShoppingListBrand()
+                return@getShoppingListBrands
+            }
+            adapter.setShoppingListBrands(r)
+        })
     }
 }
