@@ -12,8 +12,8 @@ import java.util.*
  */
 
 open class Profile : BaseModel(), Serializable {
-    @Unique var id: String? = null
-    @PrimaryKey var localID: UUID? = UUID.randomUUID()
+    @PrimaryKey @Unique var serverID: String? = UUID.randomUUID().toString()
+    @PrimaryKey var id: UUID? = UUID.randomUUID()
     @Column var createDate: Date? = null
     @Column var updateDate: Date? = null
 }

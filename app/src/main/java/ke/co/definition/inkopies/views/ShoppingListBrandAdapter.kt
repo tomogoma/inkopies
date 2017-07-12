@@ -184,7 +184,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     }
 
     private fun getPosition(slbM: SLBMapper) = slbMappers.indices.first {
-        slbMappers[it].slb.localID == slbM.slb.localID
+        slbMappers[it].slb.id == slbM.slb.id
     }
 
     private fun editableClicked(slbM: SLBMapper, position: Int, v: View) {

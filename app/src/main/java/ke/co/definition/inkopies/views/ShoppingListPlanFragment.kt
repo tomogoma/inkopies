@@ -76,7 +76,7 @@ class ShoppingListPlanFragment : Fragment() {
     }
 
     fun loadList(sl: ShoppingList) {
-        Model.getShoppingListBrands(sl.currMode!!, sl.localID!!, resultCallback = { res ->
+        Model.getShoppingListBrands(sl.currMode!!, sl.id!!, resultCallback = { res ->
             val r: MutableList<ShoppingListBrand> = res as MutableList
             if (r.isEmpty()) {
                 adapter.newShoppingListBrand()

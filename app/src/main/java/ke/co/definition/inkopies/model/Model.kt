@@ -29,7 +29,7 @@ class Model {
             val localID = shoppingListNameExists(sl)
             val res: Boolean
             if (localID != null) {
-                sl.localID = localID
+                sl.id = localID
                 res = sl.update()
             } else {
                 res = sl.save()
@@ -45,7 +45,7 @@ class Model {
             val localID = shoppingListBrandForBrandExists(slb)
             val res: Boolean
             if (localID != null) {
-                slb.localID = localID
+                slb.id = localID
                 res = slb.update()
             } else {
                 res = slb.save()
@@ -64,14 +64,14 @@ class Model {
             val localID = shoppingListBrandForBrandExists(slb)
             val res: Boolean
             var hadDeleted = false
-            if (localID != null && localID != slb.localID) {
+            if (localID != null && localID != slb.id) {
                 if (!slb.delete()) {
                     throw RuntimeException("Unable to delete (found existing" +
                             " with name, tried to delete current in order to " +
                             "update current instead)")
                 }
                 hadDeleted = true
-                slb.localID = localID
+                slb.id = localID
                 res = slb.update()
             } else {
                 res = slb.update()
@@ -102,7 +102,7 @@ class Model {
             val localID = brandNameForItemExists(br)
             val res: Boolean
             if (localID != null) {
-                br.localID = localID
+                br.id = localID
                 res = br.update()
             } else {
                 res = br.save()
@@ -191,7 +191,7 @@ class Model {
             }
             val localID = itemNameExists(it)
             if (localID != null) {
-                it.localID = localID
+                it.id = localID
                 return
             }
             if (!it.save()) {
@@ -205,7 +205,7 @@ class Model {
             }
             val localID = measuringUnitNameExists(mu)
             if (localID != null) {
-                mu.localID = localID
+                mu.id = localID
                 return
             }
             if (!mu.save()) {
@@ -218,7 +218,7 @@ class Model {
                     .from(ShoppingList::class.java)
                     .where(ShoppingList_Table.name.eq(sl.name))
                     .querySingle()
-                    ?.localID
+                    ?.id
         }
 
         private fun measuringUnitNameExists(sl: MeasuringUnit): UUID? {
@@ -226,7 +226,7 @@ class Model {
                     .from(MeasuringUnit::class.java)
                     .where(MeasuringUnit_Table.name.eq(sl.name))
                     .querySingle()
-                    ?.localID
+                    ?.id
         }
 
         private fun itemNameExists(sl: Item): UUID? {
@@ -234,25 +234,25 @@ class Model {
                     .from(Item::class.java)
                     .where(Item_Table.name.eq(sl.name))
                     .querySingle()
-                    ?.localID
+                    ?.id
         }
 
         private fun brandNameForItemExists(sl: Brand): UUID? {
             return SQLite.select(Brand_Table.localID)
                     .from(Brand::class.java)
-                    .where(Brand_Table.item_localID.eq(sl.item!!.localID))
+                    .where(Brand_Table.item_localID.eq(sl.item!!.id))
                     .and(Brand_Table.name.eq(sl.name))
                     .querySingle()
-                    ?.localID
+                    ?.id
         }
 
         private fun shoppingListBrandForBrandExists(slb: ShoppingListBrand): UUID? {
             return SQLite.select(ShoppingListBrand_Table.localID)
                     .from(ShoppingListBrand::class.java)
-                    .where(ShoppingListBrand_Table.brand_localID.eq(slb.brand!!.localID))
-                    .or(ShoppingListBrand_Table.localID.eq(slb.localID))
+                    .where(ShoppingListBrand_Table.brand_localID.eq(slb.brand!!.id))
+                    .or(ShoppingListBrand_Table.localID.eq(slb.id))
                     .querySingle()
-                    ?.localID
+                    ?.id
         }
     }
 
