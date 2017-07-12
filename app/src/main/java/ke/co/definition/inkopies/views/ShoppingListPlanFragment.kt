@@ -38,6 +38,7 @@ class ShoppingListPlanFragment : Fragment() {
     }
 
     private lateinit var adapter: ShoppingListBrandAdapter
+    private lateinit var layoutManager: LinearLayoutManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,10 +49,10 @@ class ShoppingListPlanFragment : Fragment() {
                 inflater, R.layout.fragment_shopping_list_plan, container, false)
         val sl = arguments.getSerializable(EXTRA_SHOPPING_LIST) as ShoppingList
         binding.items.setHasFixedSize(true)
-        val lm = LinearLayoutManager(context)
-        binding.items.layoutManager = lm
+        layoutManager = LinearLayoutManager(context)
+        binding.items.layoutManager = layoutManager
         adapter = ShoppingListBrandAdapter(sl, context)
-        val did = DividerItemDecoration(context, lm.orientation)
+        val did = DividerItemDecoration(context, layoutManager.orientation)
         binding.items.addItemDecoration(did)
         binding.items.adapter = adapter
 
@@ -72,14 +73,15 @@ class ShoppingListPlanFragment : Fragment() {
     }
 
     fun newShoppingListBrand() {
-        adapter.newShoppingListBrand()
+        val pos = layoutManager.findFirstVisibleItemPosition()
+        adapter.newShoppingListBrand(if (pos < 0) 0 else pos)
     }
 
     fun loadList(sl: ShoppingList) {
         Model.getShoppingListBrands(sl.currMode!!, sl.id!!, resultCallback = { res ->
             val r: MutableList<ShoppingListBrand> = res as MutableList
             if (r.isEmpty()) {
-                adapter.newShoppingListBrand()
+                adapter.newShoppingListBrand(0)
                 return@getShoppingListBrands
             }
             adapter.setShoppingListBrands(r)

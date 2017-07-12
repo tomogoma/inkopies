@@ -49,11 +49,12 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         notifyDataSetChanged()
     }
 
-    fun newShoppingListBrand() {
+    fun newShoppingListBrand(currPos: Int) {
         val slb = ShoppingListBrand(sl)
         val slbM = SLBMapper(STATE_NEW, slb, DEFAULT_FOCUS_VIEW)
-        slbMappers.add(0, slbM)
-        notifyItemInserted(0)
+        val newPos = if (currPos < slbMappers.size) currPos + 1 else currPos
+        slbMappers.add(newPos, slbM)
+        notifyItemInserted(newPos)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShoppingListBrandAdapter.ViewHolder {
