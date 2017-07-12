@@ -52,7 +52,7 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         goShopping = menu.findItem(R.id.goShopping)
         checkout = menu.findItem(R.id.checkout)
         when (sl.currMode) {
-            ShoppingList.Mode.SHOPPING -> menuModeShopping()
+            ShoppingList.SHOPPING -> menuModeShopping()
             else -> menuModePlanning()
         }
         return true
@@ -73,14 +73,14 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
     }
 
     private fun initiateGoShopping() {
-        sl.currMode = ShoppingList.Mode.SHOPPING
+        sl.currMode = ShoppingList.SHOPPING
         Model.upsertShoppingList(sl)
         menuModeShopping()
         currFragment.loadList(sl)
     }
 
     private fun initiatePlanning() {
-        sl.currMode = ShoppingList.Mode.PLANNING
+        sl.currMode = ShoppingList.PLANNING
         Model.upsertShoppingList(sl)
         menuModePlanning()
         currFragment.loadList(sl)

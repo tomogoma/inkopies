@@ -13,10 +13,11 @@ import ke.co.definition.inkopies.model.db.DB
 @Table(database = DB::class)
 class ShoppingList : Nameable() {
 
-    enum class Mode {
-        PLANNING, SHOPPING
+    companion object {
+        const val PLANNING = 1
+        const val SHOPPING = 2
     }
 
     @Column @NotNull @Unique override var name: String? = null
-    @NotNull var currMode: Mode? = Mode.PLANNING
+    @Column @NotNull var currMode: Int? = PLANNING
 }

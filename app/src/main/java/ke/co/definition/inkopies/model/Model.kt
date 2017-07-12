@@ -134,9 +134,9 @@ class Model {
                     .execute()
         }
 
-        fun getShoppingListBrands(mode: ShoppingList.Mode, shoppingListID: UUID, resultCallback: (res: List<ShoppingListBrand>) -> Unit) {
-            val where = when (mode) {
-                ShoppingList.Mode.SHOPPING -> arrayOf(
+        fun getShoppingListBrands(slMode: Int, shoppingListID: UUID, resultCallback: (res: List<ShoppingListBrand>) -> Unit) {
+            val where = when (slMode) {
+                ShoppingList.SHOPPING -> arrayOf(
                         ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID),
                         ShoppingListBrand_Table.status.greaterThanOrEq(ShoppingListBrand.STATUS_SCHEDULED)
                 )

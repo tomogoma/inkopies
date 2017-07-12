@@ -37,12 +37,12 @@ open class ShoppingListBrand() : Profile() {
     }
 
     fun isStatusBoxChecked(): Boolean = when (shoppingList?.currMode) {
-        ShoppingList.Mode.SHOPPING -> isCarted()
+        ShoppingList.SHOPPING -> isCarted()
         else -> isScheduled()
     }
 
     fun setStatusBoxChecked(checked: Boolean) = when (shoppingList?.currMode) {
-        ShoppingList.Mode.SHOPPING -> setCarted(checked)
+        ShoppingList.SHOPPING -> setCarted(checked)
         else -> setScheduled(checked)
     }
 
