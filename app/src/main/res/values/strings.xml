@@ -21,4 +21,7 @@
     <string name="total_price_title_fmt">Total Price: %s</string>
     <string name="go_shopping_title">Go Shopping</string>
     <string name="check_out_title">Check Out</string>
+    <string name="cart_price_title_fmt">Cart: %s</string>
+    <string name="shopping_title">Shopping</string>
+    <string name="planning_title">Planning</string>
 </resources>

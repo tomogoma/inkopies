@@ -40,7 +40,6 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         binding.fab.setOnClickListener { _ ->
             currFragment.newShoppingListBrand()
         }
-        binding.title.text = sl.name
         currFragment = ShoppingListPlanFragment.initialize(sl)
         supportFragmentManager.beginTransaction()
                 .add(R.id.frame, currFragment)
@@ -55,6 +54,7 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
             ShoppingList.SHOPPING -> menuModeShopping()
             else -> menuModePlanning()
         }
+        binding.toolbar.title = sl.name
         return true
     }
 
@@ -67,9 +67,23 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         return true
     }
 
-    override fun setPrice(total_selected: Pair<Float, Float>) {
-        val totalPriceStr = getString(R.string.total_price_title_fmt)
-        binding.toolbarStartText.text = String.format(totalPriceStr, total_selected.second)
+    override fun setPrice(totals: Pair<Float, Float>) {
+        val startStr: String
+        val endStr: String
+        val totalFmt = getString(R.string.total_price_title_fmt)
+        when (sl.currMode) {
+            ShoppingList.SHOPPING -> {
+                val cartFmt = getString(R.string.cart_price_title_fmt)
+                startStr = String.format(totalFmt, totals.first)
+                endStr = String.format(cartFmt, totals.second)
+            }
+            else -> {
+                startStr = String.format(getString(R.string.total_price_title_fmt), totals.second)
+                endStr = ""
+            }
+        }
+        binding.toolbarStartText.text = startStr
+        binding.toolbarEndText.text = endStr
     }
 
     private fun initiateGoShopping() {
@@ -89,11 +103,13 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
     private fun menuModeShopping() {
         goShopping.isVisible = false
         checkout.isVisible = true
+        binding.toolbar.subtitle = getString(R.string.shopping_title)
     }
 
     private fun menuModePlanning() {
         checkout.isVisible = false
         goShopping.isVisible = true
+        binding.toolbar.subtitle = getString(R.string.planning_title)
     }
 
 }

@@ -34,7 +34,7 @@ class ShoppingListPlanFragment : Fragment() {
     }
 
     interface PriceSettable {
-        fun setPrice(total_selected: Pair<Float, Float>)
+        fun setPrice(totals: Pair<Float, Float>)
     }
 
     private lateinit var adapter: ShoppingListBrandAdapter
