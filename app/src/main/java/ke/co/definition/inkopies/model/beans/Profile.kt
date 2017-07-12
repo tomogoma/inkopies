@@ -23,4 +23,6 @@ open class Profile : BaseModel(), Serializable {
         createDate = from.createDate
         updateDate = Date()
     }
+
+    open fun sanitize() = Unit
 }

@@ -5,4 +5,8 @@ package ke.co.definition.inkopies.model.beans
  */
 open class Nameable : Profile() {
     open var name: String? = null
+
+    override fun sanitize() {
+        name = name?.trim()
+    }
 }

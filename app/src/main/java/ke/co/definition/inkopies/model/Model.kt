@@ -24,6 +24,7 @@ class Model {
          * upsertShoppingList synchronously saves @link{ShoppingList} into the db.
          */
         fun upsertShoppingList(sl: ShoppingList) {
+            sl.sanitize()
             if (sl.name.isNullOrBlank()) {
                 throw RuntimeException("ShoppingList name was null or blank")
             }
@@ -39,6 +40,7 @@ class Model {
         }
 
         fun upsertShoppingListBrand(slb: ShoppingListBrand): Boolean {
+            slb.sanitize()
             upsertBrand(slb.brand!!)
             upsertShoppingList(slb.shoppingList!!)
             val existing = shoppingListBrandForBrandExists(slb)
@@ -54,6 +56,7 @@ class Model {
         }
 
         fun updateShoppingListBrand(slb: ShoppingListBrand): Boolean {
+            slb.sanitize()
             upsertBrand(slb.brand!!)
             upsertShoppingList(slb.shoppingList!!)
             val existing = shoppingListBrandForBrandExists(slb)
@@ -65,11 +68,11 @@ class Model {
                 }
                 slb.inheritIdentification(existing)
                 slb.update()
-                return true
+                return false
             }
             slb.updateDate = Date()
             slb.update()
-            return false
+            return true
         }
 
         fun deleteShoppingListBrand(slb: ShoppingListBrand) {
@@ -82,6 +85,7 @@ class Model {
         }
 
         fun upsertBrand(br: Brand) {
+            br.sanitize()
             if (br.name == null) {
                 br.name = ""
             }
@@ -152,6 +156,7 @@ class Model {
         }
 
         private fun newItem(it: Item) {
+            it.sanitize()
             if (it.name.isNullOrBlank()) {
                 throw RuntimeException("Item name was null or blank")
             }
@@ -169,6 +174,7 @@ class Model {
         }
 
         private fun newMeasuringUnit(mu: MeasuringUnit) {
+            mu.sanitize()
             if (mu.name == null) {
                 mu.name = ""
             }
