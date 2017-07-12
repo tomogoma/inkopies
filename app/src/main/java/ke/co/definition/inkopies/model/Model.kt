@@ -5,6 +5,7 @@ import com.raizlabs.android.dbflow.config.FlowManager
 import com.raizlabs.android.dbflow.runtime.FlowContentObserver
 import com.raizlabs.android.dbflow.sql.language.SQLOperator
 import com.raizlabs.android.dbflow.sql.language.SQLite
+import com.raizlabs.android.dbflow.sql.language.property.Property
 import ke.co.definition.inkopies.model.beans.*
 import java.util.*
 
@@ -26,60 +27,49 @@ class Model {
             if (sl.name.isNullOrBlank()) {
                 throw RuntimeException("ShoppingList name was null or blank")
             }
-            val localID = shoppingListNameExists(sl)
-            val res: Boolean
-            if (localID != null) {
-                sl.id = localID
-                res = sl.update()
-            } else {
-                res = sl.save()
+            val existing = nameableExists(ShoppingList_Table.name, sl)
+            if (existing != null) {
+                sl.inheritIdentification(existing)
+                sl.update()
+                return
             }
-            if (!res) {
-                throw RuntimeException("Unable to upsert ShoppingList")
+            if (!sl.save()) {
+                throw RuntimeException("Unable to save ShoppingListBrand")
             }
         }
 
         fun insertShoppingListBrand(slb: ShoppingListBrand) {
             upsertBrand(slb.brand!!)
             upsertShoppingList(slb.shoppingList!!)
-            val localID = shoppingListBrandForBrandExists(slb)
-            val res: Boolean
-            if (localID != null) {
-                slb.id = localID
-                res = slb.update()
-            } else {
-                res = slb.save()
+            val existing = shoppingListBrandForBrandExists(slb)
+            if (existing != null) {
+                slb.inheritIdentification(existing)
+                slb.update()
+                return
             }
-            if (!res) {
-                throw RuntimeException("Unable to insert ShoppingListBrand")
+            if (!slb.save()) {
+                throw RuntimeException("Unable to save ShoppingListBrand")
             }
+            return
         }
 
-        /**
-         * returns <updateSuccess, hasDeletedAnEntry>
-         */
         fun updateShoppingListBrand(slb: ShoppingListBrand): Boolean {
             upsertBrand(slb.brand!!)
             upsertShoppingList(slb.shoppingList!!)
-            val localID = shoppingListBrandForBrandExists(slb)
-            val res: Boolean
-            var hadDeleted = false
-            if (localID != null && localID != slb.id) {
+            val existing = shoppingListBrandForBrandExists(slb)
+            if (existing != null && existing.id != slb.id) {
                 if (!slb.delete()) {
                     throw RuntimeException("Unable to delete (found existing" +
                             " with name, tried to delete current in order to " +
                             "update current instead)")
                 }
-                hadDeleted = true
-                slb.id = localID
-                res = slb.update()
-            } else {
-                res = slb.update()
+                slb.inheritIdentification(existing)
+                slb.update()
+                return true
             }
-            if (!res) {
-                throw RuntimeException("Unable to update ShoppingListBrand")
-            }
-            return hadDeleted
+            slb.updateDate = Date()
+            slb.update()
+            return false
         }
 
         fun deleteShoppingListBrand(slb: ShoppingListBrand) {
@@ -99,16 +89,14 @@ class Model {
             if (br.measuringUnit != null) {
                 newMeasuringUnit(br.measuringUnit!!)
             }
-            val localID = brandNameForItemExists(br)
-            val res: Boolean
-            if (localID != null) {
-                br.id = localID
-                res = br.update()
-            } else {
-                res = br.save()
+            val existing = brandNameForItemExists(br)
+            if (existing != null) {
+                br.inheritIdentification(existing)
+                br.update()
+                return
             }
-            if (!res) {
-                throw RuntimeException("Unable to upsert Brand")
+            if (!br.save()) {
+                throw RuntimeException("Unable to save Brand")
             }
         }
 
@@ -137,11 +125,11 @@ class Model {
         fun getShoppingListBrands(slMode: Int, shoppingListID: UUID, resultCallback: (res: List<ShoppingListBrand>) -> Unit) {
             val where = when (slMode) {
                 ShoppingList.SHOPPING -> arrayOf(
-                        ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID),
+                        ShoppingListBrand_Table.shoppingList_id.eq(shoppingListID),
                         ShoppingListBrand_Table.status.greaterThanOrEq(ShoppingListBrand.STATUS_SCHEDULED)
                 )
                 else -> arrayOf(
-                        ShoppingListBrand_Table.shoppingList_localID.eq(shoppingListID)
+                        ShoppingListBrand_Table.shoppingList_id.eq(shoppingListID)
                 )
             }
             SQLite.select()
@@ -163,25 +151,6 @@ class Model {
                     .execute()
         }
 
-        /**
-         * shoppingListExists asynchronously checks and returns true if the
-         * @link{ShoppingList.name} exists.
-         */
-        fun shoppingListNameExists(sl: ShoppingList, hasShoppingListCallBack: (has: Boolean) -> Unit) {
-            SQLite.select(ShoppingList_Table.localID)
-                    .from(ShoppingList::class.java)
-                    .where(ShoppingList_Table.name.eq(sl.name))
-                    .async()
-                    .queryResultCallback({ _, res ->
-                        res.use { r ->
-                            val sls = r.toList()
-                            hasShoppingListCallBack(!sls.isEmpty())
-                        }
-                    })
-                    .error { _, error -> throw RuntimeException(error) }
-                    .execute()
-        }
-
         private fun newItem(it: Item) {
             if (it.name.isNullOrBlank()) {
                 throw RuntimeException("Item name was null or blank")
@@ -189,9 +158,9 @@ class Model {
             if (it.measuringUnit != null) {
                 newMeasuringUnit(it.measuringUnit!!)
             }
-            val localID = itemNameExists(it)
-            if (localID != null) {
-                it.id = localID
+            val existing = nameableExists(Item_Table.name, it)
+            if (existing != null) {
+                it.inheritIdentification(existing)
                 return
             }
             if (!it.save()) {
@@ -203,9 +172,9 @@ class Model {
             if (mu.name == null) {
                 mu.name = ""
             }
-            val localID = measuringUnitNameExists(mu)
-            if (localID != null) {
-                mu.id = localID
+            val existing = nameableExists(MeasuringUnit_Table.name, mu)
+            if (existing != null) {
+                mu.inheritIdentification(existing)
                 return
             }
             if (!mu.save()) {
@@ -213,46 +182,27 @@ class Model {
             }
         }
 
-        private fun shoppingListNameExists(sl: ShoppingList): UUID? {
-            return SQLite.select(ShoppingList_Table.localID)
-                    .from(ShoppingList::class.java)
-                    .where(ShoppingList_Table.name.eq(sl.name))
+        private fun nameableExists(nameCol: Property<String>, nm: Nameable): Profile? {
+            return SQLite.select()
+                    .from(nm.javaClass)
+                    .where(nameCol.eq(nm.name))
                     .querySingle()
-                    ?.id
         }
 
-        private fun measuringUnitNameExists(sl: MeasuringUnit): UUID? {
-            return SQLite.select(MeasuringUnit_Table.localID)
-                    .from(MeasuringUnit::class.java)
-                    .where(MeasuringUnit_Table.name.eq(sl.name))
-                    .querySingle()
-                    ?.id
-        }
-
-        private fun itemNameExists(sl: Item): UUID? {
-            return SQLite.select(Item_Table.localID)
-                    .from(Item::class.java)
-                    .where(Item_Table.name.eq(sl.name))
-                    .querySingle()
-                    ?.id
-        }
-
-        private fun brandNameForItemExists(sl: Brand): UUID? {
-            return SQLite.select(Brand_Table.localID)
+        private fun brandNameForItemExists(sl: Brand): Profile? {
+            return SQLite.select()
                     .from(Brand::class.java)
-                    .where(Brand_Table.item_localID.eq(sl.item!!.id))
+                    .where(Brand_Table.item_id.eq(sl.item!!.id))
                     .and(Brand_Table.name.eq(sl.name))
                     .querySingle()
-                    ?.id
         }
 
-        private fun shoppingListBrandForBrandExists(slb: ShoppingListBrand): UUID? {
-            return SQLite.select(ShoppingListBrand_Table.localID)
+        private fun shoppingListBrandForBrandExists(slb: ShoppingListBrand): Profile? {
+            return SQLite.select()
                     .from(ShoppingListBrand::class.java)
-                    .where(ShoppingListBrand_Table.brand_localID.eq(slb.brand!!.id))
-                    .or(ShoppingListBrand_Table.localID.eq(slb.id))
+                    .where(ShoppingListBrand_Table.brand_id.eq(slb.brand!!.id))
+                    .or(ShoppingListBrand_Table.id.eq(slb.id))
                     .querySingle()
-                    ?.id
         }
     }
 

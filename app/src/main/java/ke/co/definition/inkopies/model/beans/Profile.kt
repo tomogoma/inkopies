@@ -14,6 +14,13 @@ import java.util.*
 open class Profile : BaseModel(), Serializable {
     @PrimaryKey @Unique var serverID: String? = UUID.randomUUID().toString()
     @PrimaryKey var id: UUID? = UUID.randomUUID()
-    @Column var createDate: Date? = null
-    @Column var updateDate: Date? = null
+    @Column var createDate: Date? = Date()
+    @Column var updateDate: Date? = Date()
+
+    fun inheritIdentification(from: Profile) {
+        serverID = from.serverID
+        id = from.id
+        createDate = from.createDate
+        updateDate = Date()
+    }
 }
