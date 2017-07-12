@@ -132,13 +132,25 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
 
         binding.edit.submit.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
-            val position = getPosition(slbM)
+            var position = getPosition(slbM)
             if (!validateShoppingListBrand(binding.slBrand)) {
                 slbMappers.removeAt(position)
                 notifyItemRemoved(position)
                 return@setOnClickListener
             }
-            Model.insertShoppingListBrand(binding.slBrand)
+            if (!Model.upsertShoppingListBrand(binding.slBrand)) {
+                slbMappers.removeAt(position)
+                val duplicatePos = slbMappers.indices.firstOrNull {
+                    slbMappers[it].slb.id == slbM.slb.id
+                } ?: -1
+                if (duplicatePos != -1) {
+                    notifyItemRemoved(position)
+                    position = duplicatePos
+                    slbMappers[position] = slbM
+                } else {
+                    slbMappers.add(position, slbM)
+                }
+            }
             slbM.state = STATE_VIEW
             notifyItemChanged(position)
             onPriceChange?.invoke(getTotalPrices())

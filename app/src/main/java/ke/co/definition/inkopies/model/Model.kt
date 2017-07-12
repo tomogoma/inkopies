@@ -38,19 +38,19 @@ class Model {
             }
         }
 
-        fun insertShoppingListBrand(slb: ShoppingListBrand) {
+        fun upsertShoppingListBrand(slb: ShoppingListBrand): Boolean {
             upsertBrand(slb.brand!!)
             upsertShoppingList(slb.shoppingList!!)
             val existing = shoppingListBrandForBrandExists(slb)
             if (existing != null) {
                 slb.inheritIdentification(existing)
                 slb.update()
-                return
+                return false
             }
             if (!slb.save()) {
                 throw RuntimeException("Unable to save ShoppingListBrand")
             }
-            return
+            return true
         }
 
         fun updateShoppingListBrand(slb: ShoppingListBrand): Boolean {
