@@ -237,14 +237,19 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             slbM.state = STATE_VIEW
             return
         }
-        val deleted = Model.updateShoppingListBrand(slbM.slb)
-        if (deleted) {
+        val collisionless = Model.updateShoppingListBrand(slbM.slb)
+        var p = position
+        if (!collisionless) {
             slbMappers.removeAt(position)
             notifyItemRemoved(position)
-            return
+            p = slbMappers.indices.firstOrNull { slbMappers[it].slb.id == slbM.slb.id }
+                    ?: -1
+            if (p == -1) {
+                return
+            }
         }
         slbM.state = STATE_VIEW
-        notifyItemChanged(position)
+        notifyItemChanged(p)
     }
 
     private fun validateShoppingListBrand(slb: ShoppingListBrand): Boolean {
