@@ -18,5 +18,5 @@
     <dimen name="list_item_height_min">@dimen/space_xxxlarge</dimen>
     <dimen name="form_item_margin_top">@dimen/space_small</dimen>
     <dimen name="fab_margin">16dp</dimen>
-    <dimen name="icon_diameter">88dp</dimen>
+    <dimen name="icon_diameter">40dp</dimen>
 </resources>
