@@ -32,7 +32,6 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
 
         private val DEFAULT_FOCUS_VIEW = R.id.itemName
 
-        var onPriceChange: ((Pair<Float, Float>) -> Unit)? = null
     }
 
     class ViewHolder(var binding: LayoutShoppingListBrandItemBinding) : RecyclerView.ViewHolder(binding.root)
@@ -40,6 +39,8 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     private class SLBMapper(var state: Int, var slb: ShoppingListBrand, var focusView: Int)
 
     private val slbMappers: MutableList<SLBMapper> = LinkedList()
+    lateinit var onPriceChange: ((Pair<Float, Float>) -> Unit)
+    lateinit var onNewShoppingListBrandComplete: ((added: Boolean) -> Unit)
 
     fun setShoppingListBrands(brands: List<ShoppingListBrand>) {
         slbMappers.clear()
@@ -85,10 +86,6 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         return slbMappers.size
     }
 
-    fun setOnPriceChangeListener(l: (Pair<Float, Float>) -> Unit) {
-        onPriceChange = l
-    }
-
     /**
      * returns <totalPrice, totalSelectedPrice>
      */
@@ -113,7 +110,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         binding.edit.submit.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
             updateShoppingListBrand(slbM, getPosition(slbM))
-            onPriceChange?.invoke(getTotalPrices())
+            onPriceChange.invoke(getTotalPrices())
         }
         binding.edit.delete.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
@@ -121,7 +118,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             val position = slbMappers.indices.first { slbMappers[it].slb.id == slbM.slb.id }
             slbMappers.removeAt(position)
             notifyItemRemoved(position)
-            onPriceChange?.invoke(getTotalPrices())
+            onPriceChange.invoke(getTotalPrices())
         }
     }
 
@@ -137,6 +134,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             if (!validateShoppingListBrand(binding.slBrand)) {
                 slbMappers.removeAt(position)
                 notifyItemRemoved(position)
+                onNewShoppingListBrandComplete.invoke(false)
                 return@setOnClickListener
             }
             if (!Model.upsertShoppingListBrand(binding.slBrand)) {
@@ -154,13 +152,15 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             }
             slbM.state = STATE_VIEW
             notifyItemChanged(position)
-            onPriceChange?.invoke(getTotalPrices())
+            onPriceChange.invoke(getTotalPrices())
+            onNewShoppingListBrandComplete.invoke(true)
         }
         binding.edit.delete.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
             val position = getPosition(slbM)
             slbMappers.removeAt(position)
             notifyItemRemoved(position)
+            onNewShoppingListBrandComplete.invoke(false)
         }
     }
 
@@ -175,7 +175,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
                     ?: slbMappers.size
             slbMappers.add(p, slbM)
             notifyItemInserted(p)
-            onPriceChange?.invoke(getTotalPrices())
+            onPriceChange.invoke(getTotalPrices())
         }
         binding.view.brandName.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
         binding.view.itemName.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }

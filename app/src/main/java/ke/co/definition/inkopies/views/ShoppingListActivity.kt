@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListBinding
 import ke.co.definition.inkopies.model.Model
@@ -38,6 +39,7 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         setSupportActionBar(binding.toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         binding.fab.setOnClickListener { _ ->
+            binding.fab.visibility = View.GONE
             currFragment.newShoppingListBrand()
         }
         currFragment = ShoppingListPlanFragment.initialize(sl)
@@ -67,7 +69,11 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         return true
     }
 
-    override fun setPrice(totals: Pair<Float, Float>) {
+    override fun onNewShoppingListBrandComplete(successful: Boolean) {
+        binding.fab.visibility = View.VISIBLE
+    }
+
+    override fun onTotalPricesChange(totals: Pair<Float, Float>) {
         val startStr: String
         val endStr: String
         val totalFmt = getString(R.string.total_price_title_fmt)

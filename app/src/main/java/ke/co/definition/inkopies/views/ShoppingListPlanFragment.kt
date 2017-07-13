@@ -34,7 +34,8 @@ class ShoppingListPlanFragment : Fragment() {
     }
 
     interface PriceSettable {
-        fun setPrice(totals: Pair<Float, Float>)
+        fun onTotalPricesChange(totals: Pair<Float, Float>)
+        fun onNewShoppingListBrandComplete(successful: Boolean)
     }
 
     private lateinit var adapter: ShoppingListBrandAdapter
@@ -56,8 +57,12 @@ class ShoppingListPlanFragment : Fragment() {
         binding.items.addItemDecoration(did)
         binding.items.adapter = adapter
 
-        adapter.setOnPriceChangeListener { newPrices ->
-            (activity as PriceSettable).setPrice(newPrices)
+        adapter.onPriceChange = { newPrices ->
+            (activity as PriceSettable).onTotalPricesChange(newPrices)
+        }
+
+        adapter.onNewShoppingListBrandComplete = { successful ->
+            (activity as PriceSettable).onNewShoppingListBrandComplete(successful)
         }
 
         loadList(sl)
