@@ -42,9 +42,13 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
             currFragment.newShoppingListBrand()
         }
         currFragment = ShoppingListPlanFragment.initialize(sl)
-        supportFragmentManager.beginTransaction()
-                .add(R.id.frame, currFragment)
-                .commit()
+        val tx = supportFragmentManager.beginTransaction()
+        if (savedInstanceState == null) {
+            tx.add(R.id.frame, currFragment)
+        } else {
+            tx.replace(R.id.frame, currFragment)
+        }
+        tx.commit()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -22,8 +22,11 @@ class MainActivity : AppCompatActivity() {
         val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
         binding.fab.setOnClickListener { _ -> NewShoppingListDialogActivity.start(this) }
-        supportFragmentManager.beginTransaction()
-                .add(R.id.frame, ShoppingListsListFragment.instantiate())
-                .commit()
+        var tx = supportFragmentManager.beginTransaction()
+        tx = when (savedInstanceState) {
+            null -> tx.add(R.id.frame, ShoppingListsListFragment.instantiate())
+            else -> tx.replace(R.id.frame, ShoppingListsListFragment.instantiate())
+        }
+        tx.commit()
     }
 }
