@@ -32,6 +32,9 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
 
         private val DEFAULT_FOCUS_VIEW = R.id.brandName
 
+        val EDIT_MODE_NEW = 0
+        val EDIT_MODE_EXISTING = 1
+
     }
 
     class ViewHolder(var binding: LayoutShoppingListBrandItemBinding) : RecyclerView.ViewHolder(binding.root)
@@ -40,7 +43,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
 
     private val slbMappers: MutableList<SLBMapper> = LinkedList()
     lateinit var onPriceChange: ((Pair<Float, Float>) -> Unit)
-    lateinit var onEditItemStart: (() -> Unit)
+    lateinit var onEditItemStart: ((slb: ShoppingListBrand, editMode: Int) -> Unit)
     lateinit var onEditItemComplete: ((successful: Boolean) -> Unit)
 
     fun setShoppingListBrands(brands: List<ShoppingListBrand>) {
@@ -87,6 +90,17 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         return slbMappers.size
     }
 
+    fun stopEditing() {
+        for (i in slbMappers.indices) {
+            val slbM = slbMappers[i]
+            if (slbM.state == STATE_EDIT || slbM.state == STATE_NEW) {
+                slbM.state = STATE_VIEW
+                notifyItemChanged(i)
+                onEditItemComplete.invoke(true)
+            }
+        }
+    }
+
     /**
      * returns <totalPrice, totalSelectedPrice>
      */
@@ -103,7 +117,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     }
 
     private fun bindEditSLB(slbM: SLBMapper, binding: LayoutShoppingListBrandItemBinding) {
-        onEditItemStart.invoke()
+        onEditItemStart.invoke(slbM.slb, EDIT_MODE_EXISTING)
         binding.edit.delete.setText(R.string.delete)
         binding.edit.submit.setText(R.string.done)
         showEditView(slbM.focusView, binding)
@@ -127,7 +141,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     }
 
     private fun bindNewSLB(slbM: SLBMapper, binding: LayoutShoppingListBrandItemBinding) {
-        onEditItemStart.invoke()
+        onEditItemStart.invoke(slbM.slb, EDIT_MODE_NEW)
         binding.edit.delete.setText(R.string.cancel)
         binding.edit.submit.setText(R.string.add)
         showEditView(slbM.focusView, binding)
@@ -244,8 +258,8 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     }
 
     private fun updateShoppingListBrand(slbM: SLBMapper, position: Int) {
+        slbM.state = STATE_VIEW
         if (!validateShoppingListBrand(slbM.slb)) {
-            slbM.state = STATE_VIEW
             return
         }
         val collisionless = Model.updateShoppingListBrand(slbM.slb)
@@ -259,7 +273,6 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
                 return
             }
         }
-        slbM.state = STATE_VIEW
         notifyItemChanged(p)
     }
 

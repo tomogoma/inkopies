@@ -14,6 +14,7 @@ import ke.co.definition.inkopies.model.Model
 import ke.co.definition.inkopies.model.beans.ShoppingList
 import ke.co.definition.inkopies.model.beans.ShoppingListBrand
 
+
 /**
  * Created by tomogoma on 09/07/17.
  */
@@ -36,7 +37,7 @@ class ShoppingListPlanFragment : Fragment() {
     interface PriceSettable {
         fun onTotalPricesChange(totals: Pair<Float, Float>)
         fun onEditItemComplete(successful: Boolean)
-        fun onEditItemStart()
+        fun onEditItemStart(slb: ShoppingListBrand, editMode: Int)
     }
 
     private lateinit var adapter: ShoppingListBrandAdapter
@@ -66,7 +67,9 @@ class ShoppingListPlanFragment : Fragment() {
             (activity as PriceSettable).onEditItemComplete(successful)
         }
 
-        adapter.onEditItemStart = { (activity as PriceSettable).onEditItemStart() }
+        adapter.onEditItemStart = { slb, editMode ->
+            (activity as PriceSettable).onEditItemStart(slb, editMode)
+        }
 
         loadList(sl)
 
@@ -78,6 +81,10 @@ class ShoppingListPlanFragment : Fragment() {
         if (activity !is PriceSettable) {
             throw RuntimeException("Activity needs to implement PriceSettable interface")
         }
+    }
+
+    fun stopEditing() {
+        adapter.stopEditing()
     }
 
     fun newShoppingListBrand() {

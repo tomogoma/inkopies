@@ -5,6 +5,7 @@ import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -12,6 +13,7 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListBinding
 import ke.co.definition.inkopies.model.Model
 import ke.co.definition.inkopies.model.beans.ShoppingList
+import ke.co.definition.inkopies.model.beans.ShoppingListBrand
 
 class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.PriceSettable {
 
@@ -26,11 +28,33 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         }
     }
 
+    private class SelectionCallBack(val title: String, var doneable: (() -> Unit)?) : ActionMode.Callback {
+
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            mode.title = title
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+            return false
+        }
+
+        override fun onDestroyActionMode(mode: ActionMode) {
+            doneable?.invoke()
+            doneable = null
+        }
+    }
+
     private lateinit var sl: ShoppingList
     private lateinit var binding: ActivityShoppingListBinding
     private lateinit var currFragment: ShoppingListPlanFragment
     private lateinit var goShopping: MenuItem
     private lateinit var checkout: MenuItem
+    private var actionMode: ActionMode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,12 +96,19 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         return true
     }
 
-    override fun onEditItemStart() {
-        binding.fab.visibility = View.GONE
+    override fun onEditItemStart(slb: ShoppingListBrand, editMode: Int) {
+        if (editMode == ShoppingListBrandAdapter.EDIT_MODE_EXISTING) {
+            val title = String.format("Edit %s", slb.brand?.name)
+            val selectionCallBack = SelectionCallBack(title, {
+                currFragment.stopEditing()
+            })
+            actionMode = startActionMode(selectionCallBack)
+        }
     }
 
     override fun onEditItemComplete(successful: Boolean) {
         binding.fab.visibility = View.VISIBLE
+        actionMode?.finish()
     }
 
     override fun onTotalPricesChange(totals: Pair<Float, Float>) {
