@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import ke.co.definition.inkopies.R
@@ -120,15 +121,16 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         onEditItemStart.invoke(slbM.slb, EDIT_MODE_EXISTING)
         binding.edit.delete.setText(R.string.delete)
         binding.edit.submit.setText(R.string.done)
-        showEditView(slbM.focusView, binding)
         highlightAllOnFocus(binding.edit)
 
-        binding.edit.submit.setOnClickListener { _ ->
+        val submitListener = fun(_: View) {
             hideKeyboard(binding.edit.submit)
             updateShoppingListBrand(slbM, getPosition(slbM))
             onPriceChange.invoke(getTotalPrices())
             onEditItemComplete.invoke(true)
         }
+        showEditView(slbM.focusView, binding, submitListener)
+        binding.edit.submit.setOnClickListener(submitListener)
         binding.edit.delete.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
             Model.deleteShoppingListBrand(binding.slBrand)
@@ -144,17 +146,16 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         onEditItemStart.invoke(slbM.slb, EDIT_MODE_NEW)
         binding.edit.delete.setText(R.string.cancel)
         binding.edit.submit.setText(R.string.add)
-        showEditView(slbM.focusView, binding)
         highlightAllOnFocus(binding.edit)
 
-        binding.edit.submit.setOnClickListener { _ ->
+        val submitListener = fun(_: View) {
             hideKeyboard(binding.edit.submit)
             var position = getPosition(slbM)
             if (!validateShoppingListBrand(binding.slBrand)) {
                 slbMappers.removeAt(position)
                 notifyItemRemoved(position)
                 onEditItemComplete.invoke(false)
-                return@setOnClickListener
+                return
             }
             if (!Model.upsertShoppingListBrand(binding.slBrand)) {
                 slbMappers.removeAt(position)
@@ -174,6 +175,8 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             onPriceChange.invoke(getTotalPrices())
             onEditItemComplete.invoke(true)
         }
+        showEditView(slbM.focusView, binding, submitListener)
+        binding.edit.submit.setOnClickListener(submitListener)
         binding.edit.delete.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
             val position = getPosition(slbM)
@@ -230,7 +233,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         notifyItemChanged(position)
     }
 
-    private fun showEditView(focusView: Int, binding: LayoutShoppingListBrandItemBinding) {
+    private fun showEditView(focusView: Int, binding: LayoutShoppingListBrandItemBinding, submitListener: (v: View) -> Unit) {
         binding.view.root.visibility = View.GONE
         binding.edit.root.visibility = View.VISIBLE
         val view = when (focusView) {
@@ -240,6 +243,13 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             R.id.unitPrice -> binding.edit.unitPrice
             R.id.itemName -> binding.edit.itemName
             else -> binding.edit.itemName
+        }
+        binding.edit.unitPrice.setOnEditorActionListener { v, actID, _ ->
+            if (actID == EditorInfo.IME_ACTION_DONE) {
+                submitListener.invoke(binding.edit.unitPrice)
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
         }
         showKeyboard(view)
     }
