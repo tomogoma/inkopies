@@ -30,7 +30,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         private val STATE_NEW: Int = 2
         private val STATE_EDIT: Int = 3
 
-        private val DEFAULT_FOCUS_VIEW = R.id.itemName
+        private val DEFAULT_FOCUS_VIEW = R.id.brandName
 
     }
 
@@ -187,6 +187,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         binding.view.quantity.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
         binding.view.measuringUnit.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
         binding.view.unitPrice.setOnClickListener { v -> editableClicked(slbM, getPosition(slbM), v) }
+        binding.root.setOnClickListener { _ -> editableClicked(slbM, getPosition(slbM), DEFAULT_FOCUS_VIEW) }
     }
 
     private fun hideKeyboard(v: View) {
@@ -206,8 +207,12 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     }
 
     private fun editableClicked(slbM: SLBMapper, position: Int, v: View) {
+        editableClicked(slbM, position, v.id)
+    }
+
+    private fun editableClicked(slbM: SLBMapper, position: Int, focusView: Int) {
         slbM.state = STATE_EDIT
-        slbM.focusView = v.id
+        slbM.focusView = focusView
         notifyItemChanged(position)
     }
 
