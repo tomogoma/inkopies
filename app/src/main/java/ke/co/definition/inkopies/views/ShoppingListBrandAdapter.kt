@@ -40,7 +40,8 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
 
     private val slbMappers: MutableList<SLBMapper> = LinkedList()
     lateinit var onPriceChange: ((Pair<Float, Float>) -> Unit)
-    lateinit var onNewShoppingListBrandComplete: ((added: Boolean) -> Unit)
+    lateinit var onEditItemStart: (() -> Unit)
+    lateinit var onEditItemComplete: ((successful: Boolean) -> Unit)
 
     fun setShoppingListBrands(brands: List<ShoppingListBrand>) {
         slbMappers.clear()
@@ -102,6 +103,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     }
 
     private fun bindEditSLB(slbM: SLBMapper, binding: LayoutShoppingListBrandItemBinding) {
+        onEditItemStart.invoke()
         binding.edit.delete.setText(R.string.delete)
         binding.edit.submit.setText(R.string.done)
         showEditView(slbM.focusView, binding)
@@ -111,6 +113,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             hideKeyboard(binding.edit.submit)
             updateShoppingListBrand(slbM, getPosition(slbM))
             onPriceChange.invoke(getTotalPrices())
+            onEditItemComplete.invoke(true)
         }
         binding.edit.delete.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
@@ -119,10 +122,12 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             slbMappers.removeAt(position)
             notifyItemRemoved(position)
             onPriceChange.invoke(getTotalPrices())
+            onEditItemComplete.invoke(false)
         }
     }
 
     private fun bindNewSLB(slbM: SLBMapper, binding: LayoutShoppingListBrandItemBinding) {
+        onEditItemStart.invoke()
         binding.edit.delete.setText(R.string.cancel)
         binding.edit.submit.setText(R.string.add)
         showEditView(slbM.focusView, binding)
@@ -134,7 +139,7 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             if (!validateShoppingListBrand(binding.slBrand)) {
                 slbMappers.removeAt(position)
                 notifyItemRemoved(position)
-                onNewShoppingListBrandComplete.invoke(false)
+                onEditItemComplete.invoke(false)
                 return@setOnClickListener
             }
             if (!Model.upsertShoppingListBrand(binding.slBrand)) {
@@ -153,14 +158,14 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
             slbM.state = STATE_VIEW
             notifyItemChanged(position)
             onPriceChange.invoke(getTotalPrices())
-            onNewShoppingListBrandComplete.invoke(true)
+            onEditItemComplete.invoke(true)
         }
         binding.edit.delete.setOnClickListener { _ ->
             hideKeyboard(binding.edit.submit)
             val position = getPosition(slbM)
             slbMappers.removeAt(position)
             notifyItemRemoved(position)
-            onNewShoppingListBrandComplete.invoke(false)
+            onEditItemComplete.invoke(false)
         }
     }
 

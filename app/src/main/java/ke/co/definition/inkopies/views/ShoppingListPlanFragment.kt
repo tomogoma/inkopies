@@ -35,7 +35,8 @@ class ShoppingListPlanFragment : Fragment() {
 
     interface PriceSettable {
         fun onTotalPricesChange(totals: Pair<Float, Float>)
-        fun onNewShoppingListBrandComplete(successful: Boolean)
+        fun onEditItemComplete(successful: Boolean)
+        fun onEditItemStart()
     }
 
     private lateinit var adapter: ShoppingListBrandAdapter
@@ -61,9 +62,11 @@ class ShoppingListPlanFragment : Fragment() {
             (activity as PriceSettable).onTotalPricesChange(newPrices)
         }
 
-        adapter.onNewShoppingListBrandComplete = { successful ->
-            (activity as PriceSettable).onNewShoppingListBrandComplete(successful)
+        adapter.onEditItemComplete = { successful ->
+            (activity as PriceSettable).onEditItemComplete(successful)
         }
+
+        adapter.onEditItemStart = { (activity as PriceSettable).onEditItemStart() }
 
         loadList(sl)
 

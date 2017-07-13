@@ -39,7 +39,6 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         setSupportActionBar(binding.toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         binding.fab.setOnClickListener { _ ->
-            binding.fab.visibility = View.GONE
             currFragment.newShoppingListBrand()
         }
         currFragment = ShoppingListPlanFragment.initialize(sl)
@@ -69,7 +68,11 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
         return true
     }
 
-    override fun onNewShoppingListBrandComplete(successful: Boolean) {
+    override fun onEditItemStart() {
+        binding.fab.visibility = View.GONE
+    }
+
+    override fun onEditItemComplete(successful: Boolean) {
         binding.fab.visibility = View.VISIBLE
     }
 
