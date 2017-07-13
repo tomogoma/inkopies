@@ -97,6 +97,7 @@ class ShoppingListActivity : AppCompatActivity(), ShoppingListPlanFragment.Price
     }
 
     override fun onEditItemStart(slb: ShoppingListBrand, editMode: Int) {
+        binding.fab.visibility = View.GONE
         if (editMode == ShoppingListBrandAdapter.EDIT_MODE_EXISTING) {
             val title = String.format("Edit %s", slb.brand?.name)
             val selectionCallBack = SelectionCallBack(title, {
