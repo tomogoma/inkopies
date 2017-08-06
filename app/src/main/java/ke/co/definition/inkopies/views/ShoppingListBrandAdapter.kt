@@ -43,6 +43,8 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
     private class SLBMapper(var state: Int, var slb: ShoppingListBrand, var focusView: Int)
 
     private val slbMappers: MutableList<SLBMapper> = LinkedList()
+    private var totalSelectedPrice = 0F
+    private var totalPrice = 0F
     lateinit var onPriceChange: ((Pair<Float, Float>) -> Unit)
     lateinit var onEditItemStart: ((slb: ShoppingListBrand, editMode: Int) -> Unit)
     lateinit var onEditItemComplete: ((successful: Boolean) -> Unit)
@@ -79,6 +81,13 @@ class ShoppingListBrandAdapter(private var sl: ShoppingList, private var context
         slbM.slb.brand!!.load()
         slbM.slb.brand!!.item!!.load()
         (slbM.slb.brand!!.measuringUnit ?: slbM.slb.brand!!.item!!.measuringUnit)?.load()
+
+        if (slbM.slb.isStatusBoxChecked()) {
+            totalSelectedPrice += slbM.slb.quantity!! * slbM.slb.brand!!.unitPrice!!
+        }
+        totalPrice += slbM.slb.quantity!! * slbM.slb.brand!!.unitPrice!!
+        onPriceChange.invoke(Pair(totalPrice, totalSelectedPrice))
+
         holder.binding.slBrand = slbM.slb
         when (slbM.state) {
             STATE_NEW -> bindNewSLB(slbM, holder.binding)
