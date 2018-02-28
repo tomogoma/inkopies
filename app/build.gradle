@@ -1,10 +1,11 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "25.0.3"
+    buildToolsVersion '26.0.2'
     dataBinding {
         enabled = true
     }
@@ -25,36 +26,64 @@ android {
 }
 
 ext {
-    supportLibraryVersion = '26.0.0-alpha1'
-    android_plugin_version = '2.2.0-alpha4'
-    dbflow_version = "4.0.4"
+    supportLibraryVersion = '26.1.0'
+    archComponentsVersion = '1.1.0'
+    retrofitVersion = '2.1.0'
+    dagger2Version = '2.14.1'
+}
+
+repositories {
+    maven {
+        url 'https://maven.google.com'
+    }
+    mavenCentral()
+    jcenter()
 }
 
 dependencies {
-    //basics
+
+    // basics
+    implementation "com.android.support:support-v4:$supportLibraryVersion"
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // tests
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testCompile 'junit:junit:4.12'
+
     // support lib
     compile "com.android.support:appcompat-v7:$supportLibraryVersion"
     compile "com.android.support:support-v4:$supportLibraryVersion"
     compile "com.android.support:recyclerview-v7:$supportLibraryVersion"
     compile "com.android.support:design:$supportLibraryVersion"
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
     // basic kotlin
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    kapt "com.android.databinding:compiler:$gradle_version" // has to match gradle version
-    // dbflow
-    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
-    kapt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
-    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
-    compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
-    compile "com.github.Raizlabs.DBFlow:dbflow-kotlinextensions:${dbflow_version}"
-    // others
-    compile 'com.google.android:flexbox:0.3.0'
-}
-repositories {
-    mavenCentral()
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    kapt "com.android.databinding:compiler:$gradle_version"
+
+    // arch components
+    implementation "android.arch.lifecycle:extensions:$archComponentsVersion"
+    // ReactiveStreams support for LiveData
+    implementation "android.arch.lifecycle:reactivestreams:$archComponentsVersion"
+
+    // retrofit
+    compile "com.squareup.retrofit2:adapter-rxjava:$retrofitVersion"
+    compile "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    compile "com.squareup.retrofit2:retrofit:$retrofitVersion"
+
+    // rxjava
+    compile 'io.reactivex:rxandroid:1.2.0'
+    compile 'io.reactivex:rxjava:1.1.8'
+
+    // dagger2
+    compile "com.google.dagger:dagger:$dagger2Version"
+    compile "com.google.dagger:dagger-android:$dagger2Version"
+    compile "com.google.dagger:dagger-android-support:$dagger2Version"
+    kapt "com.google.dagger:dagger-compiler:$dagger2Version"
+    annotationProcessor "com.google.dagger:dagger-android-processor:$dagger2Version"
+
+    // libphonenumber
+    compile 'io.michaelrocks:libphonenumber-android:8.9.0'
 }
