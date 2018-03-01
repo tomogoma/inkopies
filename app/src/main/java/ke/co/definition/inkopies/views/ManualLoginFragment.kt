@@ -20,7 +20,7 @@ class ManualLoginFragment : Fragment() {
                 R.layout.fragment_manual_login, container, false)
 
         val lvmFactory = (activity.application as InkopiesApp).appComponent.loginVMFactory()
-        val lvm = ViewModelProviders.of(this, lvmFactory).get(LoginViewModel::class.java)
+        val lvm = ViewModelProviders.of(activity, lvmFactory).get(LoginViewModel::class.java)
         binding.vm = lvm
 
         observeView(binding)
