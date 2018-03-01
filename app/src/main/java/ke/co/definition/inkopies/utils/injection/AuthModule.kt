@@ -4,6 +4,7 @@ import android.app.Application
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
+import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.Authenticator
 import ke.co.definition.inkopies.model.auth.Validatable
@@ -18,6 +19,7 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Singleton
 
 
 /**
@@ -42,7 +44,12 @@ class AuthModule {
 
     @Provides
     @Inject
-    fun provideValidatable(): Validatable = Validator
+    @Singleton
+    fun providePhoneNumberUtil(app: Application) = PhoneNumberUtil.createInstance(app)
+
+    @Provides
+    @Inject
+    fun provideValidatable(pnu: PhoneNumberUtil): Validatable = Validator(pnu)
 
     @Provides
     @Inject

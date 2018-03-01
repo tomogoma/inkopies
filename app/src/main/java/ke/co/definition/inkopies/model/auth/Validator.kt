@@ -1,14 +1,14 @@
 package ke.co.definition.inkopies.model.auth
 
-import android.content.Context
 import android.text.TextUtils
 import android.util.Patterns
 import io.michaelrocks.libphonenumber.android.NumberParseException
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
+import javax.inject.Inject
 
-object Validator : Validatable {
+class Validator @Inject constructor(private val pnu: PhoneNumberUtil) : Validatable {
 
-    override fun validateIdentifier(c: Context, id: String?) = when {
+    override fun validateIdentifier(id: String?) = when {
         id == null || id.isEmpty() -> {
             ValidationResult.Invalid()
         }
@@ -16,7 +16,6 @@ object Validator : Validatable {
             ValidationResult.ValidOnEmail(true, id)
         }
         else -> {
-            val pnu = PhoneNumberUtil.createInstance(c)
             try {
                 val phoneNumber = pnu.parse(id, "KE")
                 if (pnu.isValidNumber(phoneNumber)) {

@@ -7,8 +7,8 @@ import android.databinding.Observable
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
-import ke.co.definition.inkopies.model.SnackBarData
-import ke.co.definition.inkopies.model.TextSnackBarData
+import ke.co.definition.inkopies.views.common.SnackBarData
+import ke.co.definition.inkopies.views.common.TextSnackBarData
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.ValidationResult
@@ -127,7 +127,7 @@ class LoginViewModel @Inject constructor(
             result = ValidationResult.Invalid()
         }
 
-        val idRes = validation.validateIdentifier(c, id)
+        val idRes = validation.validateIdentifier(id)
         return if (idRes.isValid) {
             if (result == null) idRes else result
         } else {

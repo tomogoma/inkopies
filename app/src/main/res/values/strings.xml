@@ -17,4 +17,11 @@
     <string name="registering">Registering</string>
     <string name="loggin_in">Logging in</string>
     <string name="dismiss">Dismiss</string>
+    <string name="title_activity_verify">VerifyActivity</string>
+    <string name="verification_code_sent_to">Verification code sent to</string>
+    <string name="pls_enter_it_here">please enter it here</string>
+    <string name="verification_code">Verification code</string>
+    <string name="resend">Resend</string>
+    <string name="already_verified">I\'ve already verified</string>
+    <string name="verify">Verify</string>
 </resources>

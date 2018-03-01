@@ -51,6 +51,18 @@ class Authenticator @Inject constructor(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     })
 
+    override fun sendVerifyOTP(id: Identifier): Single<OTPStatus> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun identifierVerified(vl: VerifLogin): Completable {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun verifyOTP(vl: VerifLogin): Completable {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     companion object {
         val KEY_LOGIN_DETAILS = Authenticator::class.java.name + "KEY_LOGIN_DETAILS"
     }

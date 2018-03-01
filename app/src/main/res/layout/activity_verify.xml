@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="ke.co.definition.inkopies.views.verification.VerificationViewModel" />
+    </data>
+
+    <FrameLayout
+        android:id="@+id/layoutRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/contentRoot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/desc_prefix"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
+                android:layout_marginLeft="@dimen/space_small"
+                android:layout_marginRight="@dimen/space_small"
+                android:gravity="center"
+                android:text="@string/verification_code_sent_to" />
+
+            <TextView
+                android:id="@+id/identifier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
+                android:layout_marginLeft="@dimen/space_small"
+                android:layout_marginRight="@dimen/space_small"
+                android:drawableEnd="@drawable/ic_edit"
+                android:drawablePadding="@dimen/space_small"
+                android:gravity="center"
+                android:text="@{vm.verifLogin.value}"
+                tools:text="254 712 345 678" />
+
+            <TextView
+                android:id="@+id/desc_suffix"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
+                android:layout_marginLeft="@dimen/space_small"
+                android:layout_marginRight="@dimen/space_small"
+                android:gravity="center"
+                android:text="@string/pls_enter_it_here" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/otpInputLayout"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
+                android:layout_marginLeft="@dimen/space_small"
+                android:layout_marginRight="@dimen/space_small">
+
+                <EditText
+                    android:id="@+id/otp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:hint="@string/verification_code"
+                    android:text="@={vm.otp}" />
+            </android.support.design.widget.TextInputLayout>
+
+            <Button
+                android:id="@+id/submit"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:text="@string/verify" />
+
+            <TextView
+                android:id="@+id/resetLink"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xlarge"
+                android:gravity="center"
+                android:padding="@dimen/space_small"
+                android:text="@string/resend"
+                android:textColor="@color/colorLink" />
+
+            <TextView
+                android:id="@+id/alreadyVerifiedLink"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xlarge"
+                android:gravity="center"
+                android:padding="@dimen/space_small"
+                android:text="@string/already_verified"
+                android:textColor="@color/colorLink" />
+        </LinearLayout>
+
+        <include
+            android:id="@+id/progressArea"
+            layout="@layout/progress_area"
+            android:visibility="@{vm.progress.show ? View.VISIBLE : View.GONE}"
+            bind:text="@{vm.progress.text}"
+            tools:visibility="gone" />
+    </FrameLayout>
+</layout>
