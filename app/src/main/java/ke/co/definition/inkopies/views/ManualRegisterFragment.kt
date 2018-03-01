@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import ke.co.definition.inkopies.InkopiesApp
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.FragmentManualRegisterBinding
@@ -29,6 +30,13 @@ class ManualRegisterFragment : Fragment() {
 
     private fun observeView(b: FragmentManualRegisterBinding) {
         b.submit.setOnClickListener({ b.vm!!.registerManual(context) })
+        b.manualLoginInputs!!.password.setOnEditorActionListener { _, actionID, _ ->
+            if (actionID == EditorInfo.IME_ACTION_DONE) {
+                b.vm!!.logInManual(context)
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
+        }
     }
 
-}// Required empty public constructor
+}

@@ -28,6 +28,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/email_or_phone"
+                android:imeOptions="actionNext"
+                android:inputType="textEmailAddress"
+                android:maxLines="1"
                 android:text="@={vm.identifier}" />
 
         </android.support.design.widget.TextInputLayout>
@@ -46,6 +49,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/password"
+                android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:text="@={vm.password}" />
 
