@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity
 import ke.co.definition.inkopies.InkopiesApp
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityLoginBinding
+import ke.co.definition.inkopies.views.common.replaceFrag
+import ke.co.definition.inkopies.views.common.replaceFragBackStack
 
 class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
@@ -32,24 +34,15 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
     }
 
     override fun openRegisterOptsFrag() {
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.frame, RegisterOptionsFragment(), RegisterOptionsFragment::class.java.name)
-                .addToBackStack(RegisterOptionsFragment::class.java.name)
-                .commit()
+        replaceFragBackStack(R.id.frame, RegisterOptionsFragment())
     }
 
     override fun openManualLoginFrag() {
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.frame, ManualLoginFragment(), ManualLoginFragment::class.java.name)
-                .addToBackStack(ManualLoginFragment::class.java.name)
-                .commit()
+        replaceFragBackStack(R.id.frame, ManualLoginFragment())
     }
 
     override fun openManualRegisterFrag() {
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.frame, ManualRegisterFragment(), ManualRegisterFragment::class.java.name)
-                .addToBackStack(ManualRegisterFragment::class.java.name)
-                .commit()
+        replaceFragBackStack(R.id.frame, ManualRegisterFragment())
     }
 
     private fun observeViewModel() {
@@ -59,10 +52,9 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
     }
 
     private fun showLoginOpts() {
+        // We only load the layout if not logged in (hence need to log in)
         DataBindingUtil.setContentView<ActivityLoginBinding>(this, R.layout.activity_login)
-        supportFragmentManager.beginTransaction()
-                .add(R.id.frame, LoginOptionsFragment(), LoginOptionsFragment::class.java.name)
-                .commit()
+        replaceFrag(R.id.frame, LoginOptionsFragment())
     }
 
     private fun openLoggedInActivity() {
