@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.views
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.content.Context
+import android.databinding.Observable
 import android.databinding.ObservableField
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.auth.Authable
@@ -32,6 +33,21 @@ class LoginViewModel @Inject constructor(
     val identifierError: ObservableField<String> = ObservableField()
     val password: ObservableField<String> = ObservableField()
     val passwordError: ObservableField<String> = ObservableField()
+
+    init {
+        identifier.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(p0: Observable?, p1: Int) {
+                val err = identifierError.get()
+                if (err != null && !err.isEmpty()) identifierError.set("")
+            }
+        })
+        password.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(p0: Observable?, p1: Int) {
+                val err = passwordError.get()
+                if (err != null && !err.isEmpty()) passwordError.set("")
+            }
+        })
+    }
 
     fun checkLoggedIn() {
         auth.isLoggedIn()

@@ -20,15 +20,15 @@
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/space_small"
             android:paddingEnd="@dimen/space_small"
-            android:paddingStart="@dimen/space_small">
+            android:paddingStart="@dimen/space_small"
+            app:error="@{vm.identifierError}">
 
             <EditText
                 android:id="@+id/identifier"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/email_or_phone"
-                android:text="@={vm.identifier}"
-                app:error="@{vm.identifierError}" />
+                android:text="@={vm.identifier}" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -38,7 +38,8 @@
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/space_small"
             android:paddingEnd="@dimen/space_small"
-            android:paddingStart="@dimen/space_small">
+            android:paddingStart="@dimen/space_small"
+            app:error="@{vm.passwordError}">
 
             <EditText
                 android:id="@+id/password"
@@ -46,8 +47,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/password"
                 android:inputType="textPassword"
-                android:text="@={vm.password}"
-                app:error="@{vm.passwordError}" />
+                android:text="@={vm.password}" />
 
         </android.support.design.widget.TextInputLayout>
 
