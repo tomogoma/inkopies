@@ -14,4 +14,7 @@
     <string name="error_required_field">this field is required</string>
     <string name="error_password_too_short">Password must have 8 or more characters</string>
     <string name="error_bad_email_or_phone">Invalid email or phone number format</string>
+    <string name="registering">Registering</string>
+    <string name="loggin_in">Logging in</string>
+    <string name="dismiss">Dismiss</string>
 </resources>

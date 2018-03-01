@@ -9,5 +9,14 @@ import java.util.*
 data class AuthUser(
         val id: String,
         val token: String,
-        val expiry: Date
+        val expiry: Date,
+        val phone: VerifLogin,
+        val email: VerifLogin
+)
+
+data class VerifLogin(
+        val id: String,
+        val userID: String,
+        val value: String,
+        val verified: Boolean
 )

@@ -15,6 +15,13 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
     private lateinit var loginVM: LoginViewModel
 
+    // Only required if not logged in, so bind views lazily
+    private val binding: ActivityLoginBinding by lazy {
+        val binding: ActivityLoginBinding = DataBindingUtil.setContentView(this, R.layout.activity_login)
+        binding.vm = loginVM
+        return@lazy binding
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -47,14 +54,16 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
     private fun observeViewModel() {
         loginVM.loggedInStatus.observe(this, Observer { isLoggedIn: Boolean? ->
-            if (isLoggedIn == true) openLoggedInActivity() else showLoginOpts()
+            if (isLoggedIn == true) openLoggedInActivity() else openLoginOptsFrag()
         })
+        loginVM.registeredStatus.observe(this, Observer { isRegd: Boolean? ->
+            if (isRegd == true) openLoginOptsFrag() else openRegisterOptsFrag()
+        })
+        loginVM.snackBarData.observe(this, Observer { it?.show(binding.frame) })
     }
 
-    private fun showLoginOpts() {
-        // We only load the layout if not logged in (hence need to log in)
-        DataBindingUtil.setContentView<ActivityLoginBinding>(this, R.layout.activity_login)
-        replaceFrag(R.id.frame, LoginOptionsFragment())
+    private fun openLoginOptsFrag() {
+        replaceFrag(binding.frame.id, LoginOptionsFragment())
     }
 
     private fun openLoggedInActivity() {

@@ -4,24 +4,23 @@ import io.michaelrocks.libphonenumber.android.Phonenumber
 
 sealed class ValidationResult(open val isValid: Boolean) {
 
-    abstract fun getIdentifier(): String
+    abstract fun getIdentifier(): Identifier
 
     class Invalid : ValidationResult(false) {
-        override fun getIdentifier(): String = ""
+        override fun getIdentifier() = Identifier.Email("")
     }
 
     class ValidOnPhone(
             override val isValid: Boolean,
             private val phone: Phonenumber.PhoneNumber
     ) : ValidationResult(isValid) {
-        override fun getIdentifier(): String =
-                phone.countryCode.toString() + phone.nationalNumber.toString()
+        override fun getIdentifier() = Identifier.Phone(phone)
     }
 
     class ValidOnEmail(
             override val isValid: Boolean,
             private val email: String
     ) : ValidationResult(isValid) {
-        override fun getIdentifier(): String = email
+        override fun getIdentifier() = Identifier.Email(email)
     }
 }

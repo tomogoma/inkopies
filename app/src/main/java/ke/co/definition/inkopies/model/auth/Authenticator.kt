@@ -2,6 +2,9 @@ package ke.co.definition.inkopies.model.auth
 
 import com.google.gson.Gson
 import ke.co.definition.inkopies.repos.LocalStorable
+import ke.co.definition.inkopies.repos.ms.AuthClient
+import ke.co.definition.inkopies.repos.ms.STATUS_BAD_REQUEST
+import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
 import rx.Single
 import java.util.*
@@ -13,7 +16,10 @@ import javax.inject.Inject
  */
 
 
-class Authenticator @Inject constructor(val localStore: LocalStorable) : Authable {
+class Authenticator @Inject constructor(
+        private val localStore: LocalStorable,
+        private val authCl: AuthClient
+) : Authable {
 
     override fun isLoggedIn(): Single<Boolean> = Single.create({
 
@@ -32,11 +38,16 @@ class Authenticator @Inject constructor(val localStore: LocalStorable) : Authabl
         it.onSuccess(true)
     })
 
-    override fun registerManual(identifier: String, password: String) = Completable.create({
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    })
+    override fun registerManual(id: Identifier, password: String): Single<AuthUser> =
+            authCl.registerManual(id, password)
+                    .onErrorResumeNext {
+                        if (it is HttpException && it.code() == STATUS_BAD_REQUEST) {
+                            return@onErrorResumeNext Single.error(Exception("${id.value()} is already in use"))
+                        }
+                        throw RuntimeException(it)
+                    }
 
-    override fun loginManual(identifier: String, password: String) = Completable.create({
+    override fun loginManual(id: Identifier, password: String) = Completable.create({
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     })
 

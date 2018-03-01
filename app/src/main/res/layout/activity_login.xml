@@ -1,10 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="ke.co.definition.inkopies.views.LoginViewModel" />
+    </data>
+
     <FrameLayout
-        android:id="@+id/frame"
+        android:id="@+id/rootFrame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="ke.co.definition.inkopies.views.LoginActivity" />
+        tools:context="ke.co.definition.inkopies.views.LoginActivity">
+
+        <FrameLayout
+            android:id="@+id/frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <include
+            android:id="@+id/progressArea"
+            layout="@layout/progress_area"
+            android:visibility="@{vm.showProgress ? View.VISIBLE : View.GONE}"
+            bind:text="@{vm.progressText}"
+            tools:visibility="visible" />
+    </FrameLayout>
 </layout>

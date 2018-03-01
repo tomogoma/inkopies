@@ -5,7 +5,10 @@ import android.arch.lifecycle.ViewModelProvider
 import android.content.Context
 import android.databinding.Observable
 import android.databinding.ObservableField
+import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.SnackBarData
+import ke.co.definition.inkopies.model.TextSnackBarData
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.ValidationResult
@@ -28,7 +31,11 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
 
     val loggedInStatus: SingleLiveEvent<Boolean> = SingleLiveEvent()
+    val registeredStatus: SingleLiveEvent<Boolean> = SingleLiveEvent()
+    val snackBarData: SingleLiveEvent<SnackBarData> = SingleLiveEvent()
 
+    val showProgress: ObservableField<Boolean> = ObservableField()
+    val progressText: ObservableField<String> = ObservableField()
     val identifier: ObservableField<String> = ObservableField()
     val identifierError: ObservableField<String> = ObservableField()
     val password: ObservableField<String> = ObservableField()
@@ -68,14 +75,21 @@ class LoginViewModel @Inject constructor(
             return
         }
 
+        progressText.set(c.getString(R.string.loggin_in))
+        showProgress.set(true)
         auth.loginManual(valRes.getIdentifier(), pass)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe(
-                        { loggedInStatus.value = true },
-                        { /* TODO handle error */ }
+                        {
+                            loggedInStatus.value = true
+                            showProgress.set(false)
+                        },
+                        {
+                            snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
+                            showProgress.set(false)
+                        }
                 )
-
     }
 
     fun registerManual(c: Context) {
@@ -87,8 +101,21 @@ class LoginViewModel @Inject constructor(
             return
         }
 
-        TODO("Handle registration")
-
+        progressText.set(c.getString(R.string.registering))
+        showProgress.set(true)
+        auth.registerManual(valRes.getIdentifier(), pass)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe(
+                        {
+                            registeredStatus.value = true
+                            showProgress.set(false)
+                        },
+                        {
+                            snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_INDEFINITE)
+                            showProgress.set(false)
+                        }
+                )
     }
 
     private fun validateLoginDetails(c: Context, id: String?, pass: String?): ValidationResult {
@@ -116,6 +143,7 @@ class LoginViewModel @Inject constructor(
             @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) val observeOnScheduler: Scheduler
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            @Suppress("UNCHECKED_CAST")
             return LoginViewModel(auth, validation, subscribeOnScheduler, observeOnScheduler) as T
         }
 

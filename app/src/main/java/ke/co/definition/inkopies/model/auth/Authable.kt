@@ -9,6 +9,6 @@ import rx.Single
  */
 interface Authable {
     fun isLoggedIn(): Single<Boolean>
-    fun registerManual(identifier: String, password: String): Completable
-    fun loginManual(identifier: String, password: String): Completable
+    fun registerManual(id: Identifier, password: String): Single<AuthUser>
+    fun loginManual(id: Identifier, password: String): Completable
 }

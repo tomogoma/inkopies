@@ -7,4 +7,6 @@
     <color name="colorAccentDark">#8c7b75</color>
     <color name="white">#ffffffff</color>
     <color name="greyDark">#4d4d4d</color>
+    <color name="black82PC">#CC000000</color>
+    <color name="black10PC">#1A000000</color>
 </resources>
