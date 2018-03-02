@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views.verification
+package ke.co.definition.inkopies.presentation.verification
 
 import android.app.Activity
 import android.arch.lifecycle.LiveData
@@ -11,7 +11,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import com.google.gson.Gson
-import ke.co.definition.inkopies.InkopiesApp
+import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityVerifyBinding
 import ke.co.definition.inkopies.model.auth.VerifLogin
@@ -27,7 +27,7 @@ class VerifyActivity : AppCompatActivity() {
         val views = DataBindingUtil.setContentView<ActivityVerifyBinding>(this, R.layout.activity_verify)
         layoutRoot = views.layoutRoot
 
-        val vvmFactory = (application as InkopiesApp).appComponent.verificationVMFactory()
+        val vvmFactory = (application as App).appComponent.verificationVMFactory()
         viewModel = ViewModelProviders.of(this, vvmFactory)
                 .get(VerificationViewModel::class.java)
         views.vm = viewModel

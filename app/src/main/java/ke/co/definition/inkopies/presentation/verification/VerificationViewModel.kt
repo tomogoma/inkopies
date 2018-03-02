@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views.verification
+package ke.co.definition.inkopies.presentation.verification
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
@@ -9,9 +9,9 @@ import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import ke.co.definition.inkopies.views.common.ProgressData
-import ke.co.definition.inkopies.views.common.SnackBarData
-import ke.co.definition.inkopies.views.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.ProgressData
+import ke.co.definition.inkopies.presentation.common.SnackBarData
+import ke.co.definition.inkopies.presentation.common.TextSnackBarData
 import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
@@ -106,7 +106,7 @@ class VerificationViewModel @Inject constructor(
             return
         }
 
-        auth.identifierVerified(vl)
+        auth.checkIdentifierVerified(vl)
                 .doOnUnsubscribe { progress.set(ProgressData(true, "Checking ${vl.value} verified")) }
                 .doAfterTerminate { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)

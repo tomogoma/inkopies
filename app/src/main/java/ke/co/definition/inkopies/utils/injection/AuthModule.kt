@@ -9,8 +9,8 @@ import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.Authenticator
 import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.Validator
-import ke.co.definition.inkopies.repos.LocalStorable
-import ke.co.definition.inkopies.repos.LocalStore
+import ke.co.definition.inkopies.repos.local.LocalStorable
+import ke.co.definition.inkopies.repos.local.LocalStore
 import ke.co.definition.inkopies.repos.ms.AUTH_MS_ADDRESS
 import ke.co.definition.inkopies.repos.ms.AuthClient
 import ke.co.definition.inkopies.repos.ms.AuthClientImpl

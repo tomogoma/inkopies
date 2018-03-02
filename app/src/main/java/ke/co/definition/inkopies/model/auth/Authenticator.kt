@@ -1,7 +1,7 @@
 package ke.co.definition.inkopies.model.auth
 
 import com.google.gson.Gson
-import ke.co.definition.inkopies.repos.LocalStorable
+import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.ms.AuthClient
 import ke.co.definition.inkopies.repos.ms.STATUS_BAD_REQUEST
 import retrofit2.adapter.rxjava.HttpException
@@ -63,7 +63,7 @@ class Authenticator @Inject constructor(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun identifierVerified(vl: VerifLogin): Completable {
+    override fun checkIdentifierVerified(vl: VerifLogin): Completable {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

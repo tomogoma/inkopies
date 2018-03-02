@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views
+package ke.co.definition.inkopies.presentation.login
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
@@ -13,9 +13,9 @@ import ke.co.definition.inkopies.model.auth.ValidationResult
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import ke.co.definition.inkopies.views.common.ProgressData
-import ke.co.definition.inkopies.views.common.SnackBarData
-import ke.co.definition.inkopies.views.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.ProgressData
+import ke.co.definition.inkopies.presentation.common.SnackBarData
+import ke.co.definition.inkopies.presentation.common.TextSnackBarData
 import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named

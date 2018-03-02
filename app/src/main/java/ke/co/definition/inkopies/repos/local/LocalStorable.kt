@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.repos
+package ke.co.definition.inkopies.repos.local
 
 /**
  * Created by tomogoma

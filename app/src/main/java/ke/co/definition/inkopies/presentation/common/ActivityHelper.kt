@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views.common
+package ke.co.definition.inkopies.presentation.common
 
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity

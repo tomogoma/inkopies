@@ -9,14 +9,14 @@
 
         <variable
             name="vm"
-            type="ke.co.definition.inkopies.views.LoginViewModel" />
+            type="ke.co.definition.inkopies.presentation.login.LoginViewModel" />
     </data>
 
     <FrameLayout
         android:id="@+id/rootFrame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="ke.co.definition.inkopies.views.LoginActivity">
+        tools:context="ke.co.definition.inkopies.presentation.login.LoginActivity">
 
         <FrameLayout
             android:id="@+id/frame"

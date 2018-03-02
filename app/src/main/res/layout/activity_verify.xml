@@ -9,7 +9,7 @@
 
         <variable
             name="vm"
-            type="ke.co.definition.inkopies.views.verification.VerificationViewModel" />
+            type="ke.co.definition.inkopies.presentation.verification.VerificationViewModel" />
     </data>
 
     <FrameLayout

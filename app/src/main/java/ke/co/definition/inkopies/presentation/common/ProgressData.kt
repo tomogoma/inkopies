@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views.common
+package ke.co.definition.inkopies.presentation.common
 
 /**
  * Created by tomogoma

@@ -8,14 +8,14 @@
 
         <variable
             name="vm"
-            type="ke.co.definition.inkopies.views.LoginViewModel" />
+            type="ke.co.definition.inkopies.presentation.login.LoginViewModel" />
     </data>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/rootFrame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="ke.co.definition.inkopies.views.ManualLoginFragment">
+        tools:context="ke.co.definition.inkopies.presentation.login.ManualLoginFragment">
 
         <TextView
             android:id="@+id/title"

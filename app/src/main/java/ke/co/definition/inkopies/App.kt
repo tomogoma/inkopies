@@ -9,7 +9,7 @@ import ke.co.definition.inkopies.utils.injection.DaggerAppComponent
  * Created by tomogoma
  * On 28/02/18.
  */
-class InkopiesApp : Application() {
+class App : Application() {
 
     lateinit var appComponent: AppComponent
 
@@ -18,7 +18,7 @@ class InkopiesApp : Application() {
         appComponent = initDagger(this)
     }
 
-    private fun initDagger(app: InkopiesApp): AppComponent =
+    private fun initDagger(app: App): AppComponent =
             DaggerAppComponent.builder()
                     .appModule(AppModule(app))
                     .build()

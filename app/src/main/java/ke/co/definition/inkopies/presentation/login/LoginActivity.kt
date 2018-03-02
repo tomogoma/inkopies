@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views
+package ke.co.definition.inkopies.presentation.login
 
 import android.app.Activity
 import android.arch.lifecycle.LiveData
@@ -8,13 +8,13 @@ import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import ke.co.definition.inkopies.InkopiesApp
+import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityLoginBinding
 import ke.co.definition.inkopies.model.auth.VerifLogin
-import ke.co.definition.inkopies.views.common.replaceFrag
-import ke.co.definition.inkopies.views.common.replaceFragBackStack
-import ke.co.definition.inkopies.views.verification.VerifyActivity
+import ke.co.definition.inkopies.presentation.common.replaceFrag
+import ke.co.definition.inkopies.presentation.common.replaceFragBackStack
+import ke.co.definition.inkopies.presentation.verification.VerifyActivity
 
 class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
@@ -31,7 +31,7 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val lvmFactory = (application as InkopiesApp).appComponent.loginVMFactory()
+        val lvmFactory = (application as App).appComponent.loginVMFactory()
         loginVM = ViewModelProviders.of(this, lvmFactory).get(LoginViewModel::class.java)
         observeViewModel()
     }

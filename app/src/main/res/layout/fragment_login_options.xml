@@ -7,7 +7,7 @@
         android:id="@+id/rootElem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="ke.co.definition.inkopies.views.LoginOptionsFragment">
+        tools:context="ke.co.definition.inkopies.presentation.login.LoginOptionsFragment">
 
         <TextView
             android:id="@+id/title"

@@ -1,8 +1,8 @@
 package ke.co.definition.inkopies.utils.injection
 
 import dagger.Component
-import ke.co.definition.inkopies.views.LoginViewModel
-import ke.co.definition.inkopies.views.verification.VerificationViewModel
+import ke.co.definition.inkopies.presentation.login.LoginViewModel
+import ke.co.definition.inkopies.presentation.verification.VerificationViewModel
 import javax.inject.Singleton
 
 /**

@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views
+package ke.co.definition.inkopies.presentation.login
 
 import android.databinding.DataBindingUtil
 import android.os.Bundle

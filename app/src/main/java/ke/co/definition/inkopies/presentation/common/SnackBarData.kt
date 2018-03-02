@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views.common
+package ke.co.definition.inkopies.presentation.common
 
 import android.support.design.widget.Snackbar
 import android.view.View

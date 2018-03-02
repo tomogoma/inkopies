@@ -6,7 +6,7 @@
 
         <variable
             name="vm"
-            type="ke.co.definition.inkopies.views.LoginViewModel" />
+            type="ke.co.definition.inkopies.presentation.login.LoginViewModel" />
     </data>
 
     <LinearLayout

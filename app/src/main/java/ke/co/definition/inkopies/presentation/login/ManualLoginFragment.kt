@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.views
+package ke.co.definition.inkopies.presentation.login
 
 import android.arch.lifecycle.ViewModelProviders
 import android.databinding.DataBindingUtil
@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import ke.co.definition.inkopies.InkopiesApp
+import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.FragmentManualLoginBinding
 
@@ -19,7 +19,7 @@ class ManualLoginFragment : Fragment() {
         val binding = DataBindingUtil.inflate<FragmentManualLoginBinding>(inflater,
                 R.layout.fragment_manual_login, container, false)
 
-        val lvmFactory = (activity.application as InkopiesApp).appComponent.loginVMFactory()
+        val lvmFactory = (activity.application as App).appComponent.loginVMFactory()
         val lvm = ViewModelProviders.of(activity, lvmFactory).get(LoginViewModel::class.java)
         binding.vm = lvm
 
