@@ -1,19 +1,25 @@
 package ke.co.definition.inkopies.views
 
+import android.app.Activity
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import ke.co.definition.inkopies.InkopiesApp
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityLoginBinding
+import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.views.common.replaceFrag
 import ke.co.definition.inkopies.views.common.replaceFragBackStack
+import ke.co.definition.inkopies.views.verification.VerifyActivity
 
 class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
     private lateinit var loginVM: LoginViewModel
+    private val liveDataObservations: MutableList<LiveData<Any>> = mutableListOf()
 
     // Only required if not logged in, so bind views lazily
     private val binding: ActivityLoginBinding by lazy {
@@ -35,8 +41,18 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
         loginVM.checkLoggedIn()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQ_CODE_VERIFY_REGISTRATION) {
+            if (resultCode == Activity.RESULT_OK) {
+                openLoggedInActivity()
+            }
+            return
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     override fun onDestroy() {
-        loginVM.loggedInStatus.removeObservers(this)
+        liveDataObservations.forEach { it.removeObservers(this) }
         super.onDestroy()
     }
 
@@ -53,13 +69,25 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
     }
 
     private fun observeViewModel() {
+
         loginVM.loggedInStatus.observe(this, Observer { isLoggedIn: Boolean? ->
             if (isLoggedIn == true) openLoggedInActivity() else openLoginOptsFrag()
         })
-        loginVM.registeredStatus.observe(this, Observer { isRegd: Boolean? ->
-            if (isRegd == true) openLoginOptsFrag() else openRegisterOptsFrag()
+        loginVM.registeredStatus.observe(this, Observer { vl: VerifLogin? ->
+            if (vl != null) {
+                VerifyActivity.startForResult(this, vl, REQ_CODE_VERIFY_REGISTRATION)
+            } else {
+                openRegisterOptsFrag()
+            }
         })
         loginVM.snackBarData.observe(this, Observer { it?.show(binding.frame) })
+
+        @Suppress("UNCHECKED_CAST")
+        liveDataObservations.addAll(listOf(
+                loginVM.loggedInStatus as LiveData<Any>,
+                loginVM.registeredStatus as LiveData<Any>,
+                loginVM.snackBarData as LiveData<Any>
+        ))
     }
 
     private fun openLoginOptsFrag() {
@@ -68,6 +96,10 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
     private fun openLoggedInActivity() {
         TODO("start ShoppingListsActivity")
+    }
+
+    companion object {
+        const val REQ_CODE_VERIFY_REGISTRATION = 1
     }
 
 }

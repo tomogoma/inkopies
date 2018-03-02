@@ -71,7 +71,10 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:hint="@string/verification_code"
-                    android:text="@={vm.otp}" />
+                    android:text="@={vm.otp}"
+                    android:imeOptions="actionDone"
+                    android:maxLines="1"
+                    android:inputType="number"/>
             </android.support.design.widget.TextInputLayout>
 
             <Button
@@ -81,14 +84,29 @@
                 android:text="@string/verify" />
 
             <TextView
-                android:id="@+id/resetLink"
+                android:id="@+id/resendLink"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_xlarge"
                 android:gravity="center"
                 android:padding="@dimen/space_small"
                 android:text="@string/resend"
-                android:textColor="@color/colorLink" />
+                android:textColor="@color/colorLink"
+                android:visibility="@{vm.resetCDTimer.isEmpty() ? View.VISIBLE : View.GONE}"
+                tools:visibility="gone" />
+
+            <TextView
+                android:id="@+id/resetCDTimer"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xlarge"
+                android:gravity="center"
+                android:padding="@dimen/space_small"
+                android:text="@{vm.resetCDTimer}"
+                android:textColor="@color/colorLink"
+                android:visibility="@{vm.resetCDTimer.isEmpty() ? View.GONE : View.VISIBLE}"
+                tools:text="Resend in 0:58"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/alreadyVerifiedLink"
