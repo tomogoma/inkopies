@@ -32,7 +32,7 @@ class ManualRegisterFragment : Fragment() {
         b.submit.setOnClickListener({ b.vm!!.registerManual(context) })
         b.manualLoginInputs!!.password.setOnEditorActionListener { _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
-                b.vm!!.logInManual(context)
+                b.vm!!.registerManual(context)
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false
