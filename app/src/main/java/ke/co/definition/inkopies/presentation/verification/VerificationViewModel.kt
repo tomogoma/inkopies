@@ -4,9 +4,11 @@ import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
+import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.ProgressData
+import ke.co.definition.inkopies.presentation.common.ResIDSnackBarData
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
@@ -78,6 +80,7 @@ class VerificationViewModel @Inject constructor(
                 .observeOn(observeOnScheduler)
                 .subscribe({
                     start(VerifLogin(vl.id, vl.userID, vl.value, vl.verified, it))
+                    snackBarData.value = ResIDSnackBarData(R.string.verification_code_resent, Snackbar.LENGTH_LONG)
                 }, {
                     snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
                 })

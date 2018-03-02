@@ -24,4 +24,5 @@
     <string name="resend">Resend</string>
     <string name="already_verified">I\'ve already verified</string>
     <string name="verify">Verify</string>
+    <string name="verification_code_resent">Verification code has been resent</string>
 </resources>
