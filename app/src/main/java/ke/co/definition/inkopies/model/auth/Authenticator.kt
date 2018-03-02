@@ -63,7 +63,12 @@ class Authenticator @Inject constructor(
 
     override fun loginManual(id: Identifier, password: String): Completable =
             authCl.login(id, password)
-                    .onErrorResumeNext { Single.error(handleServerErrors(it, "logging in")) }
+                    .onErrorResumeNext {
+                        if (it is HttpException && it.code() == 403) {
+                            return@onErrorResumeNext Single.error(Exception("invalid username/password combination"))
+                        }
+                        return@onErrorResumeNext Single.error(handleServerErrors(it, "logging in"))
+                    }
                     .doOnSuccess { localStore.upsert(KEY_LOGIN_DETAILS, Gson().toJson(it)) }
                     .toCompletable()
 
