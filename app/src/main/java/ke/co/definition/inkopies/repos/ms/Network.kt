@@ -16,3 +16,4 @@ const val HEADER_API_KEY = "x-api-key"
 const val KEY_SELF_REG = "selfReg"
 
 const val STATUS_BAD_REQUEST = 400
+const val STATUS_SERVER_ERROR = 500

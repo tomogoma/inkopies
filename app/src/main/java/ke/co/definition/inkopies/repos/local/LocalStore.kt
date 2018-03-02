@@ -16,13 +16,23 @@ class LocalStore @Inject constructor(val app: Application) : LocalStorable {
                 .putString(key, value)
                 .commit()
         if (!isSuccess) {
-            throw RuntimeException("error commiting key/value to shared preference")
+            throw RuntimeException("error committing key/value to shared preference")
         }
     }
 
     override fun fetch(key: String) =
             app.getSharedPreferences(KEY_SHARED_PREF_FILE, Context.MODE_PRIVATE)
                     .getString(key, "")
+
+    override fun delete(key: String) {
+        val isSuccess = app.getSharedPreferences(KEY_SHARED_PREF_FILE, Context.MODE_PRIVATE)
+                .edit()
+                .remove(key)
+                .commit()
+        if (!isSuccess) {
+            throw RuntimeException("error committing removal of key")
+        }
+    }
 
     companion object {
         val KEY_SHARED_PREF_FILE = LocalStore::class.java.name + "SHARED_PREF_FILE"

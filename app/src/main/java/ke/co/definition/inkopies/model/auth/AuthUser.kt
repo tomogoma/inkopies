@@ -10,7 +10,6 @@ import java.util.*
 data class AuthUser(
         @SerializedName("ID") val id: String,
         @SerializedName("JWT") val token: String,
-        val expiry: Date,
         val phone: VerifLogin,
         val email: VerifLogin
 )
@@ -28,4 +27,10 @@ data class OTPStatus(
         val expiresAt: Date
 ) {
     fun isExpired(): Boolean = expiresAt.before(Date())
+}
+
+data class JWT(
+        @SerializedName("exp") private val expiresAt: Long
+) {
+    fun isExpired(): Boolean = Date(expiresAt * 1000).before(Date())
 }

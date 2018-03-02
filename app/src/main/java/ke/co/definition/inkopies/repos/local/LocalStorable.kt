@@ -7,4 +7,5 @@ package ke.co.definition.inkopies.repos.local
 interface LocalStorable {
     fun upsert(key: String, value: String)
     fun fetch(key: String): String
+    fun delete(key: String)
 }

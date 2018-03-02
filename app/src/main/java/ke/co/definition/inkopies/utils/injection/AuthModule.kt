@@ -61,7 +61,7 @@ class AuthModule {
 
     @Provides
     @Inject
-    fun provideAuthable(ls: LocalStorable, authCl: AuthClient): Authable = Authenticator(ls, authCl)
+    fun provideAuthable(ls: LocalStorable, authCl: AuthClient, vldtr: Validatable): Authable = Authenticator(ls, authCl, vldtr)
 
     companion object {
         const val NAME = "AuthModule"

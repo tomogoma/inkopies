@@ -12,8 +12,8 @@ interface Authable {
     fun isLoggedIn(): Single<Boolean>
     fun registerManual(id: Identifier, password: String): Single<VerifLogin>
     fun loginManual(id: Identifier, password: String): Completable
-    fun sendVerifyOTP(id: Identifier): Single<OTPStatus>
+    fun sendVerifyOTP(vl: VerifLogin): Single<OTPStatus>
     fun checkIdentifierVerified(vl: VerifLogin): Completable
-    fun verifyOTP(vl: VerifLogin): Completable
+    fun verifyOTP(vl: VerifLogin, otp: String?): Completable
     fun resendInterval(otps: OTPStatus, intervalSecs: Long): Observable<String>
 }
