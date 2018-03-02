@@ -5,13 +5,12 @@ import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.model.auth.Authable
-import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.VerifLogin
-import ke.co.definition.inkopies.utils.injection.Dagger2Module
-import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import ke.co.definition.inkopies.presentation.common.ProgressData
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.utils.injection.Dagger2Module
+import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
@@ -23,7 +22,6 @@ import javax.inject.Named
  */
 class VerificationViewModel @Inject constructor(
         private val auth: Authable,
-        private val validator: Validatable,
         @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
@@ -59,15 +57,9 @@ class VerificationViewModel @Inject constructor(
 
     fun onSubmit() {
 
-        val validRes = validator.validateIdentifier(vl.value)
-        if (!validRes.isValid) {
-            openEditDialog.value = true
-            return
-        }
-
-        auth.verifyOTP(vl)
-                .doOnUnsubscribe { progress.set(ProgressData(true, "Verifying ${vl.value}")) }
-                .doAfterTerminate { progress.set(ProgressData()) }
+        auth.verifyOTP(vl, otp.get())
+                .doOnSubscribe { progress.set(ProgressData(true, "Verifying ${vl.value}")) }
+                .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({
@@ -79,16 +71,9 @@ class VerificationViewModel @Inject constructor(
 
     fun onRequestResendOTP() {
 
-        val validRes = validator.validateIdentifier(vl.value)
-        if (!validRes.isValid) {
-            openEditDialog.value = true
-            return
-        }
-
-        val id = validRes.getIdentifier()
-        auth.sendVerifyOTP(id)
-                .doOnUnsubscribe { progress.set(ProgressData(true, "Sending verification code")) }
-                .doAfterTerminate { progress.set(ProgressData()) }
+        auth.sendVerifyOTP(vl)
+                .doOnSubscribe { progress.set(ProgressData(true, "Sending verification code")) }
+                .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({
@@ -100,15 +85,9 @@ class VerificationViewModel @Inject constructor(
 
     fun onClaimVerified() {
 
-        val validRes = validator.validateIdentifier(vl.value)
-        if (!validRes.isValid) {
-            openEditDialog.value = true
-            return
-        }
-
         auth.checkIdentifierVerified(vl)
-                .doOnUnsubscribe { progress.set(ProgressData(true, "Checking ${vl.value} verified")) }
-                .doAfterTerminate { progress.set(ProgressData()) }
+                .doOnSubscribe { progress.set(ProgressData(true, "Checking ${vl.value} verified")) }
+                .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({
@@ -120,21 +99,20 @@ class VerificationViewModel @Inject constructor(
 
     private fun countDownResetVisibility() {
         auth.resendInterval(vl.otpStatus ?: return, 1)
+                .doOnUnsubscribe({ resetCDTimer.set("") })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .doAfterTerminate({ resetCDTimer.set("") })
                 .subscribe({ resetCDTimer.set(it) })
     }
 
     class Factory @Inject constructor(
             private val auth: Authable,
-            private val validator: Validatable,
             @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
             @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return VerificationViewModel(auth, validator, subscribeOnScheduler, observeOnScheduler) as T
+            return VerificationViewModel(auth, subscribeOnScheduler, observeOnScheduler) as T
         }
 
     }
