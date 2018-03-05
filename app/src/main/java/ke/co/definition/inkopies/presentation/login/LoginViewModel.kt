@@ -77,7 +77,7 @@ class LoginViewModel @Inject constructor(
         }
 
         auth.loginManual(valRes.getIdentifier(), pass)
-                .doOnSubscribe({ progressData.set(ProgressData(true, c.getString(R.string.loggin_in))) })
+                .doOnSubscribe({ progressData.set(ProgressData(c.getString(R.string.loggin_in))) })
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
@@ -99,7 +99,7 @@ class LoginViewModel @Inject constructor(
         }
 
         auth.registerManual(valRes.getIdentifier(), pass)
-                .doOnSubscribe({ progressData.set(ProgressData(true, c.getString(R.string.registering))) })
+                .doOnSubscribe({ progressData.set(ProgressData(c.getString(R.string.registering))) })
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
