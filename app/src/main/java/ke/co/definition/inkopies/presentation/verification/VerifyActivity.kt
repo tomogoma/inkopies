@@ -1,20 +1,27 @@
 package ke.co.definition.inkopies.presentation.verification
 
 import android.app.Activity
+import android.app.Dialog
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.view.Window
 import android.view.inputmethod.EditorInfo
 import com.google.gson.Gson
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityVerifyBinding
+import ke.co.definition.inkopies.databinding.ChangeIdentifierDialogBinding
 import ke.co.definition.inkopies.model.auth.VerifLogin
+
 
 class VerifyActivity : AppCompatActivity() {
 
@@ -31,20 +38,24 @@ class VerifyActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this, vvmFactory)
                 .get(VerificationViewModel::class.java)
         views.vm = viewModel
-        observeViewModel()
         observeViews(views)
         if (savedInstanceState == null) start()
     }
 
+    override fun onResume() {
+        super.onResume()
+        observeViewModel()
+    }
+
     override fun onDestroy() {
-        liveDataObservations.forEach { it.removeObservers(this) }
+        stopObservingViewModel()
         super.onDestroy()
     }
 
     private fun observeViewModel() {
 
         viewModel.openEditDialog.observe(this, Observer {
-            TODO("Implement edit identifier dialog")
+            if (it == true) openChangeIdentifierDialog()
         })
 
         viewModel.finishedEv.observe(this, Observer {
@@ -63,7 +74,7 @@ class VerifyActivity : AppCompatActivity() {
     }
 
     private fun observeViews(views: ActivityVerifyBinding) {
-        views.identifier.setOnClickListener({ TODO() })
+        views.identifier.setOnClickListener({ openChangeIdentifierDialog() })
         views.otp.setOnEditorActionListener({ _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
                 viewModel.onSubmit()
@@ -82,6 +93,17 @@ class VerifyActivity : AppCompatActivity() {
         viewModel.start(verifLogin)
     }
 
+    private fun openChangeIdentifierDialog() {
+        stopObservingViewModel()
+        ChangeIDDialogFrag().apply {
+            show(supportFragmentManager, ChangeIDDialogFrag::class.java.name)
+        }
+    }
+
+    private fun stopObservingViewModel() {
+        liveDataObservations.forEach { it.removeObservers(this) }
+    }
+
     companion object {
 
         private val EXTRA_VERIF_LOGIN = VerifyActivity::class.java.name + "EXTRA_VERIF_LOGIN"
@@ -91,6 +113,62 @@ class VerifyActivity : AppCompatActivity() {
                 putExtra(EXTRA_VERIF_LOGIN, Gson().toJson(vl))
             }
             a.startActivityForResult(i, reqCode)
+        }
+    }
+
+    class ChangeIDDialogFrag : DialogFragment() {
+
+        private val observedLiveData: MutableList<LiveData<Any>> = mutableListOf()
+
+        override fun onCreateView(i: LayoutInflater?, container: ViewGroup?,
+                                  savedInstanceState: Bundle?): View? {
+            val views = DataBindingUtil.inflate<ChangeIdentifierDialogBinding>(i,
+                    R.layout.change_identifier_dialog, container, false)
+
+            val vvmFactory = (activity.application as App).appComponent.verificationVMFactory()
+            val viewModel = ViewModelProviders.of(activity, vvmFactory)
+                    .get(VerificationViewModel::class.java)
+            views.vm = viewModel
+
+            observeViews(views)
+            observeViewModel(viewModel, views)
+
+            return views.root
+        }
+
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            val dialog = super.onCreateDialog(savedInstanceState)
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            return dialog
+        }
+
+        override fun onDestroy() {
+            observedLiveData.forEach { it.removeObservers(this) }
+            super.onDestroy()
+        }
+
+        private fun observeViewModel(vm: VerificationViewModel, vs: ChangeIdentifierDialogBinding) {
+
+            vm.finishedChangeIdentifierEv.observe(this, Observer { dialog.dismiss() })
+            vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
+
+            @Suppress("UNCHECKED_CAST")
+            observedLiveData.addAll(mutableListOf(
+                    vm.finishedChangeIdentifierEv as LiveData<Any>,
+                    vm.snackBarData as LiveData<Any>
+            ))
+        }
+
+        private fun observeViews(vs: ChangeIdentifierDialogBinding) {
+            vs.identifier.setOnEditorActionListener({ _, actionID, _ ->
+                if (actionID == EditorInfo.IME_ACTION_DONE) {
+                    vs.vm!!.onSubmitChangeIdentifier()
+                    return@setOnEditorActionListener true
+                }
+                return@setOnEditorActionListener false
+            })
+            vs.submit.setOnClickListener({ vs.vm!!.onSubmitChangeIdentifier() })
+            vs.cancel.setOnClickListener({ dialog.dismiss() })
         }
     }
 }

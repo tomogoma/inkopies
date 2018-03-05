@@ -19,8 +19,11 @@ class AuthClientImpl @Inject constructor(@Named(AuthModule.NAME) private val ret
 
     private val authAPI by lazy { retrofit.create(AuthAPI::class.java) }
 
+    override fun updateIdentifier(userID: String, token: String, id: Identifier): Single<AuthUser> =
+            authAPI.updateIdentifier(userID, token, FullIdentifierRequest(id.type(), id.value()))
+
     override fun sendVerifyOTP(token: String, id: Identifier): Single<OTPStatus> =
-            authAPI.sendVerifyOTP(id.type(), token, IdentifierRequest(id.value()))
+            authAPI.sendVerifyOTP(id.type(), token, IdentifierOnlyRequest(id.value()))
 
     override fun login(id: Identifier, secret: String): Single<AuthUser> =
             authAPI.login(id.type(), Credentials.basic(id.value(), secret))

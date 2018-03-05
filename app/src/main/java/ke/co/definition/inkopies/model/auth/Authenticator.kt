@@ -1,6 +1,5 @@
 package ke.co.definition.inkopies.model.auth
 
-import android.util.Base64
 import com.google.gson.Gson
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.ms.AuthClient
@@ -10,7 +9,7 @@ import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
 import rx.Observable
 import rx.Single
-import java.nio.charset.Charset
+import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -19,26 +18,51 @@ import javax.inject.Inject
  * Created by tomogoma
  * On 28/02/18.
  */
-
-
 class Authenticator @Inject constructor(
         private val localStore: LocalStorable,
         private val authCl: AuthClient,
         private val validator: Validatable
 ) : Authable {
 
+    override fun updateIdentifier(identifier: String): Single<VerifLogin> {
+        return Single.create<ValidationResult>({
+            val vr = validator.validateIdentifier(identifier)
+            if (!vr.isValid) {
+                it.onError(Exception("The email/phone provided was invalid"))
+                return@create
+            }
+            it.onSuccess(vr)
+        }).flatMap { vr: ValidationResult ->
+            getJWT().flatMap { jwt: JWT ->
+                authCl.updateIdentifier(jwt.info.userID, jwt.value, vr.getIdentifier())
+                        .onErrorResumeNext {
+                            Single.error(handleNewIdentifierErrors(it,
+                                    identifier, "updating identifier"))
+                        }
+                        .doOnSuccess { upsertAuthUser(it) }
+                        .flatMap {
+                            when (vr) {
+                                is ValidationResult.ValidOnEmail -> Single.just(it.email)
+                                is ValidationResult.ValidOnPhone -> Single.just(it.phone)
+                                is ValidationResult.Invalid -> throw RuntimeException("Working with" +
+                                        " invalid identifier while updating identifier for user")
+                            }
+                        }
+            }
+        }
+    }
+
     override fun isLoggedIn(): Single<Boolean> = Single.create({
 
-        val loginStr = localStore.fetch(KEY_LOGIN_DETAILS)
-        if (loginStr.isEmpty()) {
+        val jwtStr = localStore.fetch(KEY_JWT)
+        if (jwtStr.isEmpty()) {
             it.onSuccess(false)
             return@create
         }
 
-        val authUsr = Gson().fromJson(loginStr, AuthUser::class.java)
-        if (isTokenExpired(authUsr)) {
-            localStore.delete(KEY_LOGIN_DETAILS)
-            it.onSuccess(false)
+        val jwt = Gson().fromJson(jwtStr, JWT::class.java)
+        if (jwt.isExpired()) {
+            logOut().subscribe { it.onSuccess(false) }
             return@create
         }
 
@@ -48,12 +72,9 @@ class Authenticator @Inject constructor(
     override fun registerManual(id: Identifier, password: String): Single<VerifLogin> =
             authCl.registerManual(id, password)
                     .onErrorResumeNext {
-                        if (it is HttpException && it.code() == STATUS_BAD_REQUEST) {
-                            return@onErrorResumeNext Single.error(Exception("${id.value()} is already in use"))
-                        }
-                        return@onErrorResumeNext Single.error(handleServerErrors(it, "registering"))
+                        Single.error(handleNewIdentifierErrors(it, id.value(), "registering"))
                     }
-                    .doOnSuccess { localStore.upsert(KEY_LOGIN_DETAILS, Gson().toJson(it)) }
+                    .doOnSuccess { saveLoggedInDetails(it) }
                     .map {
                         return@map when (id) {
                             is Identifier.Email -> it.email
@@ -64,56 +85,47 @@ class Authenticator @Inject constructor(
     override fun loginManual(id: Identifier, password: String): Completable =
             authCl.login(id, password)
                     .onErrorResumeNext {
-                        if (it is HttpException && it.code() == 403) {
+                        if (it is HttpException && it.code() == 401) {
                             return@onErrorResumeNext Single.error(Exception("invalid username/password combination"))
                         }
                         return@onErrorResumeNext Single.error(handleServerErrors(it, "logging in"))
                     }
-                    .doOnSuccess { localStore.upsert(KEY_LOGIN_DETAILS, Gson().toJson(it)) }
+                    .doOnSuccess { saveLoggedInDetails(it) }
                     .toCompletable()
-
-    private fun handleServerErrors(err: Throwable, ctx: String = ""): Throwable {
-        if (err is HttpException && err.code() >= STATUS_SERVER_ERROR) {
-            return Exception("Something wicked happened, please try again", err)
-        }
-        throw RuntimeException(ctx, err)
-    }
 
     override fun sendVerifyOTP(vl: VerifLogin): Single<OTPStatus> =
             validateVerifLogin(vl).flatMap { vr: ValidationResult ->
-                getLoggedInUser()
-                        .flatMap {
-                            authCl.sendVerifyOTP(it.token, vr.getIdentifier()).onErrorResumeNext {
-                                Single.error(handleServerErrors(it, "logging in"))
-                            }
-                        }
+                getJWT().flatMap {
+                    authCl.sendVerifyOTP(it.value, vr.getIdentifier()).onErrorResumeNext {
+                        Single.error(handleServerErrors(it, "logging in"))
+                    }
+                }
             }
 
 
     override fun checkIdentifierVerified(vl: VerifLogin): Completable =
             validateVerifLogin(vl).flatMap { vr: ValidationResult ->
-
-                getLoggedInUser()
-//                        TODO return need log out error .doOnError()
-                        .flatMap { usr: AuthUser ->
-
-                            authCl.fetchUserDetails(usr.token, usr.id).onErrorResumeNext {
+                getJWT().flatMap { jwt: JWT ->
+                    authCl.fetchUserDetails(jwt.value, jwt.info.userID)
+                            .onErrorResumeNext {
                                 Single.error(handleServerErrors(it, "logging in"))
-                            }.doOnSuccess {
-                                        when (vr) {
-                                            is ValidationResult.ValidOnEmail ->
-                                                if (!it.email.verified) {
-                                                    throw Exception("${vl.value} not verified")
-                                                }
-                                            is ValidationResult.ValidOnPhone -> {
-                                                if (!it.phone.verified) {
-                                                    throw Exception("${vl.value} not verified")
-                                                }
-                                            }
+                            }
+                            .doOnSuccess {
+                                upsertAuthUser(it)
+                                when (vr) {
+                                    is ValidationResult.ValidOnEmail ->
+                                        if (!it.email.verified) {
+                                            throw Exception("${vl.value} not verified")
                                         }
-                                    } // doOnSuccess
+                                    is ValidationResult.ValidOnPhone -> {
+                                        if (!it.phone.verified) {
+                                            throw Exception("${vl.value} not verified")
+                                        }
+                                    }
+                                }
+                            } // doOnSuccess
 
-                        } // getLoggedInUser()
+                } // getLoggedInUser()
 
             }.toCompletable()
 
@@ -144,55 +156,70 @@ class Authenticator @Inject constructor(
                 .map { String.format("Resend in %02d:%02d", it % 3600 / 60, it % 60) }
     }
 
-    fun logOut(): Completable = Completable.create({
-        localStore.delete(KEY_LOGIN_DETAILS)
+    private fun logOut(): Completable = Completable.create({
+        localStore.delete(KEY_JWT)
+        localStore.delete(KEY_AUTHED_USER)
         it.onCompleted()
     })
 
-    fun validateVerifLogin(vl: VerifLogin): Single<ValidationResult> = Single.create<ValidationResult>({
+    private fun validateVerifLogin(vl: VerifLogin): Single<ValidationResult> =
+            Single.create<ValidationResult>({
+                val vr = validator.validateIdentifier(vl.value)
+                if (!vr.isValid) {
+                    it.onError(Exception("invalid email/phone number"))
+                }
+                it.onSuccess(vr)
+            })
 
-        val vr = validator.validateIdentifier(vl.value)
-        if (!vr.isValid) {
-            it.onError(Exception("invalid email/phone number"))
-        }
-        it.onSuccess(vr)
+    private fun getJWT(): Single<JWT> = Single.create({
 
-    })
-
-    fun getLoggedInUser(): Single<AuthUser> = Single.create({
-
-        val loginStr = localStore.fetch(KEY_LOGIN_DETAILS)
-        if (loginStr.isEmpty()) {
+        val jwtStr = localStore.fetch(KEY_JWT)
+        if (jwtStr.isEmpty()) {
             it.onError(Exception("User not logged in"))
         }
 
-        val authUsr = Gson().fromJson(loginStr, AuthUser::class.java)
-        if (isTokenExpired(authUsr)) {
-            localStore.delete(KEY_LOGIN_DETAILS)
-            it.onError(Exception("Login has expired, log in again"))
+        val jwt = Gson().fromJson(jwtStr, JWT::class.java)
+        if (jwt.isExpired()) {
+            logOut().subscribe({
+                it.onError(Exception("Login has expired, log in again"))
+            })
             return@create
         }
 
-        it.onSuccess(authUsr)
+        it.onSuccess(jwt)
     })
 
-    private fun isTokenExpired(authUsr: AuthUser): Boolean {
-        val jwt = extractJWT(authUsr.token)
-        return jwt.isExpired()
+    private fun handleNewIdentifierErrors(err: Throwable, frID: String, ctx: String): Throwable {
+        if (err is HttpException && err.code() == STATUS_BAD_REQUEST) {
+            return Exception("$frID is already in use")
+        }
+        return handleServerErrors(err, ctx)
+
     }
 
-    private fun extractJWT(token: String): JWT {
-        val parts = token.split(".")
-        if (parts.size != 3) {
-            throw Exception("invalid JWT: has ${parts.size} parts instead of 3")
+    private fun handleServerErrors(err: Throwable, ctx: String = ""): Throwable {
+        if (err is HttpException && err.code() >= STATUS_SERVER_ERROR) {
+            return Exception("Something wicked happened, please try again", err)
         }
-        val jwtBytes = Base64.decode(parts[1], Base64.URL_SAFE)
-        val jwtStr = String(jwtBytes, Charset.defaultCharset())
-        return Gson().fromJson(jwtStr, JWT::class.java)
+        if (err is IOException) {
+            return Exception("Couldn't reach server, please try again")
+        }
+        throw RuntimeException(ctx, err)
+    }
+
+    private fun saveLoggedInDetails(usr: AuthUser) {
+        upsertAuthUser(usr)
+        val jwt = JWT(usr.token)
+        localStore.upsert(KEY_JWT, Gson().toJson(jwt))
+    }
+
+    private fun upsertAuthUser(usr: AuthUser) {
+        localStore.upsert(KEY_AUTHED_USER, Gson().toJson(usr))
     }
 
     companion object {
-        val KEY_LOGIN_DETAILS = Authenticator::class.java.name + "KEY_LOGIN_DETAILS"
+        val KEY_AUTHED_USER = Authenticator::class.java.name + "KEY_AUTHED_USER"
+        val KEY_JWT = Authenticator::class.java.name + "KEY_JWT"
     }
 
 }

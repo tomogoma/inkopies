@@ -2,9 +2,11 @@ package ke.co.definition.inkopies.presentation.verification
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
+import android.databinding.Observable
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.ProgressData
@@ -14,6 +16,7 @@ import ke.co.definition.inkopies.presentation.common.TextSnackBarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -25,23 +28,37 @@ import javax.inject.Named
 class VerificationViewModel @Inject constructor(
         private val auth: Authable,
         @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
-        @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
+        @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler,
+        private val resMngr: ResourceManager
 ) : ViewModel() {
 
     val openEditDialog: SingleLiveEvent<Boolean> = SingleLiveEvent()
     val finishedEv: SingleLiveEvent<Boolean> = SingleLiveEvent()
+    val finishedChangeIdentifierEv: SingleLiveEvent<Boolean> = SingleLiveEvent()
     val snackBarData: SingleLiveEvent<SnackBarData> = SingleLiveEvent()
 
     val resetCDTimer: ObservableField<String> = ObservableField()
     val progress: ObservableField<ProgressData> = ObservableField()
     val verifLogin: ObservableField<VerifLogin> = ObservableField()
     val otp: ObservableField<String> = ObservableField()
+    val updatedIdentifier: ObservableField<String> = ObservableField()
+    val updatedIdentifierErr: ObservableField<String> = ObservableField()
 
-    private lateinit var vl: VerifLogin
+    init {
+        updatedIdentifier.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(p0: Observable?, p1: Int) {
+                val err = updatedIdentifierErr.get()
+                if (err != null && !err.isEmpty()) {
+                    updatedIdentifierErr.set("")
+                }
+            }
+        })
+    }
+
+    private val hasBeenStarted = AtomicBoolean()
 
     fun start(vl: VerifLogin) {
 
-        this.vl = vl
         verifLogin.set(vl)
 
         if (vl.verified) {
@@ -54,13 +71,15 @@ class VerificationViewModel @Inject constructor(
             return
         }
 
-        countDownResetVisibility()
+        if (hasBeenStarted.compareAndSet(false, true)) {
+            countDownResetVisibility()
+        }
     }
 
     fun onSubmit() {
 
-        auth.verifyOTP(vl, otp.get())
-                .doOnSubscribe { progress.set(ProgressData(true, "Verifying ${vl.value}")) }
+        auth.verifyOTP(verifLogin.get(), otp.get())
+                .doOnSubscribe { progress.set(ProgressData("Verifying ${verifLogin.get().value}")) }
                 .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
@@ -71,14 +90,31 @@ class VerificationViewModel @Inject constructor(
                 })
     }
 
+    fun onSubmitChangeIdentifier() {
+        val id = updatedIdentifier.get()
+        if (id == null || id.isEmpty()) {
+            updatedIdentifierErr.set(resMngr.getString(R.string.error_required_field))
+            return
+        }
+        auth.updateIdentifier(updatedIdentifier.get())
+                .doOnSubscribe { progress.set(ProgressData("Updating login details to $id")) }
+                .doOnUnsubscribe { progress.set(ProgressData()) }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe({ onIdentifierUpdated(it) }, {
+                    snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
+                })
+    }
+
     fun onRequestResendOTP() {
 
-        auth.sendVerifyOTP(vl)
-                .doOnSubscribe { progress.set(ProgressData(true, "Sending verification code")) }
+        auth.sendVerifyOTP(verifLogin.get())
+                .doOnSubscribe { progress.set(ProgressData("Sending verification code")) }
                 .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({
+                    val vl = verifLogin.get()
                     start(VerifLogin(vl.id, vl.userID, vl.value, vl.verified, it))
                     snackBarData.value = ResIDSnackBarData(R.string.verification_code_resent, Snackbar.LENGTH_LONG)
                 }, {
@@ -88,8 +124,8 @@ class VerificationViewModel @Inject constructor(
 
     fun onClaimVerified() {
 
-        auth.checkIdentifierVerified(vl)
-                .doOnSubscribe { progress.set(ProgressData(true, "Checking ${vl.value} verified")) }
+        auth.checkIdentifierVerified(verifLogin.get())
+                .doOnSubscribe { progress.set(ProgressData("Checking ${verifLogin.get().value} verified")) }
                 .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
@@ -100,8 +136,14 @@ class VerificationViewModel @Inject constructor(
                 })
     }
 
+    private fun onIdentifierUpdated(newVL: VerifLogin) {
+        hasBeenStarted.set(false)
+        start(newVL)
+        finishedChangeIdentifierEv.value = true
+    }
+
     private fun countDownResetVisibility() {
-        auth.resendInterval(vl.otpStatus ?: return, 1)
+        auth.resendInterval(verifLogin.get().otpStatus ?: return, 1)
                 .doOnUnsubscribe({ resetCDTimer.set("") })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
@@ -111,11 +153,12 @@ class VerificationViewModel @Inject constructor(
     class Factory @Inject constructor(
             private val auth: Authable,
             @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
-            @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
+            @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler,
+            private val resMngr: ResourceManager
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return VerificationViewModel(auth, subscribeOnScheduler, observeOnScheduler) as T
+            return VerificationViewModel(auth, subscribeOnScheduler, observeOnScheduler, resMngr) as T
         }
 
     }

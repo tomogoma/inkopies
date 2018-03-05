@@ -35,6 +35,6 @@ class LocalStore @Inject constructor(val app: Application) : LocalStorable {
     }
 
     companion object {
-        val KEY_SHARED_PREF_FILE = LocalStore::class.java.name + "SHARED_PREF_FILE"
+        private val KEY_SHARED_PREF_FILE = LocalStore::class.java.name + "SHARED_PREF_FILE"
     }
 }

@@ -14,7 +14,10 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black82PC">
+        android:background="@color/black82PC"
+        android:clickable="true"
+        android:focusable="false"
+        tools:ignore="KeyboardInaccessibleWidget">
 
         <ProgressBar
             android:id="@+id/progressBar"

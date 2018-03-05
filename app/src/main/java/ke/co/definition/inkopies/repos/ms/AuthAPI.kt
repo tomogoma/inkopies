@@ -24,7 +24,7 @@ interface AuthAPI {
     fun sendVerifyOTP(
             @Path("loginType") loginType: String,
             @Query("token") token: String,
-            @Body body: IdentifierRequest
+            @Body body: IdentifierOnlyRequest
     ): Single<OTPStatus>
 
     @POST("{loginType}/login")
@@ -48,6 +48,16 @@ interface AuthAPI {
             @Path("loginType") loginType: String,
             @Path("OTP") otp: String
     ): Completable
+
+    @POST("users/{userID}")
+    @Headers("x-api-key: $API_KEY")
+    fun updateIdentifier(
+            @Path("userID") userID: String,
+            @Query("token") token: String,
+            @Body body: FullIdentifierRequest
+    ): Single<AuthUser>
 }
 
-data class IdentifierRequest(val identifier: String)
+data class IdentifierOnlyRequest(val identifier: String)
+
+data class FullIdentifierRequest(val loginType: String, val identifier: String)

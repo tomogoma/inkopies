@@ -16,4 +16,5 @@ interface AuthClient {
     fun login(id: Identifier, secret: String): Single<AuthUser>
     fun fetchUserDetails(token: String, userID: String): Single<AuthUser>
     fun verifyOTP(userID: String, loginType: String, otp: String): Completable
+    fun updateIdentifier(userID: String, token: String, id: Identifier): Single<AuthUser>
 }
