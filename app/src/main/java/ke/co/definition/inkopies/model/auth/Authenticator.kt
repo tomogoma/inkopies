@@ -132,7 +132,7 @@ class Authenticator @Inject constructor(
     override fun verifyOTP(vl: VerifLogin, otp: String?): Completable {
         return Completable.create({
             if (otp == null || otp.isEmpty()) {
-                it.onError(Exception("Empty OTP provided"))
+                it.onError(Exception("Empty verification code provided"))
                 return@create
             }
             it.onCompleted()
