@@ -16,5 +16,5 @@ interface Authable {
     fun checkIdentifierVerified(vl: VerifLogin): Completable
     fun verifyOTP(vl: VerifLogin, otp: String?): Completable
     fun updateIdentifier(identifier: String): Single<VerifLogin>
-    fun resendInterval(otps: OTPStatus, intervalSecs: Long): Observable<String>
+    fun resendInterval(otps: OTPStatus?, intervalSecs: Long): Observable<String>
 }

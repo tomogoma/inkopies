@@ -143,7 +143,7 @@ class VerificationViewModel @Inject constructor(
     }
 
     private fun countDownResetVisibility() {
-        auth.resendInterval(verifLogin.get().otpStatus ?: return, 1)
+        auth.resendInterval(verifLogin.get().otpStatus, 1)
                 .doOnUnsubscribe({ resetCDTimer.set("") })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)

@@ -138,7 +138,7 @@ class Authenticator @Inject constructor(
                 .flatMap { authCl.verifyOTP(vl.userID, it.getIdentifier().type(), otp!!).toSingle({}) }
                 .onErrorResumeNext {
                     if (it is HttpException && it.code() == STATUS_UNAUTHORIZED) {
-                        return@onErrorResumeNext Single.error(Exception("The verification code is invalid"))
+                        return@onErrorResumeNext Single.error(Exception("The verification code is invalid or expired"))
                     }
                     if (it is HttpException && it.code() == STATUS_FORBIDDEN) {
                         return@onErrorResumeNext Single.error(Exception("The verification code is used"))
@@ -148,10 +148,10 @@ class Authenticator @Inject constructor(
                 .toCompletable()
     }
 
-    override fun resendInterval(otps: OTPStatus, intervalSecs: Long): Observable<String> {
+    override fun resendInterval(otps: OTPStatus?, intervalSecs: Long): Observable<String> {
         val now = Date().time
         val aMinFromNow = now + 60 * 1000
-        val expTime = Math.min(otps.expiresAt.time, aMinFromNow)
+        val expTime = Math.min(otps?.expiresAt?.time ?: aMinFromNow, aMinFromNow)
         val tteSecs = (expTime - now) / 1000
 
         return Observable.interval(intervalSecs, TimeUnit.SECONDS)
