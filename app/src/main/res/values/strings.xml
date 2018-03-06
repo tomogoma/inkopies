@@ -28,4 +28,6 @@
     <string name="send_ver_code_to">Send verification code to</string>
     <string name="submit">Submit</string>
     <string name="cancel">Cancel</string>
+    <string name="title_activity_profile">Profile</string>
+    <string name="avatar">Avatar</string>
 </resources>

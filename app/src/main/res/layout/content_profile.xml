@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="ke.co.definition.inkopies.presentation.profile.ProfileViewModel" />
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/layoutRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context="ke.co.definition.inkopies.presentation.profile.ProfileActivity"
+        tools:showIn="@layout/activity_profile">
+
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_diameter"
+            android:layout_height="@dimen/avatar_diameter"
+            android:layout_marginBottom="@dimen/space_large"
+            android:layout_marginLeft="@dimen/space_small"
+            android:layout_marginRight="@dimen/space_small"
+            android:contentDescription="@string/avatar"
+            android:src="@drawable/avatar"
+            app:layout_constraintBottom_toTopOf="@+id/name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="@dimen/input_width"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_small"
+            android:layout_marginLeft="@dimen/space_small"
+            android:layout_marginRight="@dimen/space_small"
+            android:drawableEnd="@drawable/ic_edit"
+            android:gravity="center"
+            android:text="@{vm.userProfile.name}"
+            app:layout_constraintBottom_toTopOf="@id/email"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/avatar"
+            tools:text="John Doe" />
+
+        <TextView
+            android:id="@+id/email"
+            android:layout_width="@dimen/input_width"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_small"
+            android:layout_marginLeft="@dimen/space_small"
+            android:layout_marginRight="@dimen/space_small"
+            android:drawableEnd="@drawable/ic_edit"
+            android:gravity="center"
+            android:text="@{vm.userProfile.auth.email.value}"
+            app:layout_constraintBottom_toTopOf="@id/phone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/name"
+            tools:text="john_doe@mail.com" />
+
+        <TextView
+            android:id="@+id/phone"
+            android:layout_width="@dimen/input_width"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_small"
+            android:layout_marginLeft="@dimen/space_small"
+            android:layout_marginRight="@dimen/space_small"
+            android:drawableEnd="@drawable/ic_edit"
+            android:gravity="center"
+            android:text="@{vm.userProfile.auth.phone.value}"
+            app:layout_constraintBottom_toTopOf="@id/googleLink"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/email"
+            tools:text="+254 712 345 678" />
+
+        <Button
+            android:id="@+id/googleLink"
+            android:layout_width="@dimen/input_width"
+            android:layout_height="wrap_content"
+            android:text="@{vm.googleLinkText}"
+            app:layout_constraintBottom_toTopOf="@id/fbLink"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/phone"
+            tools:text="Unlink Google" />
+
+        <Button
+            android:id="@+id/fbLink"
+            android:layout_width="@dimen/input_width"
+            android:layout_height="wrap_content"
+            android:text="@{vm.fbLinkText}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/googleLink"
+            tools:text="Link facebook" />
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

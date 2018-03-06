@@ -4,22 +4,18 @@ import android.app.Activity
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.google.gson.Gson
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityLoginBinding
-import ke.co.definition.inkopies.model.auth.AuthUser
-import ke.co.definition.inkopies.model.auth.Authenticator
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.replaceFrag
 import ke.co.definition.inkopies.presentation.common.replaceFragBackStack
+import ke.co.definition.inkopies.presentation.profile.ProfileActivity
 import ke.co.definition.inkopies.presentation.verification.VerifyActivity
-import ke.co.definition.inkopies.repos.local.LocalStore
 
 class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
@@ -100,12 +96,8 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
     }
 
     private fun openLoggedInActivity() {
-        val usrJSON = getSharedPreferences(LocalStore::class.java.name + "SHARED_PREF_FILE",
-                Context.MODE_PRIVATE)
-                .getString(Authenticator::class.java.name + "KEY_AUTHED_USER", "")
-        val usr = Gson().fromJson(usrJSON, AuthUser::class.java)
-        VerifyActivity.startForResult(this, usr.email, REQ_CODE_VERIFY_REGISTRATION)
         //TODO("start ShoppingListsActivity")
+        ProfileActivity.start(this)
     }
 
     companion object {

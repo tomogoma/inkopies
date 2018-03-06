@@ -24,6 +24,9 @@
         <activity
             android:name=".presentation.verification.VerifyActivity"
             android:label="@string/title_activity_verify" />
+        <activity
+            android:name=".presentation.profile.ProfileActivity"
+            android:label="@string/title_activity_profile" />
     </application>
 
 </manifest>
