@@ -2,10 +2,7 @@ package ke.co.definition.inkopies.model.auth
 
 import com.google.gson.Gson
 import ke.co.definition.inkopies.repos.local.LocalStorable
-import ke.co.definition.inkopies.repos.ms.AuthClient
-import ke.co.definition.inkopies.repos.ms.STATUS_BAD_REQUEST
-import ke.co.definition.inkopies.repos.ms.STATUS_CONFLICT
-import ke.co.definition.inkopies.repos.ms.STATUS_SERVER_ERROR
+import ke.co.definition.inkopies.repos.ms.*
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
 import rx.Observable
@@ -131,17 +128,24 @@ class Authenticator @Inject constructor(
             }.toCompletable()
 
     override fun verifyOTP(vl: VerifLogin, otp: String?): Completable {
-        return Completable.create({
-            if (otp == null || otp.isEmpty()) {
-                it.onError(Exception("Empty verification code provided"))
-                return@create
-            }
-            it.onCompleted()
-        }).andThen(validateVerifLogin(vl).doOnSuccess {
-            authCl.verifyOTP(vl.userID, it.getIdentifier().type(), otp!!).onErrorResumeNext {
-                Completable.error(handleServerErrors(it, "logging in"))
-            }
-        }).toCompletable()
+        return validateVerifLogin(vl)
+                .flatMap {
+                    if (otp == null || otp.isEmpty()) {
+                        throw Exception("Empty verification code provided")
+                    }
+                    return@flatMap Single.just(it)
+                }
+                .flatMap { authCl.verifyOTP(vl.userID, it.getIdentifier().type(), otp!!).toSingle({}) }
+                .onErrorResumeNext {
+                    if (it is HttpException && it.code() == STATUS_UNAUTHORIZED) {
+                        return@onErrorResumeNext Single.error(Exception("The verification code is invalid"))
+                    }
+                    if (it is HttpException && it.code() == STATUS_FORBIDDEN) {
+                        return@onErrorResumeNext Single.error(Exception("The verification code is used"))
+                    }
+                    return@onErrorResumeNext Single.error(handleServerErrors(it, "verifying OTP"))
+                }
+                .toCompletable()
     }
 
     override fun resendInterval(otps: OTPStatus, intervalSecs: Long): Observable<String> {
