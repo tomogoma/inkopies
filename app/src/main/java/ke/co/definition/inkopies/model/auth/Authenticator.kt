@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.ms.AuthClient
 import ke.co.definition.inkopies.repos.ms.STATUS_BAD_REQUEST
+import ke.co.definition.inkopies.repos.ms.STATUS_CONFLICT
 import ke.co.definition.inkopies.repos.ms.STATUS_SERVER_ERROR
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
@@ -190,21 +191,26 @@ class Authenticator @Inject constructor(
     })
 
     private fun handleNewIdentifierErrors(err: Throwable, frID: String, ctx: String): Throwable {
-        if (err is HttpException && err.code() == STATUS_BAD_REQUEST) {
-            return Exception("$frID is already in use")
+        if (err is HttpException) {
+            when (err.code()) {
+                STATUS_BAD_REQUEST -> return Exception("$frID was invalid")
+                STATUS_CONFLICT -> return Exception("$frID is already in use")
+            }
         }
         return handleServerErrors(err, ctx)
-
     }
 
     private fun handleServerErrors(err: Throwable, ctx: String = ""): Throwable {
         if (err is HttpException && err.code() >= STATUS_SERVER_ERROR) {
+            // TODO log WARN with error and ctx
             return Exception("Something wicked happened, please try again", err)
         }
         if (err is IOException) {
+            // TODO log WARN with error and ctx
             return Exception("Couldn't reach server, please try again")
         }
-        throw RuntimeException(ctx, err)
+        // TODO log ERROR with error and ctx
+        throw Exception("Something wicked happened, please try again")
     }
 
     private fun saveLoggedInDetails(usr: AuthUser) {

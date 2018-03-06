@@ -14,4 +14,5 @@ const val API_KEY = "vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g"
 const val KEY_SELF_REG = "selfReg"
 
 const val STATUS_BAD_REQUEST = 400
+const val STATUS_CONFLICT = 409
 const val STATUS_SERVER_ERROR = 500
