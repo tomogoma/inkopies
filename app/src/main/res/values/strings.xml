@@ -46,4 +46,8 @@
     <string name="updating_login_details_to_ss">Updating login details to %s</string>
     <string name="sending_verification_code">Sending verification code</string>
     <string name="checking_ss_verified">Checking %s verified</string>
+    <string name="link_google">Link google</string>
+    <string name="link_facebook">Link facebook</string>
+    <string name="edit_general_user_details">Edit general user details</string>
+    <string name="gender_label">Gender:</string>
 </resources>

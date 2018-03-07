@@ -1,107 +1,266 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
+        <import type="android.view.View" />
 
         <variable
             name="vm"
             type="ke.co.definition.inkopies.presentation.profile.ProfileViewModel" />
     </data>
 
-    <android.support.constraint.ConstraintLayout
+    <ScrollView
         android:id="@+id/layoutRoot"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context="ke.co.definition.inkopies.presentation.profile.ProfileActivity"
         tools:showIn="@layout/activity_profile">
 
-        <ImageView
-            android:id="@+id/avatar"
-            android:layout_width="@dimen/avatar_diameter"
-            android:layout_height="@dimen/avatar_diameter"
-            android:layout_marginBottom="@dimen/space_large"
-            android:layout_marginLeft="@dimen/space_small"
-            android:layout_marginRight="@dimen/space_small"
-            android:contentDescription="@string/avatar"
-            android:src="@drawable/avatar"
-            app:layout_constraintBottom_toTopOf="@+id/name"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed" />
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/contentRoot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/name"
-            android:layout_width="@dimen/input_width"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_small"
-            android:layout_marginLeft="@dimen/space_small"
-            android:layout_marginRight="@dimen/space_small"
-            android:drawableEnd="@drawable/ic_edit"
-            android:gravity="center"
-            android:text="@{vm.userProfile.name}"
-            app:layout_constraintBottom_toTopOf="@id/email"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/avatar"
-            tools:text="John Doe" />
+            <android.support.v4.widget.ContentLoadingProgressBar
+                android:id="@+id/contentLoadingProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:visibility="@{vm.loading ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toTopOf="@+id/avatar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/email"
-            android:layout_width="@dimen/input_width"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_small"
-            android:layout_marginLeft="@dimen/space_small"
-            android:layout_marginRight="@dimen/space_small"
-            android:drawableEnd="@drawable/ic_edit"
-            android:gravity="center"
-            android:text="@{vm.userProfile.auth.email.value}"
-            app:layout_constraintBottom_toTopOf="@id/phone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/name"
-            tools:text="john_doe@mail.com" />
+            <ImageView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/avatar_diameter"
+                android:layout_height="@dimen/avatar_diameter"
+                android:layout_marginBottom="@dimen/space_large"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:contentDescription="@string/avatar"
+                android:src="@drawable/avatar"
+                app:layout_constraintBottom_toTopOf="@+id/genProfileCard"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
-        <TextView
-            android:id="@+id/phone"
-            android:layout_width="@dimen/input_width"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_small"
-            android:layout_marginLeft="@dimen/space_small"
-            android:layout_marginRight="@dimen/space_small"
-            android:drawableEnd="@drawable/ic_edit"
-            android:gravity="center"
-            android:text="@{vm.userProfile.auth.phone.value}"
-            app:layout_constraintBottom_toTopOf="@id/googleLink"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/email"
-            tools:text="+254 712 345 678" />
+            <ImageButton
+                android:id="@+id/cameraButton"
+                style="@style/BorderLessButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/edit_general_user_details"
+                android:src="@drawable/ic_camera_dark"
+                app:layout_constraintBottom_toBottomOf="@id/avatar"
+                app:layout_constraintEnd_toEndOf="@+id/avatar" />
 
-        <Button
-            android:id="@+id/googleLink"
-            android:layout_width="@dimen/input_width"
-            android:layout_height="wrap_content"
-            android:text="@{vm.googleLinkText}"
-            app:layout_constraintBottom_toTopOf="@id/fbLink"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/phone"
-            tools:text="Unlink Google" />
+            <android.support.v7.widget.CardView
+                android:id="@+id/genProfileCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xsmall"
+                app:layout_constraintBottom_toTopOf="@+id/authCard"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/avatar"
+                card_view:cardBackgroundColor="@android:color/transparent">
 
-        <Button
-            android:id="@+id/fbLink"
-            android:layout_width="@dimen/input_width"
-            android:layout_height="wrap_content"
-            android:text="@{vm.fbLinkText}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/googleLink"
-            tools:text="Link facebook" />
+                <android.support.constraint.ConstraintLayout
+                    android:id="@+id/genProfileCardRoot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_normal"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="@dimen/space_normal">
 
-    </android.support.constraint.ConstraintLayout>
+                    <ImageButton
+                        android:id="@+id/editGenButton"
+                        style="@style/BorderLessButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/space_normal"
+                        android:contentDescription="@string/edit_general_user_details"
+                        android:src="@drawable/ic_edit"
+                        app:layout_constraintBottom_toTopOf="@id/nameLabel"
+                        app:layout_constraintEnd_toEndOf="@+id/name"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/nameLabel"
+                        android:layout_width="@dimen/label_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/space_large"
+                        android:gravity="center_vertical"
+                        android:text="@string/name_label"
+                        app:layout_constraintBottom_toTopOf="@+id/genderLabel"
+                        app:layout_constraintEnd_toStartOf="@+id/name"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/editGenButton" />
+
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:text="@{vm.userProfile.name}"
+                        app:layout_constraintBaseline_toBaselineOf="@id/nameLabel"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/nameLabel"
+                        tools:text="John Doe" />
+
+                    <TextView
+                        android:id="@+id/genderLabel"
+                        android:layout_width="@dimen/label_width"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:text="@string/gender_label"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/gender"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/nameLabel" />
+
+                    <TextView
+                        android:id="@+id/gender"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:text="@{vm.userProfile.name}"
+                        app:layout_constraintBaseline_toBaselineOf="@id/genderLabel"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/genderLabel"
+                        tools:text="Female" />
+
+                </android.support.constraint.ConstraintLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/authCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xsmall"
+                app:layout_constraintBottom_toTopOf="@+id/linksCard"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/genProfileCard"
+                card_view:cardBackgroundColor="@android:color/transparent">
+
+                <android.support.constraint.ConstraintLayout
+                    android:id="@+id/authCardRoot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_normal"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="@dimen/space_normal">
+
+                    <TextView
+                        android:id="@+id/emailLabel"
+                        android:layout_width="@dimen/label_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/space_large"
+                        android:gravity="center_vertical"
+                        android:text="@string/email_label"
+                        app:layout_constraintBottom_toTopOf="@+id/phoneLabel"
+                        app:layout_constraintEnd_toStartOf="@+id/email"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/email"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:drawableEnd="@drawable/ic_edit"
+                        android:gravity="center_vertical"
+                        android:text="@{vm.userProfile.auth.email.value}"
+                        app:layout_constraintBaseline_toBaselineOf="@id/emailLabel"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/emailLabel"
+                        tools:text="john_doe@mail.com" />
+
+                    <TextView
+                        android:id="@+id/phoneLabel"
+                        android:layout_width="@dimen/label_width"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:text="@string/phone_label"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/phone"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/emailLabel" />
+
+                    <TextView
+                        android:id="@+id/phone"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:drawableEnd="@drawable/ic_edit"
+                        android:gravity="center_vertical"
+                        android:text="@{vm.userProfile.auth.phone.value}"
+                        app:layout_constraintBaseline_toBaselineOf="@id/phoneLabel"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/phoneLabel"
+                        tools:text="+254 712 345 678" />
+                </android.support.constraint.ConstraintLayout>
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/linksCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/authCard"
+                card_view:cardBackgroundColor="@android:color/transparent">
+
+                <android.support.constraint.ConstraintLayout
+                    android:id="@+id/linksCardRoot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_normal"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="@dimen/space_normal">
+
+                    <Button
+                        android:id="@+id/googleLink"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/space_large"
+                        android:text="@{vm.googleLinkText}"
+                        app:layout_constraintBottom_toTopOf="@id/fbLink"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Unlink Google" />
+
+                    <Button
+                        android:id="@+id/fbLink"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:text="@{vm.fbLinkText}"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/googleLink"
+                        tools:text="Link facebook" />
+                </android.support.constraint.ConstraintLayout>
+            </android.support.v7.widget.CardView>
+
+
+        </android.support.constraint.ConstraintLayout>
+    </ScrollView>
 </layout>
