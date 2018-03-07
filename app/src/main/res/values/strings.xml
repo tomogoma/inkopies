@@ -42,4 +42,8 @@
     <string name="ss_in_use">%s is already in use</string>
     <string name="error_something_wicked">Something wicked happened, please try again</string>
     <string name="error_couldnt_reach_server">Couldn\'t reach server, please try again</string>
+    <string name="verifying_ss">Verifying %s</string>
+    <string name="updating_login_details_to_ss">Updating login details to %s</string>
+    <string name="sending_verification_code">Sending verification code</string>
+    <string name="checking_ss_verified">Checking %s verified</string>
 </resources>

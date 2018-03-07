@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.DialogInterface
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
@@ -40,11 +41,6 @@ class VerifyActivity : AppCompatActivity() {
         views.vm = viewModel
         observeViews(views)
         if (savedInstanceState == null) start()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        observeViewModel()
     }
 
     override fun onDestroy() {
@@ -96,6 +92,7 @@ class VerifyActivity : AppCompatActivity() {
     private fun openChangeIdentifierDialog() {
         stopObservingViewModel()
         ChangeIDDialogFrag().apply {
+            setOnDismissCallback { observeViewModel() }
             show(supportFragmentManager, ChangeIDDialogFrag::class.java.name)
         }
     }
@@ -119,6 +116,7 @@ class VerifyActivity : AppCompatActivity() {
     class ChangeIDDialogFrag : DialogFragment() {
 
         private val observedLiveData: MutableList<LiveData<Any>> = mutableListOf()
+        private var onDismissCallback: () -> Unit = {}
 
         override fun onCreateView(i: LayoutInflater?, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
@@ -145,6 +143,15 @@ class VerifyActivity : AppCompatActivity() {
         override fun onDestroy() {
             observedLiveData.forEach { it.removeObservers(this) }
             super.onDestroy()
+        }
+
+        override fun onDismiss(dialog: DialogInterface?) {
+            onDismissCallback()
+            super.onDismiss(dialog)
+        }
+
+        fun setOnDismissCallback(cb: () -> Unit) {
+            onDismissCallback = cb
         }
 
         private fun observeViewModel(vm: VerificationViewModel, vs: ChangeIdentifierDialogBinding) {
