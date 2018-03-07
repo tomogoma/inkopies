@@ -1,6 +1,8 @@
 package ke.co.definition.inkopies.model.auth
 
 import com.google.gson.Gson
+import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.ms.*
 import retrofit2.adapter.rxjava.HttpException
@@ -19,14 +21,15 @@ import javax.inject.Inject
 class Authenticator @Inject constructor(
         private val localStore: LocalStorable,
         private val authCl: AuthClient,
-        private val validator: Validatable
+        private val validator: Validatable,
+        private val resMan: ResourceManager
 ) : Authable {
 
     override fun updateIdentifier(identifier: String): Single<VerifLogin> {
         return Single.create<ValidationResult>({
             val vr = validator.validateIdentifier(identifier)
             if (!vr.isValid) {
-                it.onError(Exception("The email/phone provided was invalid"))
+                it.onError(Exception(resMan.getString(R.string.error_bad_email_or_phone)))
                 return@create
             }
             it.onSuccess(vr)
@@ -42,8 +45,8 @@ class Authenticator @Inject constructor(
                             when (vr) {
                                 is ValidationResult.ValidOnEmail -> Single.just(it.email)
                                 is ValidationResult.ValidOnPhone -> Single.just(it.phone)
-                                is ValidationResult.Invalid -> throw RuntimeException("Working with" +
-                                        " invalid identifier while updating identifier for user")
+                                is ValidationResult.Invalid -> throw RuntimeException("Working " +
+                                        "with invalid identifier while updating identifier for user")
                             }
                         }
             }
@@ -84,9 +87,11 @@ class Authenticator @Inject constructor(
             authCl.login(id, password)
                     .onErrorResumeNext {
                         if (it is HttpException && it.code() == 401) {
-                            return@onErrorResumeNext Single.error(Exception("invalid username/password combination"))
+                            return@onErrorResumeNext Single.error(
+                                    Exception(resMan.getString(R.string.error_invalid_login)))
                         }
-                        return@onErrorResumeNext Single.error(handleServerErrors(it, "logging in"))
+                        return@onErrorResumeNext Single.error(
+                                handleServerErrors(it, "logging in"))
                     }
                     .doOnSuccess { saveLoggedInDetails(it) }
                     .toCompletable()
@@ -135,15 +140,21 @@ class Authenticator @Inject constructor(
                     }
                     return@flatMap Single.just(it)
                 }
-                .flatMap { authCl.verifyOTP(vl.userID, it.getIdentifier().type(), otp!!).toSingle({}) }
+                .flatMap {
+                    authCl.verifyOTP(vl.userID, it.getIdentifier().type(), otp!!)
+                            .toSingle({})
+                }
                 .onErrorResumeNext {
                     if (it is HttpException && it.code() == STATUS_UNAUTHORIZED) {
-                        return@onErrorResumeNext Single.error(Exception("The verification code is invalid or expired"))
+                        return@onErrorResumeNext Single.error(Exception(
+                                resMan.getString(R.string.error_invalid_or_expired_verif_code)))
                     }
                     if (it is HttpException && it.code() == STATUS_FORBIDDEN) {
-                        return@onErrorResumeNext Single.error(Exception("The verification code is used"))
+                        return@onErrorResumeNext Single.error(Exception(
+                                resMan.getString(R.string.error_used_verif_code)))
                     }
-                    return@onErrorResumeNext Single.error(handleServerErrors(it, "verifying OTP"))
+                    return@onErrorResumeNext Single.error(
+                            handleServerErrors(it, "verifying OTP"))
                 }
                 .toCompletable()
     }
@@ -158,7 +169,10 @@ class Authenticator @Inject constructor(
                 .take(tteSecs.toInt()) // no risk of integer overflow because cannot be greater than a minute
                 .map { Math.abs(it - tteSecs) } // invert to count from max downwards instead of from min upwards
                 // TODO extract string resource
-                .map { String.format("Resend in %02d:%02d", it % 3600 / 60, it % 60) }
+                .map {
+                    String.format("%s %02d:%02d", resMan.getString(R.string.resend_in),
+                            it % 3600 / 60, it % 60)
+                }
     }
 
     private fun logOut(): Completable = Completable.create({
@@ -171,7 +185,7 @@ class Authenticator @Inject constructor(
             Single.create<ValidationResult>({
                 val vr = validator.validateIdentifier(vl.value)
                 if (!vr.isValid) {
-                    it.onError(Exception("invalid email/phone number"))
+                    it.onError(Exception(resMan.getString(R.string.error_bad_email_or_phone)))
                 }
                 it.onSuccess(vr)
             })
@@ -180,13 +194,15 @@ class Authenticator @Inject constructor(
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
-            it.onError(Exception("User not logged in"))
+            // TODO have special error to force activity to navigate to login screen
+            it.onError(Exception(resMan.getString(R.string.please_log_in)))
         }
 
         val jwt = Gson().fromJson(jwtStr, JWT::class.java)
         if (jwt.isExpired()) {
             logOut().subscribe({
-                it.onError(Exception("Login has expired, log in again"))
+                // TODO have special error to force activity to navigate to login screen
+                it.onError(Exception(resMan.getString(R.string.please_log_in)))
             })
             return@create
         }
@@ -197,8 +213,10 @@ class Authenticator @Inject constructor(
     private fun handleNewIdentifierErrors(err: Throwable, frID: String, ctx: String): Throwable {
         if (err is HttpException) {
             when (err.code()) {
-                STATUS_BAD_REQUEST -> return Exception("$frID was invalid")
-                STATUS_CONFLICT -> return Exception("$frID is already in use")
+                STATUS_BAD_REQUEST ->
+                    return Exception(String.format(resMan.getString(R.string.ss_was_invalid), frID))
+                STATUS_CONFLICT ->
+                    return Exception(String.format(resMan.getString(R.string.ss_in_use), frID))
             }
         }
         return handleServerErrors(err, ctx)
@@ -207,14 +225,14 @@ class Authenticator @Inject constructor(
     private fun handleServerErrors(err: Throwable, ctx: String = ""): Throwable {
         if (err is HttpException && err.code() >= STATUS_SERVER_ERROR) {
             // TODO log WARN with error and ctx
-            return Exception("Something wicked happened, please try again", err)
+            return Exception(resMan.getString(R.string.error_something_wicked))
         }
         if (err is IOException) {
             // TODO log WARN with error and ctx
-            return Exception("Couldn't reach server, please try again")
+            return Exception(resMan.getString(R.string.error_couldnt_reach_server))
         }
         // TODO log ERROR with error and ctx
-        throw Exception("Something wicked happened, please try again")
+        throw Exception(resMan.getString(R.string.error_something_wicked))
     }
 
     private fun saveLoggedInDetails(usr: AuthUser) {

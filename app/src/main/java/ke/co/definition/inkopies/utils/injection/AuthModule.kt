@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
+import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.Authenticator
 import ke.co.definition.inkopies.model.auth.Validatable
@@ -61,7 +62,8 @@ class AuthModule {
 
     @Provides
     @Inject
-    fun provideAuthable(ls: LocalStorable, authCl: AuthClient, vldtr: Validatable): Authable = Authenticator(ls, authCl, vldtr)
+    fun provideAuthable(ls: LocalStorable, ac: AuthClient, v: Validatable, rm: ResourceManager)
+            : Authable = Authenticator(ls, ac, v, rm)
 
     companion object {
         const val NAME = "AuthModule"

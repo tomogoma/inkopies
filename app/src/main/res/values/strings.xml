@@ -30,4 +30,16 @@
     <string name="cancel">Cancel</string>
     <string name="title_activity_profile">Profile</string>
     <string name="avatar">Avatar</string>
+    <string name="email_label">Email:</string>
+    <string name="name_label">Name:</string>
+    <string name="phone_label">Phone:</string>
+    <string name="error_invalid_login">invalid login</string>
+    <string name="error_invalid_or_expired_verif_code">The verification code is invalid or expired</string>
+    <string name="error_used_verif_code">The verification code is used</string>
+    <string name="resend_in">Resend in</string>
+    <string name="please_log_in">Please log in</string>
+    <string name="ss_was_invalid">%s was invalid</string>
+    <string name="ss_in_use">%s is already in use</string>
+    <string name="error_something_wicked">Something wicked happened, please try again</string>
+    <string name="error_couldnt_reach_server">Couldn\'t reach server, please try again</string>
 </resources>
