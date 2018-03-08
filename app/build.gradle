@@ -87,4 +87,7 @@ dependencies {
 
     // libphonenumber
     compile 'io.michaelrocks:libphonenumber-android:8.9.0'
+
+    // android image cropper
+    compile 'com.theartofdev.edmodo:android-image-cropper:2.6.+'
 }

@@ -4,11 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/rootLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="ke.co.definition.inkopies.presentation.profile.ProfileActivity">
 
         <android.support.design.widget.AppBarLayout
+            android:id="@+id/toolbarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:theme="@style/AppTheme.AppBarOverlay">
@@ -22,7 +24,9 @@
 
         </android.support.design.widget.AppBarLayout>
 
-        <include layout="@layout/content_profile" />
+        <include
+            android:id="@+id/content"
+            layout="@layout/content_profile" />
 
     </android.support.design.widget.CoordinatorLayout>
 </layout>

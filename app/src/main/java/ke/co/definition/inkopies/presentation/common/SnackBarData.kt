@@ -32,5 +32,8 @@ class TextSnackBarData(
         private val text: String,
         private val duration: Int
 ) : SnackBarData() {
+
+    constructor(error: Throwable, duration: Int) : this(error.message ?: "", duration)
+
     override fun show(v: View) = show(Snackbar.make(v, text, duration))
 }

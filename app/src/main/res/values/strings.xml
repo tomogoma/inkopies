@@ -50,4 +50,13 @@
     <string name="link_facebook">Link facebook</string>
     <string name="edit_general_user_details">Edit general user details</string>
     <string name="gender_label">Gender:</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="profile_photo_title">Profile Photo</string>
+    <string name="name">Name</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="gender_label">Gender:</string>
+    <string name="updating_profile">Updating profile</string>
 </resources>
