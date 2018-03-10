@@ -10,17 +10,17 @@
 
         <variable
             name="vm"
-            type="ke.co.definition.inkopies.presentation.verification.VerificationViewModel" />
+            type="ke.co.definition.inkopies.presentation.verification.UpdateIdentifierViewModel" />
     </data>
 
     <FrameLayout
         android:id="@+id/layoutRoot"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/contentRoot"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
@@ -49,7 +49,7 @@
                 android:paddingBottom="@dimen/space_small"
                 android:paddingLeft="@dimen/space_small"
                 android:paddingRight="@dimen/space_small"
-                app:error="@{vm.updatedIdentifierErr}"
+                app:error="@{vm.identifierError}"
                 app:layout_constraintBottom_toTopOf="@id/cancel"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -64,7 +64,7 @@
                     android:imeOptions="actionDone"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
-                    android:text="@={vm.updatedIdentifier}" />
+                    android:text="@={vm.identifier}" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -101,8 +101,8 @@
         <include
             android:id="@+id/progressArea"
             layout="@layout/progress_area"
-            android:visibility="@{vm.progress.show ? View.VISIBLE : View.GONE}"
-            bind:text="@{vm.progress.text}"
+            android:visibility="@{vm.progressOverlay.show ? View.VISIBLE : View.GONE}"
+            bind:text="@{vm.progressOverlay.text}"
             tools:visibility="gone" />
     </FrameLayout>
 </layout>
