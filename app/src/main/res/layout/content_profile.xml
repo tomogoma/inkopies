@@ -66,11 +66,10 @@
                     app:layout_constraintStart_toStartOf="@id/avatar"
                     app:layout_constraintTop_toTopOf="@id/avatar" />
 
-                <ImageButton
+                <ImageView
                     android:id="@+id/cameraButton"
-                    style="@style/BorderLessButton"
                     android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:contentDescription="@string/edit_general_user_details"
                     android:src="@drawable/ic_camera_dark"
                     android:visibility="@{vm.progressProfImg ? View.GONE : View.VISIBLE}"
