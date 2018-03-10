@@ -49,7 +49,6 @@
     <string name="link_google">Link google</string>
     <string name="link_facebook">Link facebook</string>
     <string name="edit_general_user_details">Edit general user details</string>
-    <string name="gender_label">Gender:</string>
     <string name="camera">Camera</string>
     <string name="gallery">Gallery</string>
     <string name="profile_photo_title">Profile Photo</string>
@@ -59,4 +58,6 @@
     <string name="other">Other</string>
     <string name="gender_label">Gender:</string>
     <string name="updating_profile">Updating profile</string>
+    <string name="please_install_camera">Please install a camera app</string>
+    <string name="file_provider_authorities">com.example.android.fileprovider</string>
 </resources>

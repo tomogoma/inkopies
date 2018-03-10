@@ -88,6 +88,9 @@ dependencies {
     // libphonenumber
     compile 'io.michaelrocks:libphonenumber-android:8.9.0'
 
-    // android image cropper
-    compile 'com.theartofdev.edmodo:android-image-cropper:2.6.+'
+    // glide
+    implementation ("com.github.bumptech.glide:glide:4.6.1") {
+        exclude group: "com.android.support"
+    }
+    kapt 'com.github.bumptech.glide:compiler:4.6.1'
 }

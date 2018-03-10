@@ -8,5 +8,7 @@ import rx.Single
  */
 interface ProfileManager {
     fun getUser(): Single<UserProfile>
-    fun updateUser(name: String, gender: String, imgURL: String): Single<UserProfile>
+    fun updateGeneral(name: String, gender: Gender): Single<UserProfile>
+    fun uploadProfilePic(uri: String): Single<UserProfile>
+    fun updateIdentifier(identifier: String): Single<UserProfile>
 }

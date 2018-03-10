@@ -10,17 +10,17 @@
 
         <variable
             name="vm"
-            type="ke.co.definition.inkopies.presentation.profile.ProfileViewModel" />
+            type="ke.co.definition.inkopies.presentation.profile.GeneralProfileViewModel" />
     </data>
 
     <FrameLayout
         android:id="@+id/layoutRoot"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/contentRoot"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
@@ -31,10 +31,8 @@
                 android:id="@+id/nameLayout"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/space_small"
-                android:paddingLeft="@dimen/space_small"
-                android:paddingRight="@dimen/space_small"
-                app:error="@{vm.updatedIdentifierErr}"
+                android:layout_marginBottom="@dimen/space_small"
+                app:error="@{vm.nameError}"
                 app:layout_constraintBottom_toTopOf="@id/gender"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +45,7 @@
                     android:hint="@string/name"
                     android:inputType="textCapWords"
                     android:maxLines="1"
-                    android:text="@={vm.updatedIdentifier}" />
+                    android:text="@={vm.name}" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -55,9 +53,7 @@
                 android:id="@+id/gender"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/space_small"
-                android:paddingLeft="@dimen/space_small"
-                android:paddingRight="@dimen/space_small"
+                android:layout_marginBottom="@dimen/space_small"
                 app:layout_constraintBottom_toTopOf="@+id/cancel"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -89,15 +85,21 @@
                     android:layout_height="wrap_content"
                     android:text="@string/other" />
 
+                <TextView
+                    android:id="@+id/genderError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@{vm.genderError}"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:visibility="@{vm.genderError.isEmpty() ? View.VISIBLE : View.GONE}"
+                    tools:text="@string/error_required_field" />
+
             </RadioGroup>
 
             <Button
                 android:id="@+id/cancel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/space_small"
-                android:paddingLeft="@dimen/space_small"
-                android:paddingRight="@dimen/space_small"
                 android:text="@string/cancel"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/submit"
@@ -109,9 +111,6 @@
                 android:id="@+id/submit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/space_small"
-                android:paddingLeft="@dimen/space_small"
-                android:paddingRight="@dimen/space_small"
                 android:text="@string/submit"
                 app:layout_constraintBaseline_toBaselineOf="@id/cancel"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -124,8 +123,8 @@
         <include
             android:id="@+id/progressArea"
             layout="@layout/progress_area"
-            android:visibility="@{vm.progress.show ? View.VISIBLE : View.GONE}"
-            bind:text="@{vm.progress.text}"
+            android:visibility="@{vm.progressOverlay.show ? View.VISIBLE : View.GONE}"
+            bind:text="@{vm.progressOverlay.text}"
             tools:visibility="gone" />
     </FrameLayout>
 </layout>

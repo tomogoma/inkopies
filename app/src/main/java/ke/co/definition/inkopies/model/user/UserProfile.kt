@@ -7,7 +7,14 @@ import ke.co.definition.inkopies.model.auth.AuthUser
  * On 06/03/18.
  */
 data class UserProfile(
-        val auth: AuthUser,
+        @Transient val auth: AuthUser,
         val name: String,
+        val gender: Gender,
         val imageURL: String
-)
+) {
+    fun getHumanGender(): String = gender.name.toLowerCase().capitalize()
+}
+
+enum class Gender {
+    MALE, FEMALE, OTHER
+}

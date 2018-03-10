@@ -210,6 +210,27 @@ class Authenticator @Inject constructor(
         it.onSuccess(jwt)
     })
 
+    override fun getUser(): Single<AuthUser> =
+            isLoggedIn().flatMap { isLoggedIn: Boolean ->
+
+                if (!isLoggedIn) {
+                    return@flatMap Single.error<AuthUser>(
+                            Exception(resMan.getString(R.string.please_log_in)))
+                }
+
+                return@flatMap Single.create<AuthUser>({
+
+                    val usrStr = localStore.fetch(KEY_AUTHED_USER)
+                    if (usrStr.isEmpty()) {
+                        // TODO have special error to force activity to navigate to login screen
+                        it.onError(Exception(resMan.getString(R.string.please_log_in)))
+                    }
+
+                    val usr = Gson().fromJson(usrStr, AuthUser::class.java)
+                    it.onSuccess(usr)
+                })
+            }
+
     private fun handleNewIdentifierErrors(err: Throwable, frID: String, ctx: String): Throwable {
         if (err is HttpException) {
             when (err.code()) {
