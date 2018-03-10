@@ -12,7 +12,7 @@ import ke.co.definition.inkopies.databinding.FragmentLoginOptionsBinding
 class LoginOptionsFragment : Fragment() {
 
 
-    override fun onCreateView(i: LayoutInflater?, container: ViewGroup?,
+    override fun onCreateView(i: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val binding = DataBindingUtil.inflate<FragmentLoginOptionsBinding>(i,
                 R.layout.fragment_login_options, container, false)

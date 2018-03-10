@@ -14,7 +14,7 @@ import ke.co.definition.inkopies.databinding.FragmentManualLoginBinding
 
 class ManualLoginFragment : Fragment() {
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val binding = DataBindingUtil.inflate<FragmentManualLoginBinding>(inflater,
                 R.layout.fragment_manual_login, container, false)
@@ -29,10 +29,10 @@ class ManualLoginFragment : Fragment() {
     }
 
     private fun observeView(b: FragmentManualLoginBinding) {
-        b.submit.setOnClickListener({ b.vm!!.logInManual(context) })
+        b.submit.setOnClickListener({ b.vm!!.logInManual(context ?: return@setOnClickListener) })
         b.manualLoginInputs!!.password.setOnEditorActionListener { _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
-                b.vm!!.logInManual(context)
+                b.vm!!.logInManual(context ?: return@setOnEditorActionListener true)
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false

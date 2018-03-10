@@ -17,7 +17,7 @@ import ke.co.definition.inkopies.databinding.FragmentRegisterOptionsBinding
 class RegisterOptionsFragment : Fragment() {
 
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val binding = DataBindingUtil.inflate<FragmentRegisterOptionsBinding>(inflater,
                 R.layout.fragment_register_options, container, false)
