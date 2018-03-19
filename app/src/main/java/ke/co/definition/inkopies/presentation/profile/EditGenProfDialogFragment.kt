@@ -37,6 +37,7 @@ class EditGenProfDialogFragment : DialogFragment() {
         val gpvmFactory = (activity.application as App).appComponent.generalProfileVMFactory()
         val viewModel = ViewModelProviders.of(this, gpvmFactory)
                 .get(GeneralProfileViewModel::class.java)
+        views.vm = viewModel
 
         observeViewModel(viewModel, views)
         observeViews(views, viewModel)
@@ -69,6 +70,7 @@ class EditGenProfDialogFragment : DialogFragment() {
     private fun observeViews(vs: DialogEditGenProfileBinding, vm: GeneralProfileViewModel) {
         vs.cancel.setOnClickListener { dismiss() }
         vs.submit.setOnClickListener { onSubmit(vm, vs) }
+        vs.gender.setOnCheckedChangeListener { _, _ -> vm.onGenderSelected() }
     }
 
     private fun observeViewModel(vm: GeneralProfileViewModel, vs: DialogEditGenProfileBinding) {

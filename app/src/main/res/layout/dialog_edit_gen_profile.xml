@@ -90,8 +90,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@{vm.genderError}"
-                    android:textColor="@color/colorPrimaryDark"
-                    android:visibility="@{vm.genderError.isEmpty() ? View.VISIBLE : View.GONE}"
+                    android:textColor="@color/colorError"
+                    android:visibility="@{vm.genderError.isEmpty() ? View.GONE : View.VISIBLE}"
                     tools:text="@string/error_required_field" />
 
             </RadioGroup>

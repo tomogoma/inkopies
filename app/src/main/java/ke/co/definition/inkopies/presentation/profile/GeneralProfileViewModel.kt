@@ -2,6 +2,7 @@ package ke.co.definition.inkopies.presentation.profile
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
+import android.databinding.Observable
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
@@ -36,6 +37,19 @@ class GeneralProfileViewModel @Inject constructor(
     val nameError: ObservableField<String> = ObservableField()
     val genderError: ObservableField<String> = ObservableField()
     val progressOverlay: ObservableField<ProgressData> = ObservableField()
+
+    init {
+        name.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(p0: Observable?, p1: Int) {
+                val err = nameError.get() ?: return
+                if (err == "") return else nameError.set("")
+            }
+        })
+    }
+
+    fun onGenderSelected() {
+        genderError.set("")
+    }
 
     fun onSubmit(gender: Gender?) {
         if (!validateGeneralProfile(gender)) {
