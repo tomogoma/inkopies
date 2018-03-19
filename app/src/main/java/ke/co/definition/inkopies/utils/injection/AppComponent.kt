@@ -13,7 +13,13 @@ import javax.inject.Singleton
  * On 28/02/18.
  */
 @Singleton
-@Component(modules = [AppModule::class, Dagger2Module::class, AuthModule::class, UserModule::class])
+@Component(modules = [
+    AppModule::class,
+    Dagger2Module::class,
+    AuthModule::class,
+    UserModule::class,
+    ImageModule::class
+])
 interface AppComponent {
     fun loginVMFactory(): LoginViewModel.Factory
     fun verificationVMFactory(): VerificationViewModel.Factory
