@@ -1,4 +1,4 @@
-package ke.co.definition.inkopies.repos.ms
+package ke.co.definition.inkopies.repos.ms.auth
 
 import ke.co.definition.inkopies.model.auth.AuthUser
 import ke.co.definition.inkopies.model.auth.Identifier

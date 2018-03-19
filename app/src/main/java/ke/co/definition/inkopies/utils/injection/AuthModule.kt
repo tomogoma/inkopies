@@ -1,7 +1,6 @@
 package ke.co.definition.inkopies.utils.injection
 
 import android.app.Application
-import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
@@ -13,11 +12,9 @@ import ke.co.definition.inkopies.model.auth.Validator
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.local.LocalStore
 import ke.co.definition.inkopies.repos.ms.AUTH_MS_ADDRESS
-import ke.co.definition.inkopies.repos.ms.AuthClient
-import ke.co.definition.inkopies.repos.ms.AuthClientImpl
+import ke.co.definition.inkopies.repos.ms.auth.AuthClient
+import ke.co.definition.inkopies.repos.ms.auth.RetrofitAuthClient
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -31,17 +28,12 @@ import javax.inject.Singleton
 class AuthModule {
 
     @Provides
-    @Named(NAME)
-    fun provideRetrofit(): Retrofit {
-        val gson = GsonBuilder()
-                .setLenient()
-                .create()
-        return Retrofit.Builder()
-                .baseUrl(AUTH_MS_ADDRESS)
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build()
-    }
+    @Named(MS)
+    fun provideRetrofit(): Retrofit = retrofitFactory(AUTH_MS_ADDRESS)
+
+    @Provides
+    @Inject
+    fun provideAuthClient(@Named(MS) rf: Retrofit): AuthClient = RetrofitAuthClient(rf)
 
     @Provides
     @Inject
@@ -54,10 +46,6 @@ class AuthModule {
 
     @Provides
     @Inject
-    fun provideAuthClient(@Named(NAME) rf: Retrofit): AuthClient = AuthClientImpl(rf)
-
-    @Provides
-    @Inject
     fun provideLocalStorable(app: Application): LocalStorable = LocalStore(app)
 
     @Provides
@@ -66,6 +54,6 @@ class AuthModule {
             : Authable = Authenticator(ls, ac, v, rm)
 
     companion object {
-        const val NAME = "AuthModule"
+        const val MS = "authms"
     }
 }

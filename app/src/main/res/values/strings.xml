@@ -60,4 +60,6 @@
     <string name="updating_profile">Updating profile</string>
     <string name="please_install_camera">Please install a camera app</string>
     <string name="file_provider_authorities">com.example.android.fileprovider</string>
+    <string name="forbidden_res_access">You do not have access to this resource</string>
+    <string name="log_in_again">Please log in again</string>
 </resources>

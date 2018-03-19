@@ -5,11 +5,11 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.ms.*
+import ke.co.definition.inkopies.repos.ms.auth.AuthClient
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
 import rx.Observable
 import rx.Single
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -91,7 +91,7 @@ class Authenticator @Inject constructor(
                                     Exception(resMan.getString(R.string.error_invalid_login)))
                         }
                         return@onErrorResumeNext Single.error(
-                                handleServerErrors(it, "logging in"))
+                                handleServerErrors(resMan, it, "logging in"))
                     }
                     .doOnSuccess { saveLoggedInDetails(it) }
                     .toCompletable()
@@ -100,7 +100,7 @@ class Authenticator @Inject constructor(
             validateVerifLogin(vl).flatMap { vr: ValidationResult ->
                 getJWT().flatMap {
                     authCl.sendVerifyOTP(it.value, vr.getIdentifier()).onErrorResumeNext {
-                        Single.error(handleServerErrors(it, "logging in"))
+                        Single.error(handleServerErrors(resMan, it, "logging in"))
                     }
                 }
             }
@@ -111,7 +111,7 @@ class Authenticator @Inject constructor(
                 getJWT().flatMap { jwt: JWT ->
                     authCl.fetchUserDetails(jwt.value, jwt.info.userID)
                             .onErrorResumeNext {
-                                Single.error(handleServerErrors(it, "logging in"))
+                                Single.error(handleServerErrors(resMan, it, "logging in"))
                             }
                             .doOnSuccess {
                                 upsertAuthUser(it)
@@ -154,7 +154,7 @@ class Authenticator @Inject constructor(
                                 resMan.getString(R.string.error_used_verif_code)))
                     }
                     return@onErrorResumeNext Single.error(
-                            handleServerErrors(it, "verifying OTP"))
+                            handleServerErrors(resMan, it, "verifying OTP"))
                 }
                 .toCompletable()
     }
@@ -240,20 +240,7 @@ class Authenticator @Inject constructor(
                     return Exception(String.format(resMan.getString(R.string.ss_in_use), frID))
             }
         }
-        return handleServerErrors(err, ctx)
-    }
-
-    private fun handleServerErrors(err: Throwable, ctx: String = ""): Throwable {
-        if (err is HttpException && err.code() >= STATUS_SERVER_ERROR) {
-            // TODO log WARN with error and ctx
-            return Exception(resMan.getString(R.string.error_something_wicked))
-        }
-        if (err is IOException) {
-            // TODO log WARN with error and ctx
-            return Exception(resMan.getString(R.string.error_couldnt_reach_server))
-        }
-        // TODO log ERROR with error and ctx
-        throw Exception(resMan.getString(R.string.error_something_wicked))
+        return handleServerErrors(resMan, err, ctx)
     }
 
     private fun saveLoggedInDetails(usr: AuthUser) {
