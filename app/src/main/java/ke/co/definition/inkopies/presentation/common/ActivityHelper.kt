@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.widget.ImageView
+import com.bumptech.glide.load.model.GlideUrl
 import ke.co.definition.inkopies.R
 
 
@@ -36,16 +37,17 @@ fun AppCompatActivity.getProgressBarIndeterminate(): Drawable? {
     }
 }
 
-fun AppCompatActivity.loadProfilePic(url: String, v: ImageView) {
+fun AppCompatActivity.loadProfilePic(url: GlideUrl, v: ImageView) {
     GlideApp
             .with(this)
             .load(url)
             .circleCrop()
             .placeholder(getProgressBarIndeterminate())
+            .error(R.drawable.avatar)
             .into(v)
 }
 
-fun AppCompatActivity.loadPic(url: String, v: ImageView) {
+fun AppCompatActivity.loadPic(url: GlideUrl, v: ImageView) {
     GlideApp
             .with(this)
             .load(url)

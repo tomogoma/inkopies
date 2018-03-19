@@ -1,5 +1,7 @@
 package ke.co.definition.inkopies.model.auth
 
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.google.gson.Gson
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
@@ -172,6 +174,16 @@ class Authenticator @Inject constructor(
                 .map {
                     String.format("%s %02d:%02d", resMan.getString(R.string.resend_in),
                             it % 3600 / 60, it % 60)
+                }
+    }
+
+    override fun glideURL(url: String): Single<GlideUrl> {
+        return getUser()
+                .flatMap {
+                    Single.just(GlideUrl(url, LazyHeaders.Builder()
+                            .addHeader("x-api-key", API_KEY)
+                            .addHeader("Authorization", bearerToken(it.token))
+                            .build()))
                 }
     }
 

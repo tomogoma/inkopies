@@ -6,9 +6,11 @@ import android.content.Intent
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import com.bumptech.glide.load.model.GlideUrl
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.FileHelper
 import ke.co.definition.inkopies.model.ResourceManager
+import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.user.ProfileManager
 import ke.co.definition.inkopies.model.user.UserProfile
 import ke.co.definition.inkopies.presentation.common.ResIDSnackBarData
@@ -29,14 +31,15 @@ class ProfileViewModel @Inject constructor(
         private val profMngr: ProfileManager,
         private val resMngr: ResourceManager,
         private val fileHelper: FileHelper,
+        private val authCl: Authable,
         @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
 
-    val profileImgURL = SingleLiveEvent<String>()
+    val profileImgURL = SingleLiveEvent<GlideUrl>()
     val snackbarData = SingleLiveEvent<SnackBarData>()
     val cropImage = SingleLiveEvent<Boolean>()
-    val loadEnlargedPic = SingleLiveEvent<String>()
+    val loadEnlargedPic = SingleLiveEvent<GlideUrl>()
     val takePhotoEvent = SingleLiveEvent<Pair<Int, File>>()
 
     val userProfile = ObservableField<UserProfile>()
@@ -44,7 +47,7 @@ class ProfileViewModel @Inject constructor(
     val fbLinkText = ObservableField<String>()
     val progressTopBar = ObservableField<Boolean>()
     val progressProfImg = ObservableField<Boolean>()
-    val enlargePPic = ObservableField<Boolean>()
+    val enlargePPic = ObservableField<Boolean>(false)
 
     fun start() {
         profMngr.getUser()
@@ -84,9 +87,7 @@ class ProfileViewModel @Inject constructor(
                         Snackbar.LENGTH_LONG)
                 return true
             }
-            val currUP = userProfile.get() ?: return true
             val newPPicURL = takePhotoEvent.value?.second!!.absolutePath ?: return false
-            onUserProfileLoaded(UserProfile(currUP.auth, currUP.name, currUP.gender, newPPicURL))
             uploadProfileImage(newPPicURL)
             return true
         }
@@ -97,10 +98,7 @@ class ProfileViewModel @Inject constructor(
                         Snackbar.LENGTH_LONG)
                 return true
             }
-            val currUP = userProfile.get() ?: return true
             val newPPicURL = (result?.data ?: return false).toString()
-            onUserProfileLoaded(
-                    UserProfile(currUP.auth, currUP.name, currUP.gender, newPPicURL))
             uploadProfileImage(newPPicURL)
             return true
         }
@@ -110,11 +108,14 @@ class ProfileViewModel @Inject constructor(
 
     fun onEnlargePPic() {
         val up = userProfile.get()
-        if (up == null || up.imageURL.isEmpty()) {
+        if (up == null || up.avatarURL.isEmpty()) {
             return
         }
         enlargePPic.set(true)
-        loadEnlargedPic.value = up.imageURL
+        authCl.glideURL(up.avatarURL)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe({ loadEnlargedPic.value = it })
     }
 
     fun onBackPressed(): Boolean {
@@ -136,11 +137,16 @@ class ProfileViewModel @Inject constructor(
                 })
     }
 
-    private fun onUserProfileLoaded(it: UserProfile) {
-        userProfile.set(it)
-        profileImgURL.value = it.imageURL
+    private fun onUserProfileLoaded(up: UserProfile) {
+        userProfile.set(up)
         googleLinkText.set(resMngr.getString(R.string.link_google))
         fbLinkText.set(resMngr.getString(R.string.link_facebook))
+        authCl.glideURL(up.avatarURL)
+                .doOnSubscribe { progressProfImg.set(true) }
+                .doOnUnsubscribe { progressProfImg.set(false) }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe({ profileImgURL.value = it })
     }
 
     companion object {
@@ -152,12 +158,14 @@ class ProfileViewModel @Inject constructor(
             private val profMngr: ProfileManager,
             private val resMngr: ResourceManager,
             private val fileHelper: FileHelper,
+            private val authCl: Authable,
             @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
             @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            return ProfileViewModel(profMngr, resMngr, fileHelper, subscribeOnScheduler, observeOnScheduler) as T
+            return ProfileViewModel(profMngr, resMngr, fileHelper, authCl, subscribeOnScheduler,
+                    observeOnScheduler) as T
         }
 
     }

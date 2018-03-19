@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.model.auth
 
+import com.bumptech.glide.load.model.GlideUrl
 import rx.Completable
 import rx.Observable
 import rx.Single
@@ -18,4 +19,5 @@ interface Authable {
     fun updateIdentifier(identifier: String): Single<VerifLogin>
     fun resendInterval(otps: OTPStatus?, intervalSecs: Long): Observable<String>
     fun getUser(): Single<AuthUser>
+    fun glideURL(url: String): Single<GlideUrl>
 }
