@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.widget.ImageView
 import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.RequestListener
 import ke.co.definition.inkopies.R
 
 
@@ -26,33 +27,22 @@ fun AppCompatActivity.replaceFrag(where: Int, frag: Fragment) {
             .commit()
 }
 
-fun AppCompatActivity.getProgressBarIndeterminate(): Drawable? {
-    val attrs = intArrayOf(android.R.attr.indeterminateDrawable)
-    val attrsIndeterminateDrawableIndex = 0
-    val a = obtainStyledAttributes(android.R.style.Widget_ProgressBar, attrs)
-    try {
-        return a.getDrawable(attrsIndeterminateDrawableIndex)
-    } finally {
-        a.recycle()
-    }
-}
-
-fun AppCompatActivity.loadProfilePic(url: GlideUrl, v: ImageView) {
+fun AppCompatActivity.loadProfilePic(url: GlideUrl, v: ImageView, l: RequestListener<Drawable>?) {
     GlideApp
             .with(this)
             .load(url)
+            .listener(l)
             .circleCrop()
-            .placeholder(getProgressBarIndeterminate())
             .error(R.drawable.avatar)
             .into(v)
 }
 
-fun AppCompatActivity.loadPic(url: GlideUrl, v: ImageView) {
+fun AppCompatActivity.loadPic(url: GlideUrl, v: ImageView, l: RequestListener<Drawable>?) {
     GlideApp
             .with(this)
             .load(url)
+            .listener(l)
             .centerCrop()
-            .placeholder(getProgressBarIndeterminate())
             .error(R.drawable.avatar)
             .into(v)
 }

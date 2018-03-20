@@ -20,6 +20,7 @@ import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.model.user.UserProfile
 import ke.co.definition.inkopies.presentation.common.loadPic
 import ke.co.definition.inkopies.presentation.common.loadProfilePic
+import ke.co.definition.inkopies.presentation.common.newRequestListener
 import ke.co.definition.inkopies.presentation.verification.ChangeIDDialogFrag
 import kotlinx.android.synthetic.main.activity_profile.*
 import java.io.File
@@ -81,12 +82,14 @@ class ProfileActivity : AppCompatActivity() {
     private fun observeViewModel() {
 
         viewModel.profileImgURL.observe(this, Observer {
-            loadProfilePic(it ?: return@Observer, views.content!!.avatar)
+            viewModel.progressProfImg.set(true)
+            loadProfilePic(it ?: return@Observer, views.content!!.avatar,
+                    newRequestListener { viewModel.progressProfImg.set(false) })
         })
         viewModel.snackbarData.observe(this, Observer { it?.show(views.rootLayout) })
         viewModel.cropImage.observe(this, Observer { TODO() })
         viewModel.loadEnlargedPic.observe(this, Observer {
-            loadPic(it ?: return@Observer, views.content!!.bigAvatar)
+            loadPic(it ?: return@Observer, views.content!!.bigAvatar, null)
         })
         viewModel.takePhotoEvent.observe(this, Observer {
             openCameraCapture(it ?: return@Observer)
