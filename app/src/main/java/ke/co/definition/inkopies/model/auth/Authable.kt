@@ -20,4 +20,5 @@ interface Authable {
     fun resendInterval(otps: OTPStatus?, intervalSecs: Long): Observable<String>
     fun getUser(): Single<AuthUser>
     fun glideURL(url: String): Single<GlideUrl>
+    fun getJWT(): Single<JWT>
 }

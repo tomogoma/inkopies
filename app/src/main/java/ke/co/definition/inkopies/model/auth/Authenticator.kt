@@ -178,49 +178,14 @@ class Authenticator @Inject constructor(
     }
 
     override fun glideURL(url: String): Single<GlideUrl> {
-        return getUser()
+        return getJWT()
                 .flatMap {
                     Single.just(GlideUrl(url, LazyHeaders.Builder()
                             .addHeader("x-api-key", API_KEY)
-                            .addHeader("Authorization", bearerToken(it.token))
+                            .addHeader("Authorization", bearerToken(it.value))
                             .build()))
                 }
     }
-
-    private fun logOut(): Completable = Completable.create({
-        localStore.delete(KEY_JWT)
-        localStore.delete(KEY_AUTHED_USER)
-        it.onCompleted()
-    })
-
-    private fun validateVerifLogin(vl: VerifLogin): Single<ValidationResult> =
-            Single.create<ValidationResult>({
-                val vr = validator.validateIdentifier(vl.value)
-                if (!vr.isValid) {
-                    it.onError(Exception(resMan.getString(R.string.error_bad_email_or_phone)))
-                }
-                it.onSuccess(vr)
-            })
-
-    private fun getJWT(): Single<JWT> = Single.create({
-
-        val jwtStr = localStore.fetch(KEY_JWT)
-        if (jwtStr.isEmpty()) {
-            // TODO have special error to force activity to navigate to login screen
-            it.onError(Exception(resMan.getString(R.string.please_log_in)))
-        }
-
-        val jwt = Gson().fromJson(jwtStr, JWT::class.java)
-        if (jwt.isExpired()) {
-            logOut().subscribe({
-                // TODO have special error to force activity to navigate to login screen
-                it.onError(Exception(resMan.getString(R.string.please_log_in)))
-            })
-            return@create
-        }
-
-        it.onSuccess(jwt)
-    })
 
     override fun getUser(): Single<AuthUser> =
             isLoggedIn().flatMap { isLoggedIn: Boolean ->
@@ -242,6 +207,41 @@ class Authenticator @Inject constructor(
                     it.onSuccess(usr)
                 })
             }
+
+    override fun getJWT(): Single<JWT> = Single.create({
+
+        val jwtStr = localStore.fetch(KEY_JWT)
+        if (jwtStr.isEmpty()) {
+            // TODO have special error to force activity to navigate to login screen
+            it.onError(Exception(resMan.getString(R.string.please_log_in)))
+        }
+
+        val jwt = Gson().fromJson(jwtStr, JWT::class.java)
+        if (jwt.isExpired()) {
+            logOut().subscribe({
+                // TODO have special error to force activity to navigate to login screen
+                it.onError(Exception(resMan.getString(R.string.please_log_in)))
+            })
+            return@create
+        }
+
+        it.onSuccess(jwt)
+    })
+
+    private fun logOut(): Completable = Completable.create({
+        localStore.delete(KEY_JWT)
+        localStore.delete(KEY_AUTHED_USER)
+        it.onCompleted()
+    })
+
+    private fun validateVerifLogin(vl: VerifLogin): Single<ValidationResult> =
+            Single.create<ValidationResult>({
+                val vr = validator.validateIdentifier(vl.value)
+                if (!vr.isValid) {
+                    it.onError(Exception(resMan.getString(R.string.error_bad_email_or_phone)))
+                }
+                it.onSuccess(vr)
+            })
 
     private fun handleNewIdentifierErrors(err: Throwable, frID: String, ctx: String): Throwable {
         if (err is HttpException) {
