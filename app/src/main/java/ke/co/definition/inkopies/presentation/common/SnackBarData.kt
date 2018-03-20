@@ -9,15 +9,16 @@ import ke.co.definition.inkopies.R
  * On 28/02/18.
  */
 sealed class SnackBarData {
-    abstract fun show(v: View)
+    abstract fun show(v: View): Snackbar
 
-    internal fun show(sb: Snackbar) {
+    internal fun show(sb: Snackbar): Snackbar {
         if (sb.duration == Snackbar.LENGTH_INDEFINITE) {
             sb.setAction(R.string.dismiss, { sb.dismiss() })
             sb.show()
         } else {
             sb.show()
         }
+        return sb
     }
 }
 

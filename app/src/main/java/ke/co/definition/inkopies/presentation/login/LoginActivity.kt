@@ -7,6 +7,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
@@ -19,6 +20,7 @@ import ke.co.definition.inkopies.presentation.verification.VerifyActivity
 
 class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
+    private var snackBar: Snackbar? = null
     private lateinit var loginVM: LoginViewModel
     private val liveDataObservations: MutableList<LiveData<Any>> = mutableListOf()
 
@@ -52,20 +54,28 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    override fun onBackPressed() {
+        snackBar?.dismiss()
+        super.onBackPressed()
+    }
+
     override fun onDestroy() {
         liveDataObservations.forEach { it.removeObservers(this) }
         super.onDestroy()
     }
 
     override fun openRegisterOptsFrag() {
+        snackBar?.dismiss()
         replaceFragBackStack(R.id.frame, RegisterOptionsFragment())
     }
 
     override fun openManualLoginFrag() {
+        snackBar?.dismiss()
         replaceFragBackStack(R.id.frame, ManualLoginFragment())
     }
 
     override fun openManualRegisterFrag() {
+        snackBar?.dismiss()
         replaceFragBackStack(R.id.frame, ManualRegisterFragment())
     }
 
@@ -81,7 +91,7 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
                 openRegisterOptsFrag()
             }
         })
-        loginVM.snackBarData.observe(this, Observer { it?.show(binding.frame) })
+        loginVM.snackBarData.observe(this, Observer { snackBar = it?.show(binding.frame) })
 
         @Suppress("UNCHECKED_CAST")
         liveDataObservations.addAll(listOf(
@@ -92,6 +102,7 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
     }
 
     private fun openLoginOptsFrag() {
+        snackBar?.dismiss()
         replaceFrag(binding.frame.id, LoginOptionsFragment())
     }
 
