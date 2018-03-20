@@ -7,8 +7,8 @@ import ke.co.definition.inkopies.model.auth.JWT
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
 import ke.co.definition.inkopies.repos.ms.handleAuthErrors
 import ke.co.definition.inkopies.repos.ms.image.ImageClient
-import ke.co.definition.inkopies.repos.ms.users.MSUserProfile
 import ke.co.definition.inkopies.repos.ms.users.UsersClient
+import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
 import rx.Single
@@ -25,8 +25,13 @@ class ProfileManagerImpl @Inject constructor(
         private val resMan: ResourceManager,
         private val auth: Authable,
         private val usersCl: UsersClient,
-        private val imageCl: ImageClient
+        private val imageCl: ImageClient,
+        private val logger: Logger
 ) : ProfileManager {
+
+    init {
+        logger.setTag(ProfileManagerImpl::class.java.name)
+    }
 
     override fun getUser(): Single<UserProfile> {
         var authUser: AuthUser? = null
@@ -36,9 +41,10 @@ class ProfileManagerImpl @Inject constructor(
                 .flatMap { usersCl.getUser(it.value, it.info.userID) }
                 .onErrorResumeNext {
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
-                        return@onErrorResumeNext Single.just(MSUserProfile())
+                        return@onErrorResumeNext Single.just(GenUserProfile())
                     }
-                    return@onErrorResumeNext Single.error(handleAuthErrors(resMan, it, "get user"))
+                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, resMan, it,
+                            "get user"))
                 }
                 .flatMap { Single.just(UserProfile(authUser!!, it)) }
     }
@@ -50,7 +56,10 @@ class ProfileManagerImpl @Inject constructor(
                 .map { authUsr = it }
                 .flatMap { auth.getJWT() }
                 .flatMap { usersCl.updateUser(it.value, it.info.userID, name, gender) }
-                .onErrorResumeNext { Single.error(handleAuthErrors(resMan, it, "update general profile")) }
+                .onErrorResumeNext {
+                    Single.error(handleAuthErrors(logger, resMan, it,
+                            "update general profile"))
+                }
                 .flatMap { Single.just(UserProfile(authUsr!!, it)) }
     }
 
@@ -68,9 +77,15 @@ class ProfileManagerImpl @Inject constructor(
                 .map { authUsr = it }
                 .flatMap { auth.getJWT() }
                 .flatMap { jwt = it;imageCl.uploadProfilePic(it.value, PROFILE_IMG_FOLDER, uri) }
-                .onErrorResumeNext { Single.error(handleAuthErrors(resMan, it, "upload profile picture")) }
+                .onErrorResumeNext {
+                    Single.error(handleAuthErrors(logger, resMan, it,
+                            "upload profile picture"))
+                }
                 .flatMap { usersCl.updateAvatar(jwt!!.value, jwt!!.info.userID, it) }
-                .onErrorResumeNext { Single.error(handleAuthErrors(resMan, it, "update user's avatar URL")) }
+                .onErrorResumeNext {
+                    Single.error(handleAuthErrors(logger, resMan, it,
+                            "update user's avatar URL"))
+                }
                 .flatMap { Single.just(UserProfile(authUsr!!, it)) }
     }
 

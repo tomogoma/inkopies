@@ -18,7 +18,8 @@ import javax.inject.Singleton
     Dagger2Module::class,
     AuthModule::class,
     UserModule::class,
-    ImageModule::class
+    ImageModule::class,
+    LoggingModule::class
 ])
 interface AppComponent {
     fun loginVMFactory(): LoginViewModel.Factory

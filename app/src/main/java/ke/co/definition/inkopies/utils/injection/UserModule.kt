@@ -10,6 +10,7 @@ import ke.co.definition.inkopies.repos.ms.USERS_MS_ADDRESS
 import ke.co.definition.inkopies.repos.ms.image.ImageClient
 import ke.co.definition.inkopies.repos.ms.users.RetrofitUsersClient
 import ke.co.definition.inkopies.repos.ms.users.UsersClient
+import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named
@@ -31,8 +32,8 @@ class UserModule {
 
     @Provides
     @Inject
-    fun provideProfileManager(rm: ResourceManager, a: Authable, ucl: UsersClient, imgCl: ImageClient): ProfileManager {
-        return ProfileManagerImpl(rm, a, ucl, imgCl)
+    fun provideProfileManager(rm: ResourceManager, a: Authable, ucl: UsersClient, imgCl: ImageClient, lg: Logger): ProfileManager {
+        return ProfileManagerImpl(rm, a, ucl, imgCl, lg)
     }
 
     companion object {

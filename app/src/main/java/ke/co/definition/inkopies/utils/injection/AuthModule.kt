@@ -14,6 +14,7 @@ import ke.co.definition.inkopies.repos.local.LocalStore
 import ke.co.definition.inkopies.repos.ms.AUTH_MS_ADDRESS
 import ke.co.definition.inkopies.repos.ms.auth.AuthClient
 import ke.co.definition.inkopies.repos.ms.auth.RetrofitAuthClient
+import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.Retrofit
 import javax.inject.Inject
 import javax.inject.Named
@@ -50,8 +51,8 @@ class AuthModule {
 
     @Provides
     @Inject
-    fun provideAuthable(ls: LocalStorable, ac: AuthClient, v: Validatable, rm: ResourceManager)
-            : Authable = Authenticator(ls, ac, v, rm)
+    fun provideAuthable(ls: LocalStorable, ac: AuthClient, v: Validatable, rm: ResourceManager, lg: Logger)
+            : Authable = Authenticator(ls, ac, v, rm, lg)
 
     companion object {
         const val MS = "authms"

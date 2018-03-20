@@ -8,6 +8,7 @@ import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.ms.*
 import ke.co.definition.inkopies.repos.ms.auth.AuthClient
+import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
 import rx.Observable
@@ -24,8 +25,13 @@ class Authenticator @Inject constructor(
         private val localStore: LocalStorable,
         private val authCl: AuthClient,
         private val validator: Validatable,
-        private val resMan: ResourceManager
+        private val resMan: ResourceManager,
+        private val logger: Logger
 ) : Authable {
+
+    init {
+        logger.setTag(Authenticator::class.java.name)
+    }
 
     override fun updateIdentifier(identifier: String): Single<VerifLogin> {
         return Single.create<ValidationResult>({
@@ -77,11 +83,11 @@ class Authenticator @Inject constructor(
                     .onErrorResumeNext {
                         Single.error(handleNewIdentifierErrors(it, id.value(), "registering"))
                     }
-                    .doOnSuccess { saveLoggedInDetails(it) }
+                    .doOnSuccess { saveLoggedInDetails(it.first, it.second) }
                     .map {
                         return@map when (id) {
-                            is Identifier.Email -> it.email
-                            is Identifier.Phone -> it.phone
+                            is Identifier.Email -> it.first.email
+                            is Identifier.Phone -> it.first.phone
                         }
                     }
 
@@ -93,16 +99,16 @@ class Authenticator @Inject constructor(
                                     Exception(resMan.getString(R.string.error_invalid_login)))
                         }
                         return@onErrorResumeNext Single.error(
-                                handleServerErrors(resMan, it, "logging in"))
+                                handleServerErrors(logger, resMan, it, "login manual"))
                     }
-                    .doOnSuccess { saveLoggedInDetails(it) }
+                    .doOnSuccess { saveLoggedInDetails(it.first, it.second) }
                     .toCompletable()
 
     override fun sendVerifyOTP(vl: VerifLogin): Single<OTPStatus> =
             validateVerifLogin(vl).flatMap { vr: ValidationResult ->
                 getJWT().flatMap {
                     authCl.sendVerifyOTP(it.value, vr.getIdentifier()).onErrorResumeNext {
-                        Single.error(handleServerErrors(resMan, it, "logging in"))
+                        Single.error(handleServerErrors(logger, resMan, it, "send verify OTP"))
                     }
                 }
             }
@@ -113,7 +119,8 @@ class Authenticator @Inject constructor(
                 getJWT().flatMap { jwt: JWT ->
                     authCl.fetchUserDetails(jwt.value, jwt.info.userID)
                             .onErrorResumeNext {
-                                Single.error(handleServerErrors(resMan, it, "logging in"))
+                                Single.error(handleServerErrors(logger, resMan, it,
+                                        "check identifier verified"))
                             }
                             .doOnSuccess {
                                 upsertAuthUser(it)
@@ -156,7 +163,7 @@ class Authenticator @Inject constructor(
                                 resMan.getString(R.string.error_used_verif_code)))
                     }
                     return@onErrorResumeNext Single.error(
-                            handleServerErrors(resMan, it, "verifying OTP"))
+                            handleServerErrors(logger, resMan, it, "verify OTP"))
                 }
                 .toCompletable()
     }
@@ -252,12 +259,12 @@ class Authenticator @Inject constructor(
                     return Exception(String.format(resMan.getString(R.string.ss_in_use), frID))
             }
         }
-        return handleServerErrors(resMan, err, ctx)
+        return handleServerErrors(logger, resMan, err, ctx)
     }
 
-    private fun saveLoggedInDetails(usr: AuthUser) {
+    private fun saveLoggedInDetails(usr: AuthUser, jwtStr: String) {
         upsertAuthUser(usr)
-        val jwt = JWT(usr.token)
+        val jwt = JWT(jwtStr)
         localStore.upsert(KEY_JWT, Gson().toJson(jwt))
     }
 

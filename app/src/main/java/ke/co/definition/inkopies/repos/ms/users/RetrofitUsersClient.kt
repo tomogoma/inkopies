@@ -21,14 +21,17 @@ class RetrofitUsersClient @Inject constructor(@Named(UserModule.MS) private val 
 
     override fun getUser(token: String, userID: String) =
             usersMSAPI.getUser(bearerToken(token), userID)
+                    .map { it.toGenUserProfile() }
 
     override fun updateUser(token: String, userID: String, name: String, gender: Gender) =
             usersMSAPI.updateUser(bearerToken(token), userID,
                     UpdateUserRequest(name = name, gender = gender.name))
+                    .map { it.toGenUserProfile() }
 
     override fun updateAvatar(token: String, userID: String, newURI: String) =
             usersMSAPI.updateUser(bearerToken(token), userID,
                     UpdateUserRequest(avatarURL = newURI))
+                    .map { it.toGenUserProfile() }
 
 }
 

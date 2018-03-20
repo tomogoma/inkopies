@@ -11,18 +11,17 @@ import java.util.*
  * On 28/02/18.
  */
 data class AuthUser(
-        @SerializedName("ID") val id: String,
-        @SerializedName("JWT") val token: String,
+        val id: String,
         val phone: VerifLogin,
         val email: VerifLogin
 )
 
 data class VerifLogin(
-        @SerializedName("ID") val id: String,
-        val userID: String,
-        val value: String,
-        val verified: Boolean,
-        @SerializedName("OTPStatus") val otpStatus: OTPStatus?
+        val id: String = "",
+        val userID: String = "",
+        val value: String = "",
+        val verified: Boolean = false,
+        val otpStatus: OTPStatus? = null
 )
 
 data class OTPStatus(

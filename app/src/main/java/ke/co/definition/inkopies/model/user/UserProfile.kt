@@ -1,7 +1,6 @@
 package ke.co.definition.inkopies.model.user
 
 import ke.co.definition.inkopies.model.auth.AuthUser
-import ke.co.definition.inkopies.repos.ms.users.MSUserProfile
 
 /**
  * Created by tomogoma
@@ -14,11 +13,17 @@ data class UserProfile(
         val avatarURL: String
 ) {
 
-    constructor(auth: AuthUser, msUsr: MSUserProfile) :
-            this(auth, msUsr.name, msUsr.gender, msUsr.avatarURL)
+    constructor(auth: AuthUser, genUsr: GenUserProfile) :
+            this(auth, genUsr.name, genUsr.gender, genUsr.avatarURL)
 
     fun getHumanGender(): String = if (gender == Gender.NONE) "" else gender.name.toLowerCase().capitalize()
 }
+
+data class GenUserProfile(
+        val name: String = "",
+        val gender: Gender = Gender.NONE,
+        val avatarURL: String = ""
+)
 
 enum class Gender {
     NONE, MALE, FEMALE, OTHER
