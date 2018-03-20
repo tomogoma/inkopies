@@ -28,7 +28,7 @@
 
             <android.support.v4.widget.ContentLoadingProgressBar
                 android:id="@+id/contentLoadingProgressBar"
-                style="@android:style/Widget.ProgressBar.Horizontal"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/space_xsmall"
                 android:indeterminate="true"
