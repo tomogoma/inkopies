@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="ke.co.definition.inkopies.presentation.shopping.lists.ShoppingListsViewModel" />
+    </data>
+
+    <FrameLayout
+        android:id="@+id/layoutRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".presentation.shopping.lists.ShoppingListsActivity"
+        tools:showIn="@layout/activity_shopping_lists">
+
+        <android.support.v4.widget.ContentLoadingProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/emptyListsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:gravity="center"
+            android:text="@string/empty_shopping_lists_text"
+            android:visibility="@{vm.showNoShoppingListsText ? View.VISIBLE: View.GONE}" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/shoppingLists"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="@{vm.showShoppingLists ? View.VISIBLE: View.GONE}"
+            tools:listitem="@layout/item_shopping_lists" />
+
+        <android.support.v4.widget.ContentLoadingProgressBar
+            android:id="@+id/progressShoppingLists"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="@{vm.progressShoppingLists ? View.VISIBLE: View.GONE}" />
+
+    </FrameLayout>
+
+</layout>

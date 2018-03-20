@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="shoppingList"
+            type="ke.co.definition.inkopies.model.shopping.ShoppingList" />
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_normal"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/space_normal">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_normal"
+            android:maxLength="30"
+            android:text="@{shoppingList.name}"
+            android:textSize="@dimen/text_size_large"
+            app:layout_constraintBottom_toTopOf="@id/listPriceLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Groceries" />
+
+        <TextView
+            android:id="@+id/listPriceLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/space_xsmall"
+            android:text="@string/list_label"
+            android:visibility="@{shoppingList.showActiveListPrice ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/listPrice"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/name" />
+
+        <TextView
+            android:id="@+id/listPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{shoppingList.formattedActiveListPrice}"
+            android:visibility="@{shoppingList.showActiveListPrice ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBaseline_toBaselineOf="@id/listPriceLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/listPriceLabel"
+            tools:text="5,000.00" />
+
+        <TextView
+            android:id="@+id/cartPriceLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/space_xsmall"
+            android:text="@string/cart_label"
+            android:visibility="@{shoppingList.showCartPrice ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBaseline_toBaselineOf="@id/listPrice"
+            app:layout_constraintEnd_toStartOf="@id/cartPrice"
+            app:layout_constraintHorizontal_bias="100"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/listPrice" />
+
+        <TextView
+            android:id="@+id/cartPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{shoppingList.formattedCartPrice}"
+            android:visibility="@{shoppingList.showCartPrice ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBaseline_toBaselineOf="@id/cartPriceLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/cartPriceLabel"
+            tools:text="2,500.00" />
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

@@ -15,7 +15,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="@string/file_provider_authorities"
@@ -41,8 +40,9 @@
         <activity
             android:name=".presentation.profile.ProfileActivity"
             android:label="@string/title_activity_profile" />
-        <!--<activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"-->
-        <!--android:theme="@style/Base.Theme.AppCompat"/>-->
+        <!-- <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" -->
+        <!-- android:theme="@style/Base.Theme.AppCompat"/> -->
+        <activity android:name=".presentation.shopping.lists.ShoppingListsActivity"></activity>
     </application>
 
 </manifest>

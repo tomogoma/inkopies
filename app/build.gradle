@@ -89,7 +89,7 @@ dependencies {
     compile 'io.michaelrocks:libphonenumber-android:8.9.0'
 
     // glide
-    implementation ("com.github.bumptech.glide:glide:4.6.1") {
+    implementation("com.github.bumptech.glide:glide:4.6.1") {
         exclude group: "com.android.support"
     }
     kapt 'com.github.bumptech.glide:compiler:4.6.1'
