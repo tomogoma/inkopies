@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.model.user
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.AuthUser
 import ke.co.definition.inkopies.model.auth.Authable
+import ke.co.definition.inkopies.model.auth.JWT
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
 import ke.co.definition.inkopies.repos.ms.handleAuthErrors
 import ke.co.definition.inkopies.repos.ms.image.ImageClient
@@ -30,8 +31,9 @@ class ProfileManagerImpl @Inject constructor(
     override fun getUser(): Single<UserProfile> {
         var authUser: AuthUser? = null
         return auth.getUser()
-                .flatMap { authUser = it; Single.just(it) }
-                .flatMap { usersCl.getUser(it.token, it.id) }
+                .map { authUser = it }
+                .flatMap { auth.getJWT() }
+                .flatMap { usersCl.getUser(it.value, it.info.userID) }
                 .onErrorResumeNext {
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorResumeNext Single.just(MSUserProfile())
@@ -45,14 +47,16 @@ class ProfileManagerImpl @Inject constructor(
         var authUsr: AuthUser? = null
         return validateGeneral(name, gender).toSingle {}
                 .flatMap { auth.getUser() }
-                .flatMap { authUsr = it;Single.just(it) }
-                .flatMap { usersCl.updateUser(it.token, it.id, name, gender) }
+                .map { authUsr = it }
+                .flatMap { auth.getJWT() }
+                .flatMap { usersCl.updateUser(it.value, it.info.userID, name, gender) }
                 .onErrorResumeNext { Single.error(handleAuthErrors(resMan, it, "update general profile")) }
                 .flatMap { Single.just(UserProfile(authUsr!!, it)) }
     }
 
     override fun uploadProfilePic(uri: String): Single<UserProfile> {
         var authUsr: AuthUser? = null
+        var jwt: JWT? = null
         return Completable.create {
             if (uri == "") {
                 it.onError(Exception("Profile picture was not found"))
@@ -61,10 +65,11 @@ class ProfileManagerImpl @Inject constructor(
             it.onCompleted()
         }.toSingle {}
                 .flatMap { auth.getUser() }
-                .flatMap { authUsr = it;Single.just(it) }
-                .flatMap { imageCl.uploadProfilePic(it.token, PROFILE_IMG_FOLDER, uri) }
+                .map { authUsr = it }
+                .flatMap { auth.getJWT() }
+                .flatMap { jwt = it;imageCl.uploadProfilePic(it.value, PROFILE_IMG_FOLDER, uri) }
                 .onErrorResumeNext { Single.error(handleAuthErrors(resMan, it, "upload profile picture")) }
-                .flatMap { usersCl.updateAvatar(authUsr!!.token, authUsr!!.id, it) }
+                .flatMap { usersCl.updateAvatar(jwt!!.value, jwt!!.info.userID, it) }
                 .onErrorResumeNext { Single.error(handleAuthErrors(resMan, it, "update user's avatar URL")) }
                 .flatMap { Single.just(UserProfile(authUsr!!, it)) }
     }
