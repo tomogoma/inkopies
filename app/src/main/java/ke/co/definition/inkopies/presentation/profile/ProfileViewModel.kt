@@ -115,7 +115,7 @@ class ProfileViewModel @Inject constructor(
         authCl.glideURL(up.avatarURL)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ loadEnlargedPic.value = it })
+                .subscribe({ loadEnlargedPic.value = it }, { /*no-op*/ })
     }
 
     fun onBackPressed(): Boolean {
@@ -146,7 +146,7 @@ class ProfileViewModel @Inject constructor(
                 .doOnUnsubscribe { progressProfImg.set(false) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ profileImgURL.value = it })
+                .subscribe({ profileImgURL.value = it }, { /*no-op*/ })
     }
 
     companion object {
