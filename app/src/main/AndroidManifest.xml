@@ -42,7 +42,16 @@
             android:label="@string/title_activity_profile" />
         <!-- <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" -->
         <!-- android:theme="@style/Base.Theme.AppCompat"/> -->
-        <activity android:name=".presentation.shopping.lists.ShoppingListsActivity"></activity>
+        <activity android:name=".presentation.shopping.lists.ShoppingListsActivity" />
+        <activity
+            android:name=".presentation.shopping.list.ShoppingListActivity"
+            android:label="@string/title_activity_shopping_list"
+            android:parentActivityName=".presentation.shopping.lists.ShoppingListsActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ke.co.definition.inkopies.presentation.shopping.lists.ShoppingListsActivity" />
+        </activity>
     </application>
 
 </manifest>
