@@ -5,6 +5,7 @@ import ke.co.definition.inkopies.presentation.login.LoginViewModel
 import ke.co.definition.inkopies.presentation.profile.GeneralProfileViewModel
 import ke.co.definition.inkopies.presentation.profile.ProfileViewModel
 import ke.co.definition.inkopies.presentation.shopping.lists.NewShoppingListViewModel
+import ke.co.definition.inkopies.presentation.shopping.lists.ShoppingListsViewModel
 import ke.co.definition.inkopies.presentation.verification.UpdateIdentifierViewModel
 import ke.co.definition.inkopies.presentation.verification.VerificationViewModel
 import javax.inject.Singleton
@@ -30,4 +31,5 @@ interface AppComponent {
     fun generalProfileVMFactory(): GeneralProfileViewModel.Factory
     fun profileVMFactory(): ProfileViewModel.Factory
     fun provideNewShoppingListVMFactory(): NewShoppingListViewModel.Factory
+    fun provideShoppingListsVMFactory(): ShoppingListsViewModel.Factory
 }
