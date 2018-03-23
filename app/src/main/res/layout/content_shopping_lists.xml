@@ -40,6 +40,8 @@
             android:id="@+id/shoppingLists"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/fab_allowance"
             android:visibility="@{vm.showShoppingLists ? View.VISIBLE: View.GONE}"
             tools:listitem="@layout/item_shopping_lists" />
 

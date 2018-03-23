@@ -1,7 +1,9 @@
 package ke.co.definition.inkopies.presentation.shopping.lists
 
+import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.databinding.ObservableField
+import ke.co.definition.inkopies.model.shopping.ShoppingList
 
 /**
  * Created by tomogoma
@@ -12,6 +14,12 @@ class ShoppingListsViewModel : ViewModel() {
     val progressShoppingLists = ObservableField<Boolean>()
     val showNoShoppingListsText = ObservableField<Boolean>()
     val showShoppingLists = ObservableField<Boolean>()
+
+    val shoppingLists = MutableLiveData<MutableList<ShoppingList>>()
+
+    fun start() {
+        showNoShoppingListsText()
+    }
 
     private fun showShoppingLists() {
         progressShoppingLists.set(false)

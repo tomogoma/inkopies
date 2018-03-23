@@ -65,4 +65,8 @@
     <string name="list_label">List:</string>
     <string name="cart_label">Cart:</string>
     <string name="empty_shopping_lists_text">Your shopping lists will appear here when you add them</string>
+    <string name="title_activity_shopping_list">ShoppingListActivity</string>
+    <string name="creating_shopping_list">Creating shopping list</string>
+    <string name="shopping_lists_title">Shopping Lists</string>
+    <string name="new_shopping_list_title">New Shopping List</string>
 </resources>

@@ -15,7 +15,7 @@ import ke.co.definition.inkopies.databinding.ActivityLoginBinding
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.replaceFrag
 import ke.co.definition.inkopies.presentation.common.replaceFragBackStack
-import ke.co.definition.inkopies.presentation.profile.ProfileActivity
+import ke.co.definition.inkopies.presentation.shopping.lists.ShoppingListsActivity
 import ke.co.definition.inkopies.presentation.verification.VerifyActivity
 
 class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
@@ -107,8 +107,8 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
     }
 
     private fun openLoggedInActivity() {
-        //TODO("start ShoppingListsActivity")
-        ProfileActivity.start(this)
+        ShoppingListsActivity.start(this)
+        finish()
     }
 
     companion object {

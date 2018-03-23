@@ -4,6 +4,7 @@ import dagger.Component
 import ke.co.definition.inkopies.presentation.login.LoginViewModel
 import ke.co.definition.inkopies.presentation.profile.GeneralProfileViewModel
 import ke.co.definition.inkopies.presentation.profile.ProfileViewModel
+import ke.co.definition.inkopies.presentation.shopping.lists.NewShoppingListViewModel
 import ke.co.definition.inkopies.presentation.verification.UpdateIdentifierViewModel
 import ke.co.definition.inkopies.presentation.verification.VerificationViewModel
 import javax.inject.Singleton
@@ -19,7 +20,8 @@ import javax.inject.Singleton
     AuthModule::class,
     UserModule::class,
     ImageModule::class,
-    LoggingModule::class
+    LoggingModule::class,
+    ShoppingModule::class
 ])
 interface AppComponent {
     fun loginVMFactory(): LoginViewModel.Factory
@@ -27,4 +29,5 @@ interface AppComponent {
     fun updateIdentifierVMFactory(): UpdateIdentifierViewModel.Factory
     fun generalProfileVMFactory(): GeneralProfileViewModel.Factory
     fun profileVMFactory(): ProfileViewModel.Factory
+    fun provideNewShoppingListVMFactory(): NewShoppingListViewModel.Factory
 }
