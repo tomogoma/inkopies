@@ -8,4 +8,5 @@ import rx.Single
  */
 interface ShoppingManager {
     fun createShoppingList(name: String): Single<ShoppingList>
+    fun getShoppingLists(offset: Long, count: Int): Single<List<ShoppingList>>
 }
