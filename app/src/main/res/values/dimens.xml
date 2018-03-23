@@ -25,4 +25,5 @@
     <dimen name="input_width">256dp</dimen>
     <dimen name="label_width">56dp</dimen>
     <dimen name="input_width_no_margin">232dp</dimen>
+    <dimen name="snackbar_height">48dp</dimen>
 </resources>
