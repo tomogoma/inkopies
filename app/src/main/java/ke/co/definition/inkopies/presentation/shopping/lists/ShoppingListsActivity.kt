@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListsBinding
 import ke.co.definition.inkopies.databinding.ContentShoppingListsBinding
@@ -20,9 +21,9 @@ import ke.co.definition.inkopies.model.shopping.ShoppingList
 
 class ShoppingListsActivity : AppCompatActivity() {
 
-
-    private lateinit var viewAdapter: ShoppingListsAdapter
     private val vmObservables: MutableList<LiveData<Any>> = mutableListOf()
+    private lateinit var viewAdapter: ShoppingListsAdapter
+    private lateinit var viewModel: ShoppingListsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,17 +31,23 @@ class ShoppingListsActivity : AppCompatActivity() {
         val views: ActivityShoppingListsBinding = DataBindingUtil.setContentView(this,
                 R.layout.activity_shopping_lists)
 
-        val viewModel = ViewModelProviders.of(this).get(ShoppingListsViewModel::class.java)
+        val vmFactory = (application as App).appComponent.provideShoppingListsVMFactory()
+        viewModel = ViewModelProviders.of(this, vmFactory)
+                .get(ShoppingListsViewModel::class.java)
         views.vm = viewModel
 
         setSupportActionBar(views.toolbar)
         views.toolbar.setSubtitle(R.string.shopping_lists_title)
         prepRecyclerView(views.content!!)
 
-        observeViewModel(viewModel)
+        observeViewModel(views)
         observeViews(views)
 
-        viewModel.start()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.nextPage()
     }
 
     override fun onDestroy() {
@@ -52,13 +59,22 @@ class ShoppingListsActivity : AppCompatActivity() {
         vs.fab.setOnClickListener { showNewShoppingListDialog() }
     }
 
-    private fun observeViewModel(vm: ShoppingListsViewModel) {
-        vm.shoppingLists.observe(this, Observer {
-            viewAdapter.setShoppingLists(it ?: return@Observer)
+    private fun observeViewModel(vs: ActivityShoppingListsBinding) {
+        viewModel.nextPage.observe(this, Observer {
+            viewAdapter.addShoppingLists(it ?: return@Observer)
         })
+        viewModel.addedItem.observe(this, Observer {
+            viewAdapter.add(it ?: return@Observer)
+        })
+        viewModel.snackbarData.observe(this, Observer { it?.show(vs.root) })
 
         @Suppress("UNCHECKED_CAST")
-        vmObservables.add(vm.shoppingLists as LiveData<Any>)
+        vmObservables.addAll(mutableListOf(
+                viewModel.nextPage as LiveData<Any>,
+                viewModel.addedItem as LiveData<Any>,
+                viewModel.snackbarData as LiveData<Any>,
+                viewModel.progressNextPage as LiveData<Any>
+        ))
     }
 
     private fun prepRecyclerView(vs: ContentShoppingListsBinding) {
@@ -75,7 +91,7 @@ class ShoppingListsActivity : AppCompatActivity() {
 
     private fun showNewShoppingListDialog() {
         NewShoppingListDialogFrag.start(supportFragmentManager, {
-            viewAdapter.add(it ?: return@start)
+            viewModel.onItemAdded(it ?: return@start)
         })
     }
 
@@ -107,14 +123,15 @@ class ShoppingListsAdapter :
         holder.binding.shoppingList = shoppingLists[position]
     }
 
-    fun setShoppingLists(shoppingLists: MutableList<ShoppingList>) {
-        this.shoppingLists = shoppingLists
-        notifyDataSetChanged()
+    fun addShoppingLists(shoppingLists: MutableList<ShoppingList>) {
+        val origiSize = this.shoppingLists.size
+        this.shoppingLists.addAll(shoppingLists)
+        notifyItemRangeInserted(origiSize, shoppingLists.size)
     }
 
     fun add(shoppingList: ShoppingList) {
         shoppingLists.add(shoppingList)
-        notifyItemChanged(shoppingLists.size - 1)
+        notifyItemInserted(shoppingLists.size - 1)
     }
 
     data class ItemShoppingListsHolder(internal val binding: ItemShoppingListsBinding) :
