@@ -18,6 +18,7 @@ import ke.co.definition.inkopies.databinding.ActivityShoppingListsBinding
 import ke.co.definition.inkopies.databinding.ContentShoppingListsBinding
 import ke.co.definition.inkopies.databinding.ItemShoppingListsBinding
 import ke.co.definition.inkopies.model.shopping.ShoppingList
+import ke.co.definition.inkopies.presentation.shopping.list.ShoppingListActivity
 
 class ShoppingListsActivity : AppCompatActivity() {
 
@@ -57,6 +58,7 @@ class ShoppingListsActivity : AppCompatActivity() {
 
     private fun observeViews(vs: ActivityShoppingListsBinding) {
         vs.fab.setOnClickListener { showNewShoppingListDialog() }
+        viewAdapter.setOnItemSelectedListener { ShoppingListActivity.start(this, it) }
     }
 
     private fun observeViewModel(vs: ActivityShoppingListsBinding) {
@@ -108,6 +110,7 @@ class ShoppingListsAdapter :
         RecyclerView.Adapter<ShoppingListsAdapter.ItemShoppingListsHolder>() {
 
     private var shoppingLists: MutableList<ShoppingList> = mutableListOf()
+    private var onItemSelectedListener: (it: ShoppingList) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemShoppingListsHolder {
 
@@ -121,6 +124,13 @@ class ShoppingListsAdapter :
 
     override fun onBindViewHolder(holder: ItemShoppingListsHolder, position: Int) {
         holder.binding.shoppingList = shoppingLists[position]
+        holder.binding.layoutRoot.setOnClickListener {
+            onItemSelectedListener(shoppingLists[position])
+        }
+    }
+
+    fun setOnItemSelectedListener(l: (it: ShoppingList) -> Unit) {
+        onItemSelectedListener = l
     }
 
     fun addShoppingLists(shoppingLists: MutableList<ShoppingList>) {
