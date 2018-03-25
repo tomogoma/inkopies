@@ -21,6 +21,11 @@ class ShoppingManagerImpl @Inject constructor(
         private val resMan: ResourceManager
 ) : ShoppingManager {
 
+    override fun getShoppingListItems(shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>> {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return Single.just(listOf())
+    }
+
     init {
         logger.setTag(ShoppingManagerImpl::class.java.name)
     }

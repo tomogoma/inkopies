@@ -16,7 +16,7 @@ import android.view.inputmethod.EditorInfo
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogNewShoppingListBinding
-import ke.co.definition.inkopies.model.shopping.ShoppingList
+import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 
 /**
  * Created by tomogoma
@@ -25,8 +25,8 @@ import ke.co.definition.inkopies.model.shopping.ShoppingList
 class NewShoppingListDialogFrag : DialogFragment() {
 
     private var isDialog = false
-    private var shoppingList: ShoppingList? = null
-    private var onDismissCallback: (shoppingList: ShoppingList?) -> Unit = {}
+    private var shoppingList: VMShoppingList? = null
+    private var onDismissCallback: (shoppingList: VMShoppingList?) -> Unit = {}
     private val liveDataObservers = mutableListOf<LiveData<Any>>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -86,7 +86,7 @@ class NewShoppingListDialogFrag : DialogFragment() {
 
     companion object {
 
-        fun start(fm: FragmentManager, onDismissCallback: (vl: ShoppingList?) -> Unit = {}) {
+        fun start(fm: FragmentManager, onDismissCallback: (vl: VMShoppingList?) -> Unit = {}) {
             NewShoppingListDialogFrag().apply {
                 this.onDismissCallback = onDismissCallback
                 show(fm, NewShoppingListDialogFrag::class.java.name)

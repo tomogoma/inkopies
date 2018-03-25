@@ -17,7 +17,7 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListsBinding
 import ke.co.definition.inkopies.databinding.ContentShoppingListsBinding
 import ke.co.definition.inkopies.databinding.ItemShoppingListsBinding
-import ke.co.definition.inkopies.model.shopping.ShoppingList
+import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.list.ShoppingListActivity
 
 class ShoppingListsActivity : AppCompatActivity() {
@@ -109,8 +109,8 @@ class ShoppingListsActivity : AppCompatActivity() {
 class ShoppingListsAdapter :
         RecyclerView.Adapter<ShoppingListsAdapter.ItemShoppingListsHolder>() {
 
-    private var shoppingLists: MutableList<ShoppingList> = mutableListOf()
-    private var onItemSelectedListener: (it: ShoppingList) -> Unit = {}
+    private var shoppingLists: MutableList<VMShoppingList> = mutableListOf()
+    private var onItemSelectedListener: (it: VMShoppingList) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemShoppingListsHolder {
 
@@ -129,17 +129,17 @@ class ShoppingListsAdapter :
         }
     }
 
-    fun setOnItemSelectedListener(l: (it: ShoppingList) -> Unit) {
+    fun setOnItemSelectedListener(l: (it: VMShoppingList) -> Unit) {
         onItemSelectedListener = l
     }
 
-    fun addShoppingLists(shoppingLists: MutableList<ShoppingList>) {
+    fun addShoppingLists(shoppingLists: MutableList<VMShoppingList>) {
         val origiSize = this.shoppingLists.size
         this.shoppingLists.addAll(shoppingLists)
         notifyItemRangeInserted(origiSize, shoppingLists.size)
     }
 
-    fun add(shoppingList: ShoppingList) {
+    fun add(shoppingList: VMShoppingList) {
         shoppingLists.add(shoppingList)
         notifyItemInserted(shoppingLists.size - 1)
     }

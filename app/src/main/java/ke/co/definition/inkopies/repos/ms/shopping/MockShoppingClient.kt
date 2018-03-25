@@ -1,6 +1,7 @@
 package ke.co.definition.inkopies.repos.ms.shopping
 
 import ke.co.definition.inkopies.model.shopping.ShoppingList
+import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
 import okhttp3.MediaType
 import okhttp3.ResponseBody
@@ -15,9 +16,9 @@ import rx.Single
 class MockShoppingClient : ShoppingClient {
 
     private val shoppingLists = mutableListOf(
-            ShoppingList("1", "One", 500F, 100F),
-            ShoppingList("2", "Two", 0F, 0F),
-            ShoppingList("3", "Three", 2500F, 0F)
+            ShoppingList("1", "One", 500F, 100F, ShoppingMode.SHOPPING),
+            ShoppingList("2", "Two", 0F, 0F, ShoppingMode.PREPARATION),
+            ShoppingList("3", "Three", 2500F, 0F, ShoppingMode.SHOPPING)
     )
 
     override fun getShoppingLists(token: String, offset: Long, count: Int): Single<List<ShoppingList>> {

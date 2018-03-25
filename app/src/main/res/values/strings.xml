@@ -69,4 +69,6 @@
     <string name="creating_shopping_list">Creating shopping list</string>
     <string name="shopping_lists_title">Shopping Lists</string>
     <string name="new_shopping_list_title">New Shopping List</string>
+    <string name="empty_items_text">Your items will appear here when you add them</string>
+    <string name="times">X</string>
 </resources>

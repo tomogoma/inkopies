@@ -9,7 +9,7 @@
 
         <variable
             name="shoppingList"
-            type="ke.co.definition.inkopies.model.shopping.ShoppingList" />
+            type="ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList" />
     </data>
 
     <android.support.constraint.ConstraintLayout
@@ -51,7 +51,7 @@
             android:id="@+id/listPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{shoppingList.formattedActiveListPrice}"
+            android:text="@{shoppingList.fmtActiveListPrice}"
             android:visibility="@{shoppingList.showActiveListPrice ? View.VISIBLE : View.GONE}"
             app:layout_constraintBaseline_toBaselineOf="@id/listPriceLabel"
             app:layout_constraintEnd_toEndOf="parent"
@@ -75,7 +75,7 @@
             android:id="@+id/cartPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{shoppingList.formattedCartPrice}"
+            android:text="@{shoppingList.fmtCartPrice}"
             android:visibility="@{shoppingList.showCartPrice ? View.VISIBLE : View.GONE}"
             app:layout_constraintBaseline_toBaselineOf="@id/cartPriceLabel"
             app:layout_constraintEnd_toEndOf="parent"

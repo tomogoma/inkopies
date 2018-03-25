@@ -6,10 +6,10 @@ import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.annotation.UiThread
 import android.support.design.widget.Snackbar
-import ke.co.definition.inkopies.model.shopping.ShoppingList
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -32,8 +32,8 @@ class ShoppingListsViewModel @Inject constructor(
 
     val progressNextPage = SingleLiveEvent<Boolean>()
     val snackbarData = SingleLiveEvent<SnackBarData>()
-    val nextPage = MutableLiveData<MutableList<ShoppingList>>()
-    val addedItem = MutableLiveData<ShoppingList>()
+    val nextPage = MutableLiveData<MutableList<VMShoppingList>>()
+    val addedItem = MutableLiveData<VMShoppingList>()
 
     private var currPage: Long = 0
 
@@ -43,19 +43,23 @@ class ShoppingListsViewModel @Inject constructor(
                 .observeOn(observeOnScheduler)
                 .doOnSubscribe { showProgressShoppingLists() }
                 .doOnUnsubscribe { hideProgressShoppingLists() }
-                .map { it.toMutableList() }
+                .map {
+                    val res = mutableListOf<VMShoppingList>()
+                    it.forEach { res.add(VMShoppingList(it)) }
+                    return@map res
+                }
                 .subscribe({ onShoppingListsFetched(it) }, {
                     snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
                 })
     }
 
-    fun onItemAdded(sl: ShoppingList) {
+    fun onItemAdded(sl: VMShoppingList) {
         currPage++
         addedItem.value = sl
         showShoppingLists()
     }
 
-    private fun onShoppingListsFetched(sls: MutableList<ShoppingList>) {
+    private fun onShoppingListsFetched(sls: MutableList<VMShoppingList>) {
         currPage += sls.size
         nextPage.value = sls
         if (haveShoppingListItems())

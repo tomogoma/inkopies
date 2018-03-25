@@ -7,11 +7,11 @@ import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
-import ke.co.definition.inkopies.model.shopping.ShoppingList
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.presentation.common.ProgressData
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -33,7 +33,7 @@ class NewShoppingListViewModel @Inject constructor(
     val nameError = ObservableField<String>()
     val progress = ObservableField<ProgressData>()
 
-    val finished = SingleLiveEvent<ShoppingList>()
+    val finished = SingleLiveEvent<VMShoppingList>()
     val snackbarData = SingleLiveEvent<SnackBarData>()
 
     init {
@@ -59,6 +59,7 @@ class NewShoppingListViewModel @Inject constructor(
                 .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
+                .map { VMShoppingList(it) }
                 .subscribe({ finished.value = it }, {
                     snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
                 })
