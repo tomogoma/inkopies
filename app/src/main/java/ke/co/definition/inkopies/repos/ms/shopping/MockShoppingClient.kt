@@ -7,7 +7,6 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.adapter.rxjava.HttpException
 import rx.Single
-import java.util.*
 
 /**
  * Created by tomogoma
@@ -15,16 +14,16 @@ import java.util.*
  */
 class MockShoppingClient : ShoppingClient {
 
-    private val shoppingLists = mutableListOf<ShoppingList>()
+    private val shoppingLists = mutableListOf(
+            ShoppingList("1", "One", 500F, 100F),
+            ShoppingList("2", "Two", 0F, 0F),
+            ShoppingList("3", "Three", 2500F, 0F)
+    )
 
     override fun getShoppingLists(token: String, offset: Long, count: Int): Single<List<ShoppingList>> {
         return Single.create {
             Thread.sleep(2000)
             if (offset >= shoppingLists.size) {
-                it.onError(notFound())
-                return@create
-            }
-            if (Random(Date().time).nextInt(4) == 0) {
                 it.onError(notFound())
                 return@create
             }
@@ -41,15 +40,11 @@ class MockShoppingClient : ShoppingClient {
             val sl = ShoppingList(shoppingLists.size.toString(), name, 0f, 0f)
             shoppingLists.add(sl)
             Thread.sleep(2000)
-            if (Random(Date().time).nextInt(4) == 0) {
-                it.onError(notFound())
-                return@create
-            }
             it.onSuccess(sl)
         }
     }
 
-    fun notFound() = HttpException(Response.error<ResponseBody>(STATUS_NOT_FOUND,
+    private fun notFound() = HttpException(Response.error<ResponseBody>(STATUS_NOT_FOUND,
             ResponseBody.create(MediaType.parse("text/plain"), "none found")))
 
 }
