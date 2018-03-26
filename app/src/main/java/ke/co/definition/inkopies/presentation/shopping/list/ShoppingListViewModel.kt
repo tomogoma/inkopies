@@ -4,10 +4,12 @@ import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
-import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
+import ke.co.definition.inkopies.model.shopping.ShoppingListItem
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
+import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
@@ -33,6 +35,7 @@ class ShoppingListViewModel @Inject constructor(
 
     val snackbarData = SingleLiveEvent<SnackBarData>()
     val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
+    val itemUpdate = SingleLiveEvent<Pair<VMShoppingListItem, Int>>()
 
     private var currOffset = 0L
 
@@ -48,9 +51,32 @@ class ShoppingListViewModel @Inject constructor(
                     it.forEach { rslt.add(VMShoppingListItem(it, list.mode)) }
                     return@map rslt
                 }
-                .subscribe({ onNextPageLoad(it) }, {
-                    snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
-                })
+                .subscribe({ onNextPageLoad(it) }, { showError(it) })
+    }
+
+    fun onItemSelectionChanged(item: VMShoppingListItem, posn: Int, toState: Boolean) {
+        var inList = item.inList
+        var inCart = item.inCart
+        when (item.mode) {
+            ShoppingMode.SHOPPING -> inCart = toState
+            else -> inList = toState
+        }
+        manager.updateShoppingListItem(ShoppingListItem(item.id, item.quantity, item.shoppingList,
+                item.brandPrice, inList, inCart))
+                .doOnSubscribe { item.isUpdating.set(true) }
+                .doOnUnsubscribe { item.isUpdating.set(false) }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .map { VMShoppingListItem(it, item.mode) }
+                .subscribe({ onItemUpdated(it, posn) }, { showError(it) })
+    }
+
+    private fun onItemUpdated(newVal: VMShoppingListItem, posn: Int) {
+        itemUpdate.value = Pair(newVal, posn)
+    }
+
+    private fun showError(it: Throwable) {
+        snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
     }
 
     private fun onNextPageLoad(page: MutableList<VMShoppingListItem>) {
@@ -63,7 +89,7 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
-    private fun hasItems() = currOffset == 0L
+    private fun hasItems() = currOffset > 0L
 
     private fun showItems() {
         showNoItemsTxt.set(false)
