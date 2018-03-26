@@ -14,19 +14,17 @@ data class MeasuringUnit(
 
 data class ShoppingItem(
         val id: String,
-        val name: String,
-        val measuringUnit: MeasuringUnit
+        val name: String
 )
 
 data class Brand(
         val id: String,
         val name: String,
         val measuringUnit: MeasuringUnit,
-        val shoppingItem: ShoppingItem? = null
+        val shoppingItem: ShoppingItem
 ) {
-    fun effectiveMeasuringUnitName() = effectiveMeasuringUnit().name
-    fun effectiveMeasuringUnit() = shoppingItem?.measuringUnit ?: measuringUnit
-    fun itemName() = shoppingItem?.name ?: ""
+    fun measuringUnitName() = measuringUnit.name
+    fun itemName() = shoppingItem.name
 }
 
 data class BrandPrice(
@@ -35,12 +33,12 @@ data class BrandPrice(
         val brand: Brand,
         val atStoreBranch: StoreBranch
 ) {
-    fun measuringUnitName() = brand.effectiveMeasuringUnitName()
+    fun measuringUnitName() = brand.measuringUnitName()
     fun itemName() = brand.itemName()
     fun brandName() = brand.name
 }
 
-open class ShoppingListItem(
+data class ShoppingListItem(
         val id: String,
         val quantity: Int,
         val shoppingList: ShoppingList,
@@ -59,7 +57,7 @@ enum class ShoppingMode {
     PREPARATION, SHOPPING
 }
 
-open class ShoppingList(
+data class ShoppingList(
         val id: String,
         val name: String,
         val activeListPrice: Float,

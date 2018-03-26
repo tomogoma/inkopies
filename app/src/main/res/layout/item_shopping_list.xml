@@ -5,6 +5,8 @@
 
     <data>
 
+        <import type="android.view.View" />
+
         <variable
             name="item"
             type="ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem" />
@@ -79,7 +81,7 @@
             android:layout_height="wrap_content"
             android:maxLength="30"
             android:maxLines="1"
-            android:text="@{item.formattedUnitPrice()}"
+            android:text="@{item.fmtUnitPrice}"
             app:layout_constraintBaseline_toBaselineOf="@id/measuringUnit"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/measuringUnit"
@@ -104,7 +106,7 @@
             android:layout_height="wrap_content"
             android:maxLength="30"
             android:maxLines="1"
-            android:text="@{item.quantity}"
+            android:text="@{item.fmtQuantity}"
             app:layout_constraintBaseline_toBaselineOf="@id/x"
             app:layout_constraintEnd_toStartOf="@id/totalPrice"
             app:layout_constraintStart_toEndOf="@id/x"
@@ -116,11 +118,31 @@
             android:layout_height="wrap_content"
             android:maxLength="30"
             android:maxLines="1"
-            android:text="@{item.formattedTotalPrice()}"
+            android:text="@{item.fmtTotalPrice}"
             android:textStyle="bold"
             app:layout_constraintBaseline_toBaselineOf="@id/quantity"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="750.00" />
+
+        <FrameLayout
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="@{item.updating ? View.VISIBLE : View.GONE}"
+            app:elevation="2dp"
+            app:layout_constraintBottom_toBottomOf="@id/x"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/checked">
+
+            <android.support.v4.widget.ContentLoadingProgressBar
+                style="@style/Widget.AppCompat.ProgressBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"/>
+        </FrameLayout>
 
     </android.support.constraint.ConstraintLayout>
 </layout>
