@@ -1,31 +1,28 @@
 package ke.co.definition.inkopies.presentation.profile
 
-import android.app.Dialog
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import com.google.gson.Gson
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogEditGenProfileBinding
 import ke.co.definition.inkopies.model.user.Gender
 import ke.co.definition.inkopies.model.user.UserProfile
+import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
 
 /**
  * Created by tomogoma
  * On 09/03/18.
  */
-class EditGenProfDialogFragment : DialogFragment() {
+class EditGenProfDialogFragment : SLMDialogFragment() {
 
-    private var isDialog = false
     private var onDismissCallback: (up: UserProfile?) -> Unit = {}
 
     private val liveDataObservers = mutableListOf<LiveData<Any>>()
@@ -44,13 +41,6 @@ class EditGenProfDialogFragment : DialogFragment() {
         start(viewModel, views)
 
         return views.root
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        isDialog = true
-        return dialog
     }
 
     override fun dismiss() {
@@ -93,6 +83,9 @@ class EditGenProfDialogFragment : DialogFragment() {
             Gender.MALE -> vs.gender.check(R.id.male)
             Gender.FEMALE -> vs.gender.check(R.id.female)
             Gender.OTHER -> vs.gender.check(R.id.other)
+            Gender.NONE -> {
+                /* no-op don't bind*/
+            }
         }
         vm.setName(usrProf.name)
     }

@@ -1,49 +1,35 @@
 package ke.co.definition.inkopies.presentation.shopping.lists
 
-import android.app.Dialog
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.view.inputmethod.EditorInfo
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogNewShoppingListBinding
+import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 
 /**
  * Created by tomogoma
  * On 22/03/18.
  */
-class NewShoppingListDialogFrag : DialogFragment() {
+class NewShoppingListDialogFrag : SLMDialogFragment() {
 
-    private var isDialog = false
     private var shoppingList: VMShoppingList? = null
     private var onDismissCallback: (shoppingList: VMShoppingList?) -> Unit = {}
     private val liveDataObservers = mutableListOf<LiveData<Any>>()
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        isDialog = true
-        return dialog
-    }
-
-    override fun onCreateView(i: LayoutInflater, container: ViewGroup?,
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
-        if (!isDialog) {
-            throw RuntimeException("This DialogFragment only supports being started as a dialog" +
-                    "because of how it finishes() which will cause NPE on non-dialogs")
-        }
 
-        val views: DialogNewShoppingListBinding = DataBindingUtil.inflate(i,
+        val views: DialogNewShoppingListBinding = DataBindingUtil.inflate(inflater,
                 R.layout.dialog_new_shopping_list, container, false)
 
         val vmFactory = (activity.application as App).appComponent.provideNewShoppingListVMFactory()
