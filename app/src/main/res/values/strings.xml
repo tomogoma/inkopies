@@ -71,4 +71,9 @@
     <string name="new_shopping_list_title">New Shopping List</string>
     <string name="empty_items_text">Your items will appear here when you add them</string>
     <string name="times">X</string>
+    <string name="delete">Delete</string>
+    <string name="brand">Brand</string>
+    <string name="quantity">Quantity</string>
+    <string name="measuring_unit_title">Measuring Unit</string>
+    <string name="price">Price</string>
 </resources>

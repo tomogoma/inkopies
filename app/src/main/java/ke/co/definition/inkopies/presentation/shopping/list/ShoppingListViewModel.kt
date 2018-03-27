@@ -71,6 +71,10 @@ class ShoppingListViewModel @Inject constructor(
                 .subscribe({ onItemUpdated(it, posn) }, { showError(it) })
     }
 
+    fun onItemAdded(item: VMShoppingListItem) {
+        TODO()
+    }
+
     private fun onItemUpdated(newVal: VMShoppingListItem, posn: Int) {
         itemUpdate.value = Pair(newVal, posn)
     }

@@ -65,10 +65,14 @@ class ShoppingListActivity : AppCompatActivity() {
     }
 
     private fun observeViews(views: ActivityShoppingListBinding, vm: ShoppingListViewModel, va: ShoppingListAdapter) {
-        views.fab.setOnClickListener { TODO("Show new shopping list item") }
+        views.fab.setOnClickListener {
+            UpsertListItemDialogFrag.start(supportFragmentManager, null,
+                    { vm.onItemAdded(it ?: return@start) })
+        }
         va.setOnItemSelectedListener(object : ActionListener {
-            override fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus) {
-                TODO("Show edit item dialog")
+            override fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus) {
+                UpsertListItemDialogFrag.start(supportFragmentManager, item,
+                        { va.updateItem(it ?: return@start, pos) })
             }
 
             override fun onCheckChanged(item: VMShoppingListItem, pos: Int, newState: Boolean) {
@@ -110,7 +114,7 @@ class ShoppingListActivity : AppCompatActivity() {
     }
 
     interface ActionListener {
-        fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus)
+        fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus)
         fun onCheckChanged(item: VMShoppingListItem, pos: Int, newState: Boolean)
     }
 
@@ -118,7 +122,7 @@ class ShoppingListActivity : AppCompatActivity() {
             RecyclerView.Adapter<ShoppingListAdapter.ItemShoppingListHolder>() {
 
         private var listener: ActionListener = object : ActionListener {
-            override fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus) {
+            override fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus) {
                 /* No-op */
             }
 
@@ -145,19 +149,19 @@ class ShoppingListActivity : AppCompatActivity() {
             holder.binding.item = item
 
             holder.binding.brand.setOnClickListener {
-                listener.onItemSelected(item, ItemFocus.BRAND)
+                listener.onItemSelected(item, position, ItemFocus.BRAND)
             }
             holder.binding.name.setOnClickListener {
-                listener.onItemSelected(item, ItemFocus.ITEM)
+                listener.onItemSelected(item, position, ItemFocus.ITEM)
             }
             holder.binding.measuringUnit.setOnClickListener {
-                listener.onItemSelected(item, ItemFocus.MEASUREMENT_UNIT)
+                listener.onItemSelected(item, position, ItemFocus.MEASUREMENT_UNIT)
             }
             holder.binding.unitPrice.setOnClickListener {
-                listener.onItemSelected(item, ItemFocus.UNIT_PRICE)
+                listener.onItemSelected(item, position, ItemFocus.UNIT_PRICE)
             }
             holder.binding.quantity.setOnClickListener {
-                listener.onItemSelected(item, ItemFocus.QUANTITY)
+                listener.onItemSelected(item, position, ItemFocus.QUANTITY)
             }
             holder.binding.checked.setOnCheckedChangeListener { _, state ->
                 if (item.isChecked() == state) return@setOnCheckedChangeListener
