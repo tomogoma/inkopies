@@ -1,6 +1,7 @@
 package ke.co.definition.inkopies.presentation.common
 
 import android.app.Dialog
+import android.arch.lifecycle.LiveData
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import android.view.Window
 open class SLMDialogFragment : DialogFragment() {
 
     private var isDialog = false
+    internal val observedLiveData: MutableList<LiveData<*>> = mutableListOf()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         if (!isDialog) {
@@ -29,5 +31,10 @@ open class SLMDialogFragment : DialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         return dialog
+    }
+
+    override fun onDestroy() {
+        observedLiveData.forEach { it.removeObservers(this) }
+        super.onDestroy()
     }
 }

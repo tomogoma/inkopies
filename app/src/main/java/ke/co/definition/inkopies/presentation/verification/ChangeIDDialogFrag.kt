@@ -19,7 +19,6 @@ import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
 
 class ChangeIDDialogFrag : SLMDialogFragment() {
 
-    private val observedLiveData: MutableList<LiveData<Any>> = mutableListOf()
     private var onDismissCallback: (vl: VerifLogin?) -> Unit = {}
     private var result: VerifLogin? = null
 
@@ -39,11 +38,6 @@ class ChangeIDDialogFrag : SLMDialogFragment() {
         start(viewModel)
 
         return views.root
-    }
-
-    override fun onDestroy() {
-        observedLiveData.forEach { it.removeObservers(this) }
-        super.onDestroy()
     }
 
     override fun onDismiss(dialog: DialogInterface?) {

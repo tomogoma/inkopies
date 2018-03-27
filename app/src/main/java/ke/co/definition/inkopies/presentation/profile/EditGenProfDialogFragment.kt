@@ -25,8 +25,6 @@ class EditGenProfDialogFragment : SLMDialogFragment() {
 
     private var onDismissCallback: (up: UserProfile?) -> Unit = {}
 
-    private val liveDataObservers = mutableListOf<LiveData<Any>>()
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val views: DialogEditGenProfileBinding = DataBindingUtil.inflate(inflater,
@@ -48,11 +46,6 @@ class EditGenProfDialogFragment : SLMDialogFragment() {
         onDismissCallback(null)
     }
 
-    override fun onDestroy() {
-        liveDataObservers.forEach { it.removeObservers(this) }
-        super.onDestroy()
-    }
-
     fun setOnDismissCallback(cb: (up: UserProfile?) -> Unit) {
         onDismissCallback = cb
     }
@@ -68,7 +61,7 @@ class EditGenProfDialogFragment : SLMDialogFragment() {
         vm.snackbarData.observe(this, Observer { it!!.show(vs.layoutRoot) })
 
         @Suppress("UNCHECKED_CAST")
-        liveDataObservers.addAll(mutableListOf(
+        observedLiveData.addAll(mutableListOf(
                 vm.finishEvent as LiveData<Any>,
                 vm.snackbarData as LiveData<Any>
         ))

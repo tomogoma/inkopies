@@ -24,7 +24,6 @@ class NewShoppingListDialogFrag : SLMDialogFragment() {
 
     private var shoppingList: VMShoppingList? = null
     private var onDismissCallback: (shoppingList: VMShoppingList?) -> Unit = {}
-    private val liveDataObservers = mutableListOf<LiveData<Any>>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -47,7 +46,7 @@ class NewShoppingListDialogFrag : SLMDialogFragment() {
         vm.finished.observe(this, Observer { shoppingList = it; dismiss() })
 
         @Suppress("UNCHECKED_CAST")
-        liveDataObservers.addAll(mutableListOf(
+        observedLiveData.addAll(mutableListOf(
                 vm.snackbarData as LiveData<Any>,
                 vm.finished as LiveData<Any>
         ))
