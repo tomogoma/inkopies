@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.presentation.shopping.list
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
+import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.presentation.common.ProgressData
 import ke.co.definition.inkopies.presentation.common.clearErrorOnChange
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 class UpsertListItemViewModel : ViewModel() {
 
+    var title = ObservableField<Int>()
     var brandName = ObservableField<String>()
     var itemName = ObservableField<String>()
     var quantity = ObservableField<String>()
@@ -37,8 +39,10 @@ class UpsertListItemViewModel : ViewModel() {
 
     fun start(item: VMShoppingListItem?) {
         if (item == null) {
+            title.set(R.string.new_item_title)
             return
         }
+        title.set(R.string.edit_item_title)
         brandName.set(item.brandName())
         itemName.set(item.itemName())
         quantity.set(item.quantity.toString())

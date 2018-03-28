@@ -13,7 +13,11 @@ import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogUpsertListItemBinding
 import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
+import ke.co.definition.inkopies.presentation.common.hideKeyboard
+import ke.co.definition.inkopies.presentation.common.onGlobalLayoutOnce
+import ke.co.definition.inkopies.presentation.common.showKeyboard
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
+
 
 /**
  * Created by tomogoma
@@ -33,7 +37,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         views.vm = viewModel
 
         observeViewModel(viewModel, views)
-        start(viewModel)
+        start(viewModel, views)
         observeViews(views, viewModel)
 
         return views.root
@@ -46,6 +50,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             if (actionID != EditorInfo.IME_ACTION_DONE) {
                 return@setOnEditorActionListener false
             }
+            vs.unitPrice.hideKeyboard(activity!!)
             vm.onSubmit()
             return@setOnEditorActionListener true
         }
@@ -54,30 +59,55 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
     }
 
-    private fun start(vm: UpsertListItemViewModel) {
+    private fun start(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
 
-        val itemStr = arguments?.getString(EXTRA_LIST_ITEM)
+        val itemStr = arguments!!.getString(EXTRA_LIST_ITEM)
         if (itemStr == null || itemStr == "") {
             vm.start(null)
-            return
+        } else {
+            val item = Gson().fromJson(itemStr, VMShoppingListItem::class.java)
+            vm.start(item)
         }
 
-        val item = Gson().fromJson(itemStr, VMShoppingListItem::class.java)
-        vm.start(item)
+        vs.layoutRoot.onGlobalLayoutOnce {
+
+            val focusStr = arguments!!.getString(EXTRA_FOCUS)
+            val focus = ItemFocus.valueOf(focusStr)
+
+            when (focus) {
+                ItemFocus.BRAND -> vs.brandName.showKeyboard(activity!!)
+                ItemFocus.ITEM -> vs.itemName.showKeyboard(activity!!)
+                ItemFocus.MEASUREMENT_UNIT -> vs.measuringUnit.showKeyboard(activity!!)
+                ItemFocus.UNIT_PRICE -> vs.unitPrice.showKeyboard(activity!!)
+                ItemFocus.QUANTITY -> vs.quantity.showKeyboard(activity!!)
+                ItemFocus.NONE -> {
+                    /* no-op */
+                }
+            }
+        }
+
     }
 
     companion object {
         private const val EXTRA_LIST_ITEM = "EXTRA_LIST_ITEM"
+        private const val EXTRA_FOCUS = "EXTRA_FOCUS"
 
-        fun start(fm: FragmentManager, item: VMShoppingListItem?,
+        fun start(fm: FragmentManager, item: VMShoppingListItem?, focus: ItemFocus?,
                   onDismissCallback: (vl: VMShoppingListItem?) -> Unit = {}) {
             UpsertListItemDialogFrag().apply {
+
                 this.onDismissCallback = onDismissCallback
-                if (item != null) {
-                    arguments = Bundle().apply { putString(EXTRA_LIST_ITEM, Gson().toJson(item)) }
+
+                arguments = Bundle().apply {
+                    if (item != null) {
+                        putString(EXTRA_LIST_ITEM, Gson().toJson(item))
+                    }
+                    putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.NONE.name)
                 }
+
                 show(fm, UpsertListItemDialogFrag::class.java.name)
             }
         }
     }
 }
+

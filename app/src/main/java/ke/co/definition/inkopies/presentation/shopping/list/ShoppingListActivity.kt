@@ -36,7 +36,7 @@ class ShoppingListActivity : AppCompatActivity() {
                 .get(ShoppingListViewModel::class.java)
         views.vm = viewModel
 
-        val viewAdapter = prepRecyclerView(views.content!!)
+        val viewAdapter = prepRecyclerView(views.content)
         setSupportActionBar(views.toolbar)
 
         observeViewModel(viewModel, views, viewAdapter)
@@ -66,12 +66,12 @@ class ShoppingListActivity : AppCompatActivity() {
 
     private fun observeViews(views: ActivityShoppingListBinding, vm: ShoppingListViewModel, va: ShoppingListAdapter) {
         views.fab.setOnClickListener {
-            UpsertListItemDialogFrag.start(supportFragmentManager, null,
+            UpsertListItemDialogFrag.start(supportFragmentManager, null, null,
                     { vm.onItemAdded(it ?: return@start) })
         }
         va.setOnItemSelectedListener(object : ActionListener {
             override fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus) {
-                UpsertListItemDialogFrag.start(supportFragmentManager, item,
+                UpsertListItemDialogFrag.start(supportFragmentManager, item, focus,
                         { va.updateItem(it ?: return@start, pos) })
             }
 
@@ -159,6 +159,9 @@ class ShoppingListActivity : AppCompatActivity() {
             }
             holder.binding.unitPrice.setOnClickListener {
                 listener.onItemSelected(item, position, ItemFocus.UNIT_PRICE)
+            }
+            holder.binding.x.setOnClickListener {
+                listener.onItemSelected(item, position, ItemFocus.QUANTITY)
             }
             holder.binding.quantity.setOnClickListener {
                 listener.onItemSelected(item, position, ItemFocus.QUANTITY)

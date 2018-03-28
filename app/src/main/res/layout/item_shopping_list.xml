@@ -106,10 +106,12 @@
             android:layout_height="wrap_content"
             android:maxLength="30"
             android:maxLines="1"
+            android:paddingEnd="@dimen/space_normal"
             android:text="@{item.fmtQuantity}"
             app:layout_constraintBaseline_toBaselineOf="@id/x"
             app:layout_constraintEnd_toStartOf="@id/totalPrice"
             app:layout_constraintStart_toEndOf="@id/x"
+            tools:ignore="RtlSymmetry"
             tools:text="3" />
 
         <TextView
@@ -141,7 +143,7 @@
                 style="@style/Widget.AppCompat.ProgressBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center" />
         </FrameLayout>
 
     </android.support.constraint.ConstraintLayout>
