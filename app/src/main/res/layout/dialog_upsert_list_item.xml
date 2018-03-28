@@ -152,16 +152,22 @@
                     android:text="@={vm.unitPrice}" />
             </android.support.design.widget.TextInputLayout>
 
+            <android.support.constraint.Guideline
+                android:id="@+id/startMarginGuideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="@dimen/space_normal" />
+
             <Button
                 android:id="@+id/delete"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/space_normal"
                 android:text="@string/delete"
                 android:visibility="@{vm.deletable ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBaseline_toBaselineOf="@id/submit"
                 app:layout_constraintEnd_toStartOf="@id/submit"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="@id/startMarginGuideline" />
 
             <Button
                 android:id="@+id/submit"
