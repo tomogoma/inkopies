@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.model.shopping
 
+import rx.Completable
 import rx.Single
 
 /**
@@ -11,4 +12,6 @@ interface ShoppingManager {
     fun getShoppingLists(offset: Long, count: Int): Single<List<ShoppingList>>
     fun getShoppingListItems(shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>>
     fun updateShoppingListItem(item: ShoppingListItem): Single<ShoppingListItem>
+    fun upsertShoppingListItem(req: ShoppingListItemRequest): Single<ShoppingListItem>
+    fun deleteShoppingListItem(id: String): Completable
 }

@@ -136,7 +136,7 @@
                 android:layout_marginEnd="@dimen/space_normal"
                 android:layout_marginStart="@dimen/space_normal"
                 app:error="@{vm.unitPriceError}"
-                app:layout_constraintBottom_toTopOf="@id/delete"
+                app:layout_constraintBottom_toTopOf="@id/submit"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/measuringUnitLayout">
@@ -156,23 +156,24 @@
                 android:id="@+id/delete"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_normal"
                 android:layout_marginStart="@dimen/space_normal"
                 android:text="@string/delete"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:visibility="@{vm.deletable ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@id/submit"
                 app:layout_constraintEnd_toStartOf="@id/submit"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/unitPriceLayout" />
+                app:layout_constraintStart_toStartOf="parent" />
 
             <Button
                 android:id="@+id/submit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_normal"
                 android:layout_marginEnd="@dimen/space_normal"
                 android:text="@string/submit"
-                app:layout_constraintBaseline_toBaselineOf="@id/delete"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/delete" />
+                app:layout_constraintStart_toEndOf="@id/delete"
+                app:layout_constraintTop_toBottomOf="@id/unitPriceLayout" />
 
             <include
                 android:id="@+id/overlayProgress"

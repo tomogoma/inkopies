@@ -53,6 +53,16 @@ data class ShoppingListItem(
     fun totalPrice() = unitPrice() * quantity
 }
 
+data class ShoppingListItemRequest(
+        val shoppingListID: String,
+        val itemName: String,
+        val itemID: String?,
+        val brandName: String?,
+        val quantity: Int?,
+        val measuringUnit: String?,
+        val unitPrice: Float?
+)
+
 enum class ShoppingMode {
     PREPARATION, SHOPPING
 }

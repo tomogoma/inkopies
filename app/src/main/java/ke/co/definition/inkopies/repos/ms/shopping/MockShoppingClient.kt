@@ -8,6 +8,7 @@ import okhttp3.MediaType
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.adapter.rxjava.HttpException
+import rx.Completable
 import rx.Single
 import java.util.*
 
@@ -25,15 +26,52 @@ class MockShoppingClient : ShoppingClient {
 
     private var shoppingListItems = mutableListOf<ShoppingListItem>()
 
+
+    override fun upsertShoppingListItem(token: String, req: ShoppingListItemRequest): Single<ShoppingListItem> {
+        return Single.create {
+            Thread.sleep(2000)
+            var rslt: ShoppingListItem?
+            try {
+                val indx = getShoppingListItemIndex(req.itemID ?: throw notFound())
+                val curr = shoppingListItems[indx]
+                rslt = ShoppingListItem(
+                        curr.id, req.quantity ?: curr.quantity,
+                        ShoppingList(req.shoppingListID, curr.shoppingList.name,
+                                curr.shoppingList.activeListPrice, curr.shoppingList.cartPrice,
+                                curr.shoppingList.mode),
+                        BrandPrice(curr.brandPrice.id, req.unitPrice ?: curr.unitPrice(),
+                                Brand(curr.brandPrice.brand.id, req.brandName ?: curr.brandName(),
+                                        MeasuringUnit(curr.brandPrice.brand.measuringUnit.id,
+                                                req.measuringUnit ?: curr.measuringUnitName()),
+                                        ShoppingItem(curr.brandPrice.brand.shoppingItem.id,
+                                                req.itemName)),
+                                curr.brandPrice.atStoreBranch),
+                        curr.inList, curr.inCart
+                )
+                shoppingListItems[indx] = rslt
+            } catch (e: HttpException) {
+                val rand = Random(Date().time)
+                rslt = genShoppingListItem(req.shoppingListID, rand.nextInt().toString(), rand)
+                shoppingListItems.add(rslt)
+            }
+
+            it.onSuccess(rslt)
+        }
+    }
+
+    override fun deleteShoppingListItem(token: String, id: String): Completable {
+        return Completable.create {
+            Thread.sleep(2000)
+            val indx = getShoppingListItemIndex(id)
+            shoppingListItems.removeAt(indx)
+            it.onCompleted()
+        }
+    }
+
     override fun updateShoppingListItem(token: String, item: ShoppingListItem): Single<ShoppingListItem> {
         return Single.create {
             Thread.sleep(2000)
-            var indx = -1
-            shoppingListItems.forEachIndexed { i, itm -> if (itm.id == item.id) indx = i }
-            if (indx == -1) {
-                it.onError(notFound())
-                return@create
-            }
+            val indx = getShoppingListItemIndex(item.id)
             shoppingListItems[indx] = item
             it.onSuccess(item)
         }
@@ -75,6 +113,15 @@ class MockShoppingClient : ShoppingClient {
         }
     }
 
+    private fun getShoppingListItemIndex(id: String): Int {
+        var indx = -1
+        shoppingListItems.forEachIndexed { i, itm -> if (itm.id == id) indx = i }
+        if (indx == -1) {
+            throw notFound()
+        }
+        return indx
+    }
+
     private fun notFound() = HttpException(Response.error<ResponseBody>(STATUS_NOT_FOUND,
             ResponseBody.create(MediaType.parse("text/plain"), "none found")))
 
@@ -90,26 +137,28 @@ class MockShoppingClient : ShoppingClient {
         val list = mutableListOf<ShoppingListItem>()
         val rand = Random(Date().time)
         for (i in 0..1000) {
-            list.add(ShoppingListItem(
-                    i.toString(),
-                    rand.nextInt(5),
-                    ShoppingList(shoppingListID, randWord(rand), 0F, 0F,
-                            ShoppingMode.PREPARATION),
-                    BrandPrice(
-                            randID(rand),
-                            rand.nextFloat(),
-                            Brand(randID(rand), randWord(rand),
-                                    MeasuringUnit(randID(rand), randWord(rand)),
-                                    ShoppingItem(randID(rand), randWord(rand))),
-                            StoreBranch(randID(rand), randWord(rand), Store(randID(rand),
-                                    randWord(rand)))
-                    ),
-                    rand.nextBoolean(),
-                    rand.nextBoolean()
-            ))
+            list.add(genShoppingListItem(shoppingListID, i.toString(), rand))
         }
         return list
     }
+
+    fun genShoppingListItem(shoppingListID: String, id: String, rand: Random) = ShoppingListItem(
+            id,
+            rand.nextInt(5),
+            ShoppingList(shoppingListID, randWord(rand), 0F, 0F,
+                    ShoppingMode.PREPARATION),
+            BrandPrice(
+                    randID(rand),
+                    rand.nextFloat(),
+                    Brand(randID(rand), randWord(rand),
+                            MeasuringUnit(randID(rand), randWord(rand)),
+                            ShoppingItem(randID(rand), randWord(rand))),
+                    StoreBranch(randID(rand), randWord(rand), Store(randID(rand),
+                            randWord(rand)))
+            ),
+            rand.nextBoolean(),
+            rand.nextBoolean()
+    )
 
     private fun randID(rand: Random) = rand.nextInt().toString()
 

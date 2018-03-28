@@ -40,9 +40,8 @@ class ShoppingListActivity : AppCompatActivity() {
         setSupportActionBar(views.toolbar)
 
         observeViewModel(viewModel, views, viewAdapter)
-        observeViews(views, viewModel, viewAdapter)
-
-        start(viewModel)
+        val list = start(viewModel)
+        observeViews(list, views, viewModel, viewAdapter)
     }
 
     override fun onDestroy() {
@@ -64,15 +63,21 @@ class ShoppingListActivity : AppCompatActivity() {
         return viewAdapter
     }
 
-    private fun observeViews(views: ActivityShoppingListBinding, vm: ShoppingListViewModel, va: ShoppingListAdapter) {
-        views.fab.setOnClickListener {
-            UpsertListItemDialogFrag.start(supportFragmentManager, null, null,
+    private fun observeViews(list: VMShoppingList, vs: ActivityShoppingListBinding, vm: ShoppingListViewModel, va: ShoppingListAdapter) {
+        vs.fab.setOnClickListener {
+            UpsertListItemDialogFrag.start(supportFragmentManager, list, null, null,
                     { vm.onItemAdded(it ?: return@start) })
         }
         va.setOnItemSelectedListener(object : ActionListener {
             override fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus) {
-                UpsertListItemDialogFrag.start(supportFragmentManager, item, focus,
-                        { va.updateItem(it ?: return@start, pos) })
+                UpsertListItemDialogFrag.start(supportFragmentManager, list, item, focus,
+                        {
+                            if (it != null) {
+                                va.updateItem(it, pos)
+                            } else {
+                                va.removeItem(pos)
+                            }
+                        })
             }
 
             override fun onCheckChanged(item: VMShoppingListItem, pos: Int, newState: Boolean) {
@@ -87,19 +92,22 @@ class ShoppingListActivity : AppCompatActivity() {
         vm.itemUpdate.observe(this, Observer {
             va.updateItem(it?.first ?: return@Observer, it.second)
         })
+        vm.newItem.observe(this, Observer { va.add(it ?: return@Observer) })
 
         @Suppress("UNCHECKED_CAST")
         liveDataObservables.addAll(mutableListOf(
                 vm.snackbarData as LiveData<Any>,
                 vm.nextPage as LiveData<Any>,
-                vm.itemUpdate as LiveData<Any>
+                vm.itemUpdate as LiveData<Any>,
+                vm.newItem as LiveData<Any>
         ))
     }
 
-    private fun start(vm: ShoppingListViewModel) {
+    private fun start(vm: ShoppingListViewModel): VMShoppingList {
         val slStr = intent.getStringExtra(EXTRA_SHOPPING_LIST)
         val sl = Gson().fromJson(slStr, VMShoppingList::class.java)
         vm.start(sl)
+        return sl
     }
 
     companion object {
@@ -186,6 +194,11 @@ class ShoppingListActivity : AppCompatActivity() {
             this.items.removeAt(pos)
             this.items.add(pos, newVal)
             notifyItemChanged(pos)
+        }
+
+        fun removeItem(pos: Int) {
+            this.items.removeAt(pos)
+            notifyItemRemoved(pos)
         }
 
         fun add(item: VMShoppingListItem) {

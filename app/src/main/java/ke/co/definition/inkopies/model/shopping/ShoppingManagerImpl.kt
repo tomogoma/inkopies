@@ -26,6 +26,27 @@ class ShoppingManagerImpl @Inject constructor(
         logger.setTag(ShoppingManagerImpl::class.java.name)
     }
 
+    override fun upsertShoppingListItem(req: ShoppingListItemRequest): Single<ShoppingListItem> {
+        return validateShoppingListItemReq(req)
+                .toSingle {}
+                .flatMap { auth.getJWT() }
+                .flatMap { client.upsertShoppingListItem(it.value, req) }
+                .onErrorResumeNext {
+                    Single.error(handleAuthErrors(logger, resMan, it, "upsert shopping list item"))
+                }
+    }
+
+    override fun deleteShoppingListItem(id: String): Completable {
+        var jwt = ""
+        return auth.getJWT()
+                .map { jwt = it.value }
+                .toCompletable()
+                .andThen(client.deleteShoppingListItem(jwt, id))
+                .onErrorResumeNext {
+                    Completable.error(handleAuthErrors(logger, resMan, it, "delete shopping list item"))
+                }
+    }
+
     override fun updateShoppingListItem(item: ShoppingListItem): Single<ShoppingListItem> {
         return validateShoppingListItem(item)
                 .toSingle {}
@@ -67,6 +88,14 @@ class ShoppingManagerImpl @Inject constructor(
 
     private fun validateShoppingListItem(item: ShoppingListItem) = Completable.create {
         if (item.itemName() == "") {
+            it.onError(Exception("item name cannot be empty"))
+            return@create
+        }
+        it.onCompleted()
+    }
+
+    private fun validateShoppingListItemReq(item: ShoppingListItemRequest) = Completable.create {
+        if (item.itemName == "") {
             it.onError(Exception("item name cannot be empty"))
             return@create
         }

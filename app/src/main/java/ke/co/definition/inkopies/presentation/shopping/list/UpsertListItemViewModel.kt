@@ -3,31 +3,54 @@ package ke.co.definition.inkopies.presentation.shopping.list
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
+import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.ResourceManager
+import ke.co.definition.inkopies.model.shopping.ShoppingListItemRequest
+import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.presentation.common.ProgressData
+import ke.co.definition.inkopies.presentation.common.SnackBarData
+import ke.co.definition.inkopies.presentation.common.TextSnackBarData
 import ke.co.definition.inkopies.presentation.common.clearErrorOnChange
+import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
+import ke.co.definition.inkopies.utils.injection.Dagger2Module
+import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
+import rx.Scheduler
 import javax.inject.Inject
+import javax.inject.Named
 
 /**
  * Created by tomogoma
  * On 27/03/18.
  */
 
-class UpsertListItemViewModel : ViewModel() {
+class UpsertListItemViewModel @Inject constructor(
+        private val manager: ShoppingManager,
+        private val resMan: ResourceManager,
+        @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
+        @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
+) : ViewModel() {
 
-    var title = ObservableField<Int>()
-    var brandName = ObservableField<String>()
-    var itemName = ObservableField<String>()
-    var quantity = ObservableField<String>()
-    var measuringUnit = ObservableField<String>()
-    var unitPrice = ObservableField<String>()
-    var brandNameError = ObservableField<String>()
-    var itemNameError = ObservableField<String>()
-    var quantityError = ObservableField<String>()
-    var measuringUnitError = ObservableField<String>()
-    var unitPriceError = ObservableField<String>()
-    var overlayProgress = ObservableField<ProgressData>()
+    val title = ObservableField<Int>()
+    val brandName = ObservableField<String>()
+    val itemName = ObservableField<String>()
+    val quantity = ObservableField<String>()
+    val measuringUnit = ObservableField<String>()
+    val unitPrice = ObservableField<String>()
+    val brandNameError = ObservableField<String>()
+    val itemNameError = ObservableField<String>()
+    val quantityError = ObservableField<String>()
+    val measuringUnitError = ObservableField<String>()
+    val unitPriceError = ObservableField<String>()
+    val overlayProgress = ObservableField<ProgressData>()
+    val deletable = ObservableField<Boolean>()
+
+    val snackBarData = SingleLiveEvent<SnackBarData>()
+    val finished = SingleLiveEvent<VMShoppingListItem>()
+
+    private lateinit var list: VMShoppingList
+    private var id: String? = null
 
     init {
         brandName.clearErrorOnChange(brandNameError)
@@ -37,12 +60,16 @@ class UpsertListItemViewModel : ViewModel() {
         unitPrice.clearErrorOnChange(brandNameError)
     }
 
-    fun start(item: VMShoppingListItem?) {
+    fun start(list: VMShoppingList, item: VMShoppingListItem?) {
+        this.list = list
         if (item == null) {
             title.set(R.string.new_item_title)
+            deletable.set(false)
             return
         }
         title.set(R.string.edit_item_title)
+        deletable.set(true)
+        id = item.id
         brandName.set(item.brandName())
         itemName.set(item.itemName())
         quantity.set(item.quantity.toString())
@@ -51,17 +78,59 @@ class UpsertListItemViewModel : ViewModel() {
     }
 
     fun onDelete() {
-        TODO()
+        manager.deleteShoppingListItem(id!!)
+                .doOnSubscribe {
+                    overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
+                }
+                .doOnUnsubscribe { overlayProgress.set(ProgressData()) }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe({ finished.value = null }, {
+                    snackBarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
+                })
     }
 
     fun onSubmit() {
-        TODO()
+        if (!validate()) {
+            return
+        }
+        manager.upsertShoppingListItem(ShoppingListItemRequest(
+                list.id, itemName.get()!!, id, brandName.get(), quantity.get()?.toInt(),
+                measuringUnit.get(), unitPrice.get()?.toFloat()
+        ))
+                .doOnSubscribe {
+                    overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
+                }
+                .doOnUnsubscribe { overlayProgress.set(ProgressData()) }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .map { VMShoppingListItem(it, list.mode) }
+                .subscribe({ finished.value = it }, {
+                    snackBarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
+                })
     }
 
-    class Factory @Inject constructor() : ViewModelProvider.Factory {
+    private fun validate(): Boolean {
+        var isValid = true
+        val item = itemName.get()
+        if (item == null || item == "") {
+            itemNameError.set(resMan.getString(R.string.error_required_field))
+            isValid = false
+
+        }
+        return isValid
+    }
+
+    class Factory @Inject constructor(
+            private val manager: ShoppingManager,
+            private val resMan: ResourceManager,
+            @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
+            @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return UpsertListItemViewModel() as T
+            return UpsertListItemViewModel(manager, resMan, subscribeOnScheduler, observeOnScheduler)
+                    as T
         }
     }
 }

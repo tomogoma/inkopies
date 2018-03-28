@@ -1,6 +1,8 @@
 package ke.co.definition.inkopies.presentation.shopping.list
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.DialogInterface
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
@@ -16,6 +18,7 @@ import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
 import ke.co.definition.inkopies.presentation.common.hideKeyboard
 import ke.co.definition.inkopies.presentation.common.onGlobalLayoutOnce
 import ke.co.definition.inkopies.presentation.common.showKeyboard
+import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 
 
@@ -26,6 +29,7 @@ import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     internal var onDismissCallback: (VMShoppingListItem?) -> Unit = {}
+    private var item: VMShoppingListItem? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
@@ -43,6 +47,11 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         return views.root
     }
 
+    override fun onDismiss(dialog: DialogInterface?) {
+        onDismissCallback(item)
+        super.onDismiss(dialog)
+    }
+
     private fun observeViews(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
         vs.delete.setOnClickListener { vm.onDelete() }
         vs.submit.setOnClickListener { vm.onSubmit() }
@@ -57,16 +66,22 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     }
 
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
+        vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
+        vm.finished.observe(this, Observer { item = it; dialog.dismiss() })
+        observedLiveData.addAll(mutableListOf(vm.snackBarData, vm.finished))
     }
 
     private fun start(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
 
+        val listStr = arguments!!.getString(EXTRA_LIST)
+        val list = Gson().fromJson(listStr, VMShoppingList::class.java)
+
         val itemStr = arguments!!.getString(EXTRA_LIST_ITEM)
         if (itemStr == null || itemStr == "") {
-            vm.start(null)
+            vm.start(list, null)
         } else {
             val item = Gson().fromJson(itemStr, VMShoppingListItem::class.java)
-            vm.start(item)
+            vm.start(list, item)
         }
 
         vs.layoutRoot.onGlobalLayoutOnce {
@@ -91,9 +106,10 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     companion object {
         private const val EXTRA_LIST_ITEM = "EXTRA_LIST_ITEM"
         private const val EXTRA_FOCUS = "EXTRA_FOCUS"
+        private const val EXTRA_LIST = "EXTRA_LIST"
 
-        fun start(fm: FragmentManager, item: VMShoppingListItem?, focus: ItemFocus?,
-                  onDismissCallback: (vl: VMShoppingListItem?) -> Unit = {}) {
+        fun start(fm: FragmentManager, list: VMShoppingList, item: VMShoppingListItem?,
+                  focus: ItemFocus?, onDismissCallback: (vl: VMShoppingListItem?) -> Unit = {}) {
             UpsertListItemDialogFrag().apply {
 
                 this.onDismissCallback = onDismissCallback
@@ -103,6 +119,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                         putString(EXTRA_LIST_ITEM, Gson().toJson(item))
                     }
                     putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.NONE.name)
+                    putString(EXTRA_LIST, Gson().toJson(list))
                 }
 
                 show(fm, UpsertListItemDialogFrag::class.java.name)

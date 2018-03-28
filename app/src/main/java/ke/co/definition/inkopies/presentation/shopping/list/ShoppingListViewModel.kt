@@ -35,6 +35,7 @@ class ShoppingListViewModel @Inject constructor(
 
     val snackbarData = SingleLiveEvent<SnackBarData>()
     val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
+    val newItem = SingleLiveEvent<VMShoppingListItem>()
     val itemUpdate = SingleLiveEvent<Pair<VMShoppingListItem, Int>>()
 
     private var currOffset = 0L
@@ -72,7 +73,9 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     fun onItemAdded(item: VMShoppingListItem) {
-        TODO()
+        currOffset++
+        newItem.value = item
+        showItems()
     }
 
     private fun onItemUpdated(newVal: VMShoppingListItem, posn: Int) {
@@ -138,6 +141,6 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     companion object {
-        const val PRICE_FETCH_COUNT = 100
+        const val PRICE_FETCH_COUNT = 5
     }
 }
