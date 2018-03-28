@@ -19,8 +19,8 @@ class ManualLoginFragment : Fragment() {
         val binding = DataBindingUtil.inflate<FragmentManualLoginBinding>(inflater,
                 R.layout.fragment_manual_login, container, false)
 
-        val lvmFactory = (activity.application as App).appComponent.loginVMFactory()
-        val lvm = ViewModelProviders.of(activity, lvmFactory).get(LoginViewModel::class.java)
+        val lvmFactory = (activity!!.application as App).appComponent.loginVMFactory()
+        val lvm = ViewModelProviders.of(activity!!, lvmFactory).get(LoginViewModel::class.java)
         binding.vm = lvm
 
         observeView(binding)
@@ -30,7 +30,7 @@ class ManualLoginFragment : Fragment() {
 
     private fun observeView(b: FragmentManualLoginBinding) {
         b.submit.setOnClickListener({ b.vm!!.logInManual(context ?: return@setOnClickListener) })
-        b.manualLoginInputs!!.password.setOnEditorActionListener { _, actionID, _ ->
+        b.manualLoginInputs.password.setOnEditorActionListener { _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
                 b.vm!!.logInManual(context ?: return@setOnEditorActionListener true)
                 return@setOnEditorActionListener true

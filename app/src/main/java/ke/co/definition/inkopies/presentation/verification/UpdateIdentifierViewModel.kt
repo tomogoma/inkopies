@@ -57,7 +57,7 @@ class UpdateIdentifierViewModel @Inject constructor(
             identifierError.set(resMngr.getString(R.string.error_required_field))
             return
         }
-        auth.updateIdentifier(identifier.get())
+        auth.updateIdentifier(id)
                 .doOnSubscribe {
                     progressOverlay.set(ProgressData(String.format(
                             resMngr.getString(R.string.updating_login_details_to_ss), id)))

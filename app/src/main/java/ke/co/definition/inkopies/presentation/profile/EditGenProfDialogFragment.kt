@@ -29,7 +29,7 @@ class EditGenProfDialogFragment : SLMDialogFragment() {
 
         val views: DialogEditGenProfileBinding = DataBindingUtil.inflate(inflater,
                 R.layout.dialog_edit_gen_profile, container, false)
-        val gpvmFactory = (activity.application as App).appComponent.generalProfileVMFactory()
+        val gpvmFactory = (activity!!.application as App).appComponent.generalProfileVMFactory()
         val viewModel = ViewModelProviders.of(this, gpvmFactory)
                 .get(GeneralProfileViewModel::class.java)
         views.vm = viewModel

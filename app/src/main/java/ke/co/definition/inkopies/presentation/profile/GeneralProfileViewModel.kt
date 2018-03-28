@@ -55,7 +55,7 @@ class GeneralProfileViewModel @Inject constructor(
         if (!validateGeneralProfile(gender)) {
             return
         }
-        profMngr.updateGeneral(name.get(), gender!!)
+        profMngr.updateGeneral(name.get()!!, gender!!)
                 .doOnSubscribe {
                     progressOverlay.set(ProgressData(resMngr.getString(R.string.updating_profile)))
                 }

@@ -9,7 +9,10 @@ import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.OTPStatus
 import ke.co.definition.inkopies.model.auth.VerifLogin
-import ke.co.definition.inkopies.presentation.common.*
+import ke.co.definition.inkopies.presentation.common.ProgressData
+import ke.co.definition.inkopies.presentation.common.ResIDSnackBarData
+import ke.co.definition.inkopies.presentation.common.SnackBarData
+import ke.co.definition.inkopies.presentation.common.TextSnackBarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -68,10 +71,11 @@ class VerificationViewModel @Inject constructor(
 
     fun onSubmit() {
 
-        auth.verifyOTP(verifLogin.get(), otp.get())
+        val vl = verifLogin.get()!!
+        auth.verifyOTP(vl, otp.get())
                 .doOnSubscribe {
                     progress.set(ProgressData(String.format(
-                            resMngr.getString(R.string.verifying_ss), verifLogin.get().value)))
+                            resMngr.getString(R.string.verifying_ss), vl.value)))
                 }
                 .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
@@ -85,7 +89,7 @@ class VerificationViewModel @Inject constructor(
 
     fun onRequestResendOTP() {
 
-        auth.sendVerifyOTP(verifLogin.get())
+        auth.sendVerifyOTP(verifLogin.get()!!)
                 .doOnSubscribe {
                     progress.set(ProgressData(resMngr.getString(
                             R.string.sending_verification_code)))
@@ -100,10 +104,11 @@ class VerificationViewModel @Inject constructor(
 
     fun onClaimVerified() {
 
-        auth.checkIdentifierVerified(verifLogin.get())
+        auth.checkIdentifierVerified(verifLogin.get()!!)
                 .doOnSubscribe {
                     progress.set(ProgressData(String.format(resMngr.getString(
-                            R.string.checking_ss_verified), verifLogin.get().value)))
+                            R.string.checking_ss_verified),
+                            verifLogin.get()!!.value)))
                 }
                 .doOnUnsubscribe { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
@@ -116,7 +121,7 @@ class VerificationViewModel @Inject constructor(
     }
 
     private fun onOTPResent(it: OTPStatus) {
-        val vl = verifLogin.get()
+        val vl = verifLogin.get()!!
         hasBeenStarted.set(false)
         start(VerifLogin(vl.id, vl.userID, vl.value, vl.verified, it))
         snackBarData.value = ResIDSnackBarData(R.string.verification_code_resent, Snackbar.LENGTH_LONG)
@@ -124,7 +129,7 @@ class VerificationViewModel @Inject constructor(
 
     private fun countDownResetVisibility() {
         resetCDSub?.unsubscribe()
-        resetCDSub = auth.resendInterval(verifLogin.get().otpStatus, 1)
+        resetCDSub = auth.resendInterval(verifLogin.get()!!.otpStatus, 1)
                 .doOnUnsubscribe({ resetCDTimer.set("") })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)

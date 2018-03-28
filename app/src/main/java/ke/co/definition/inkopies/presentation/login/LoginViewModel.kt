@@ -11,11 +11,11 @@ import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.ValidationResult
 import ke.co.definition.inkopies.model.auth.VerifLogin
-import ke.co.definition.inkopies.utils.injection.Dagger2Module
-import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import ke.co.definition.inkopies.presentation.common.ProgressData
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.utils.injection.Dagger2Module
+import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
@@ -76,7 +76,7 @@ class LoginViewModel @Inject constructor(
             return
         }
 
-        auth.loginManual(valRes.getIdentifier(), pass)
+        auth.loginManual(valRes.getIdentifier(), pass!!)
                 .doOnSubscribe({ progressData.set(ProgressData(c.getString(R.string.loggin_in))) })
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
@@ -98,7 +98,7 @@ class LoginViewModel @Inject constructor(
             return
         }
 
-        auth.registerManual(valRes.getIdentifier(), pass)
+        auth.registerManual(valRes.getIdentifier(), pass!!)
                 .doOnSubscribe({ progressData.set(ProgressData(c.getString(R.string.registering))) })
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)

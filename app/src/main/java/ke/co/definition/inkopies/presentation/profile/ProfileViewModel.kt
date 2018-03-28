@@ -119,7 +119,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onBackPressed(): Boolean {
-        if (enlargePPic.get()) {
+        if (enlargePPic.get() == true) {
             enlargePPic.set(false)
             return true
         }

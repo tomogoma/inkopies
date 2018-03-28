@@ -27,7 +27,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
                 R.layout.dialog_upsert_list_item, container, false)
 
-        val vmFactory = (activity.application as App).appComponent.provideUpsertListItemVMFactory()
+        val vmFactory = (activity!!.application as App).appComponent.provideUpsertListItemVMFactory()
         val viewModel = ViewModelProviders.of(this, vmFactory)
                 .get(UpsertListItemViewModel::class.java)
         views.vm = viewModel

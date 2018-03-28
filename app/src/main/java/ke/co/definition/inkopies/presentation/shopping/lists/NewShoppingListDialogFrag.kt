@@ -31,7 +31,7 @@ class NewShoppingListDialogFrag : SLMDialogFragment() {
         val views: DialogNewShoppingListBinding = DataBindingUtil.inflate(inflater,
                 R.layout.dialog_new_shopping_list, container, false)
 
-        val vmFactory = (activity.application as App).appComponent.provideNewShoppingListVMFactory()
+        val vmFactory = (activity!!.application as App).appComponent.provideNewShoppingListVMFactory()
         val vm = ViewModelProviders.of(this, vmFactory).get(NewShoppingListViewModel::class.java)
         views.vm = vm
 
