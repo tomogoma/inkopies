@@ -46,17 +46,31 @@ class MockShoppingClient : ShoppingClient {
                                         ShoppingItem(curr.brandPrice.brand.shoppingItem.id,
                                                 req.itemName)),
                                 curr.brandPrice.atStoreBranch),
-                        curr.inList, curr.inCart
+                        req.inList, req.inCart
                 )
                 shoppingListItems[indx] = rslt
             } catch (e: HttpException) {
                 val rand = Random(Date().time)
-                rslt = genShoppingListItem(req.shoppingListID, rand.nextInt().toString(), rand)
+                rslt = ShoppingListItem(
+                        randID(rand), req.quantity ?: 0,
+                        getShoppingList(req.shoppingListID),
+                        BrandPrice(randID(rand), req.unitPrice ?: 0F,
+                                Brand(randID(rand), req.brandName ?: "",
+                                        MeasuringUnit(randID(rand), req.measuringUnit ?: ""),
+                                        ShoppingItem(randID(rand), req.itemName)),
+                                StoreBranch(randID(rand), randWord(rand),
+                                        Store(randID(rand), randWord(rand)))),
+                        req.inList, req.inCart
+                )
                 shoppingListItems.add(rslt)
             }
 
             it.onSuccess(rslt)
         }
+    }
+
+    private fun getShoppingList(id: String): ShoppingList {
+        return shoppingLists.first { it.id == id }
     }
 
     override fun deleteShoppingListItem(token: String, id: String): Completable {

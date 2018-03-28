@@ -8,6 +8,7 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.shopping.ShoppingListItemRequest
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
+import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.presentation.common.ProgressData
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
@@ -94,8 +95,11 @@ class UpsertListItemViewModel @Inject constructor(
         if (!validate()) {
             return
         }
+        // TODO implement in UI (inList and inCart) e.g. have an is checked option
+        val inList = true
+        val inCart = list.mode == ShoppingMode.SHOPPING
         manager.upsertShoppingListItem(ShoppingListItemRequest(
-                list.id, itemName.get()!!, id, brandName.get(), quantity.get()?.toInt(),
+                list.id, itemName.get()!!, inList, inCart, id, brandName.get(), quantity.get()?.toInt(),
                 measuringUnit.get(), unitPrice.get()?.toFloat()
         ))
                 .doOnSubscribe {

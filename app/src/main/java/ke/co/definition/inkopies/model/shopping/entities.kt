@@ -56,6 +56,8 @@ data class ShoppingListItem(
 data class ShoppingListItemRequest(
         val shoppingListID: String,
         val itemName: String,
+        val inList: Boolean,
+        val inCart: Boolean,
         val itemID: String?,
         val brandName: String?,
         val quantity: Int?,
