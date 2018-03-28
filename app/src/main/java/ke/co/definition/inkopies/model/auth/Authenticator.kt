@@ -94,7 +94,7 @@ class Authenticator @Inject constructor(
     override fun loginManual(id: Identifier, password: String): Completable =
             authCl.login(id, password)
                     .onErrorResumeNext {
-                        if (it is HttpException && it.code() == 401) {
+                        if (it is HttpException && it.code() == STATUS_FORBIDDEN) {
                             return@onErrorResumeNext Single.error(
                                     Exception(resMan.getString(R.string.error_invalid_login)))
                         }
