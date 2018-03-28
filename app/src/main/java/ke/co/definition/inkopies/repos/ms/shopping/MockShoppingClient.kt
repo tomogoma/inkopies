@@ -1,7 +1,5 @@
 package ke.co.definition.inkopies.repos.ms.shopping
 
-import android.os.Build
-import android.support.annotation.RequiresApi
 import ke.co.definition.inkopies.model.shopping.*
 import ke.co.definition.inkopies.model.stores.Store
 import ke.co.definition.inkopies.model.stores.StoreBranch
@@ -27,11 +25,16 @@ class MockShoppingClient : ShoppingClient {
 
     private var shoppingListItems = mutableListOf<ShoppingListItem>()
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun updateShoppingListItem(token: String, item: ShoppingListItem): Single<ShoppingListItem> {
         return Single.create {
-            Thread.sleep(5000)
-            shoppingListItems.replaceAll { if (it.id == item.id) item else it }
+            Thread.sleep(2000)
+            var indx = -1
+            shoppingListItems.forEachIndexed { i, itm -> if (itm.id == item.id) indx = i }
+            if (indx == -1) {
+                it.onError(notFound())
+                return@create
+            }
+            shoppingListItems[indx] = item
             it.onSuccess(item)
         }
     }
