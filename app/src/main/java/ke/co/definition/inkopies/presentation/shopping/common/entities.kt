@@ -42,3 +42,7 @@ class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
     fun fmtQuantity() = quantity.toString()
     fun unitPrice() = sli.unitPrice()
 }
+
+interface Nameable {
+    fun name(): String
+}

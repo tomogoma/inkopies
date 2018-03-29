@@ -10,6 +10,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.ArrayAdapter
+import android.widget.Filter
+import android.widget.Filterable
 import com.google.gson.Gson
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
@@ -18,8 +21,11 @@ import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
 import ke.co.definition.inkopies.presentation.common.hideKeyboard
 import ke.co.definition.inkopies.presentation.common.onGlobalLayoutOnce
 import ke.co.definition.inkopies.presentation.common.showKeyboard
+import ke.co.definition.inkopies.presentation.shopping.common.Nameable
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
+import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
+import java.util.concurrent.atomic.AtomicLong
 
 
 /**
@@ -42,6 +48,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
         observeViewModel(viewModel, views)
         start(viewModel, views)
+        setUpAutoComplete(views, viewModel)
         observeViews(views, viewModel)
 
         return views.root
@@ -50,6 +57,22 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     override fun onDismiss(dialog: DialogInterface?) {
         onDismissCallback(item)
         super.onDismiss(dialog)
+    }
+
+    private fun setUpAutoComplete(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
+        vs.itemName.setAdapter(AutoCompleteAdapter(this,
+                vm::onSearchItemName, vm.searchItemNameResult))
+        vs.brandName.setAdapter(AutoCompleteAdapter(this,
+                vm::onSearchBrandName, vm.searchBrandNameResult))
+        vs.quantity.setAdapter(AutoCompleteAdapter(this,
+                vm::onSearchQuantity, vm.searchQuantityResult))
+        vs.unitPrice.setAdapter(AutoCompleteAdapter(this,
+                vm::onSearchUnitPrice, vm.searchUnitPriceResult))
+        vs.measuringUnit.setAdapter(AutoCompleteAdapter(this,
+                vm::onSearchMeasuringUnit, vm.searchMeasuringUnitResult))
+
+        observedLiveData.addAll(listOf(vm.searchItemNameResult, vm.searchBrandNameResult,
+                vm.searchQuantityResult, vm.searchUnitPriceResult, vm.searchMeasuringUnitResult))
     }
 
     private fun observeViews(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
@@ -125,6 +148,46 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                 show(fm, UpsertListItemDialogFrag::class.java.name)
             }
         }
+    }
+
+    class AutoCompleteAdapter<T : Nameable>(
+            frag: UpsertListItemDialogFrag,
+            private val search: (text: String) -> Unit,
+            resultEvent: SingleLiveEvent<List<T>>
+    ) : ArrayAdapter<String>(frag.context, android.R.layout.simple_dropdown_item_1line), Filterable {
+
+        private val resultItems = mutableListOf<Pair<T, Long>>()
+        private var lastID = AtomicLong(0)
+
+        init {
+            resultEvent.observe(frag, Observer {
+                synchronized(this@AutoCompleteAdapter) {
+                    resultItems.clear()
+                    it?.forEach { resultItems.add(Pair(it, lastID.addAndGet(1))) }
+                    notifyDataSetChanged()
+                }
+            })
+        }
+
+        override fun getItem(pos: Int): String = resultItems[pos].first.name()
+
+        override fun getItemId(pos: Int): Long = resultItems[pos].second
+
+        override fun getCount(): Int = resultItems.size
+
+        override fun getFilter() = object : Filter() {
+            override fun performFiltering(searchTxt: CharSequence?): FilterResults {
+                val results = FilterResults()
+                search(searchTxt?.toString() ?: return results)
+                return results
+            }
+
+            override fun publishResults(p0: CharSequence?, p1: FilterResults?) {
+                /* no-op*/
+            }
+
+        }
+
     }
 }
 

@@ -13,6 +13,7 @@ import ke.co.definition.inkopies.presentation.common.ProgressData
 import ke.co.definition.inkopies.presentation.common.SnackBarData
 import ke.co.definition.inkopies.presentation.common.TextSnackBarData
 import ke.co.definition.inkopies.presentation.common.clearErrorOnChange
+import ke.co.definition.inkopies.presentation.shopping.common.Nameable
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
@@ -49,6 +50,11 @@ class UpsertListItemViewModel @Inject constructor(
 
     val snackBarData = SingleLiveEvent<SnackBarData>()
     val finished = SingleLiveEvent<VMShoppingListItem>()
+    val searchItemNameResult = SingleLiveEvent<List<Nameable>>()
+    val searchBrandNameResult = SingleLiveEvent<List<Nameable>>()
+    val searchQuantityResult = SingleLiveEvent<List<Nameable>>()
+    val searchMeasuringUnitResult = SingleLiveEvent<List<Nameable>>()
+    val searchUnitPriceResult = SingleLiveEvent<List<Nameable>>()
 
     private lateinit var list: VMShoppingList
     private var id: String? = null
@@ -76,6 +82,32 @@ class UpsertListItemViewModel @Inject constructor(
         quantity.set(item.quantity.toString())
         measuringUnit.set(item.measuringUnitName())
         unitPrice.set(item.unitPrice().toString())
+    }
+
+    class Value(val value: String) : Nameable {
+        override fun name(): String {
+            return value
+        }
+    }
+
+    fun onSearchItemName(search: String) {
+        TODO()
+    }
+
+    fun onSearchBrandName(search: String) {
+        TODO()
+    }
+
+    fun onSearchQuantity(search: String) {
+        TODO()
+    }
+
+    fun onSearchMeasuringUnit(search: String) {
+        TODO()
+    }
+
+    fun onSearchUnitPrice(search: String) {
+        TODO()
     }
 
     fun onDelete() {

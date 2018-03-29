@@ -49,7 +49,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/title">
 
-                <AutoCompleteTextView
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                     android:id="@+id/brandName"
                     android:layout_width="@dimen/input_width"
                     android:layout_height="wrap_content"
@@ -72,7 +72,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/brandNameLayout">
 
-                <AutoCompleteTextView
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                     android:id="@+id/itemName"
                     android:layout_width="@dimen/input_width"
                     android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/itemNameLayout">
 
-                <AutoCompleteTextView
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                     android:id="@+id/quantity"
                     android:layout_width="@dimen/input_width"
                     android:layout_height="wrap_content"
@@ -118,7 +118,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/quantityLayout">
 
-                <AutoCompleteTextView
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                     android:id="@+id/measuringUnit"
                     android:layout_width="@dimen/input_width"
                     android:layout_height="wrap_content"
@@ -141,7 +141,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/measuringUnitLayout">
 
-                <AutoCompleteTextView
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                     android:id="@+id/unitPrice"
                     android:layout_width="@dimen/input_width"
                     android:layout_height="wrap_content"
