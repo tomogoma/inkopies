@@ -15,7 +15,7 @@ fun TextView.showKeyboard(context: Context) {
 fun TextView.hideKeyboard(context: Context) {
     this.postDelayed({
         val imm = getInputMethodMan(context)
-        imm.hideSoftInputFromWindow(windowToken, InputMethodManager.SHOW_IMPLICIT)
+        imm.hideSoftInputFromWindow(windowToken, InputMethodManager.HIDE_IMPLICIT_ONLY)
     }, 200)
 }
 
