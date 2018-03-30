@@ -168,7 +168,7 @@ class Authenticator @Inject constructor(
                 .toCompletable()
     }
 
-    override fun resendInterval(otps: OTPStatus?, intervalSecs: Long): Observable<String> {
+    override fun resendInterval(otps: OTPStatus?, intervalSecs: Long): Observable<Long> {
         val now = Date().time
         val aMinFromNow = now + 60 * 1000
         val expTime = Math.min(otps?.expiresAt?.time ?: aMinFromNow, aMinFromNow)
@@ -177,11 +177,6 @@ class Authenticator @Inject constructor(
         return Observable.interval(intervalSecs, TimeUnit.SECONDS)
                 .take(tteSecs.toInt()) // no risk of integer overflow because cannot be greater than a minute
                 .map { Math.abs(it - tteSecs) } // invert to count from max downwards instead of from min upwards
-                // TODO extract string resource
-                .map {
-                    String.format("%s %02d:%02d", resMan.getString(R.string.resend_in),
-                            it % 3600 / 60, it % 60)
-                }
     }
 
     override fun glideURL(url: String): Single<GlideUrl> {

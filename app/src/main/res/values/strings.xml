@@ -36,7 +36,7 @@
     <string name="error_invalid_login">invalid login</string>
     <string name="error_invalid_or_expired_verif_code">The verification code is invalid or expired</string>
     <string name="error_used_verif_code">The verification code is used</string>
-    <string name="resend_in">Resend in</string>
+    <string name="resend_in_s_min_s_sec">Resend in %02d:%02d</string>
     <string name="please_log_in">Please log in</string>
     <string name="ss_was_invalid">%s was invalid</string>
     <string name="ss_in_use">%s is already in use</string>

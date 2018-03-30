@@ -133,6 +133,10 @@ class VerificationViewModel @Inject constructor(
                 .doOnUnsubscribe({ resetCDTimer.set("") })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
+                .map {
+                    String.format(resMngr.getString(R.string.resend_in_s_min_s_sec),
+                            it % 3600 / 60, it % 60)
+                }
                 .subscribe({ resetCDTimer.set(it) })
     }
 
