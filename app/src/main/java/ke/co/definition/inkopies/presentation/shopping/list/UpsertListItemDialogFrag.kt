@@ -139,7 +139,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                     if (item != null) {
                         putString(EXTRA_LIST_ITEM, Gson().toJson(item))
                     }
-                    putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.NONE.name)
+                    putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.BRAND.name)
                     putString(EXTRA_LIST, Gson().toJson(list))
                 }
 
