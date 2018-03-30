@@ -29,10 +29,10 @@ class ManualRegisterFragment : Fragment() {
     }
 
     private fun observeView(b: FragmentManualRegisterBinding) {
-        b.submit.setOnClickListener({ b.vm!!.registerManual(context ?: return@setOnClickListener) })
+        b.submit.setOnClickListener({ b.vm!!.registerManual() })
         b.manualLoginInputs.password.setOnEditorActionListener { _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
-                b.vm!!.registerManual(context ?: return@setOnEditorActionListener true)
+                b.vm!!.registerManual()
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false

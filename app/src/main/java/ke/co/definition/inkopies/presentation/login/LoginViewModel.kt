@@ -7,6 +7,7 @@ import android.databinding.Observable
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.ValidationResult
@@ -26,10 +27,11 @@ import javax.inject.Named
  * On 28/02/18.
  */
 class LoginViewModel @Inject constructor(
-        val auth: Authable,
-        val validation: Validatable,
-        @Named(Dagger2Module.SCHEDULER_IO) val subscribeOnScheduler: Scheduler,
-        @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) val observeOnScheduler: Scheduler
+        private val auth: Authable,
+        private val validation: Validatable,
+        private val resMan: ResourceManager,
+        @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
+        @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
 
     val loggedInStatus: SingleLiveEvent<Boolean> = SingleLiveEvent()
@@ -71,7 +73,7 @@ class LoginViewModel @Inject constructor(
 
         val pass = password.get()
         val id = identifier.get()
-        val valRes = validateLoginDetails(c, id, pass)
+        val valRes = validateLoginDetails(id, pass)
         if (!valRes.isValid) {
             return
         }
@@ -88,18 +90,17 @@ class LoginViewModel @Inject constructor(
                 })
     }
 
-    // TODO get rid of Context requirement
-    fun registerManual(c: Context) {
+    fun registerManual() {
 
         val pass = password.get()
         val id = identifier.get()
-        val valRes = validateLoginDetails(c, id, pass)
+        val valRes = validateLoginDetails(id, pass)
         if (!valRes.isValid) {
             return
         }
 
         auth.registerManual(valRes.getIdentifier(), pass!!)
-                .doOnSubscribe({ progressData.set(ProgressData(c.getString(R.string.registering))) })
+                .doOnSubscribe({ progressData.set(ProgressData(resMan.getString(R.string.registering))) })
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
@@ -110,13 +111,12 @@ class LoginViewModel @Inject constructor(
                 })
     }
 
-    // TODO inject strings instead of relying on context
-    private fun validateLoginDetails(c: Context, id: String?, pass: String?): ValidationResult {
+    private fun validateLoginDetails(id: String?, pass: String?): ValidationResult {
 
         var result: ValidationResult? = null
 
         if (!validation.isValidPassword(pass)) {
-            passwordError.set(c.getString(R.string.error_password_too_short))
+            passwordError.set(resMan.getString(R.string.error_password_too_short))
             result = ValidationResult.Invalid()
         }
 
@@ -124,20 +124,22 @@ class LoginViewModel @Inject constructor(
         return if (idRes.isValid) {
             if (result == null) idRes else result
         } else {
-            identifierError.set(c.getString(R.string.error_bad_email_or_phone))
+            identifierError.set(resMan.getString(R.string.error_bad_email_or_phone))
             ValidationResult.Invalid()
         }
     }
 
     class Factory @Inject constructor(
-            val auth: Authable,
-            val validation: Validatable,
-            @Named(Dagger2Module.SCHEDULER_IO) val subscribeOnScheduler: Scheduler,
-            @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) val observeOnScheduler: Scheduler
+            private val auth: Authable,
+            private val validation: Validatable,
+            private val resMan: ResourceManager,
+            @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
+            @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return LoginViewModel(auth, validation, subscribeOnScheduler, observeOnScheduler) as T
+            return LoginViewModel(auth, validation, resMan, subscribeOnScheduler,
+                    observeOnScheduler) as T
         }
 
     }
