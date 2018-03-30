@@ -53,6 +53,7 @@ data class ShoppingListItem(
     fun totalPrice() = unitPrice() * quantity
 }
 
+// TODO refactor to ShoppingListItemUpsert
 data class ShoppingListItemRequest(
         val shoppingListID: String,
         val itemName: String,
@@ -63,6 +64,13 @@ data class ShoppingListItemRequest(
         val quantity: Int?,
         val measuringUnit: String?,
         val unitPrice: Float?
+)
+
+data class ShoppingListItemSearch(
+        val brandName: String?,
+        val shoppingItemName: String?,
+        val brandPrice: String?,
+        val measUnit: String?
 )
 
 enum class ShoppingMode {

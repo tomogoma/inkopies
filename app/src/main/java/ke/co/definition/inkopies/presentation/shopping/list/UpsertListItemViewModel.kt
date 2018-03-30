@@ -6,14 +6,9 @@ import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
-import ke.co.definition.inkopies.model.shopping.ShoppingListItemRequest
-import ke.co.definition.inkopies.model.shopping.ShoppingManager
-import ke.co.definition.inkopies.model.shopping.ShoppingMode
-import ke.co.definition.inkopies.presentation.common.ProgressData
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
-import ke.co.definition.inkopies.presentation.common.clearErrorOnChange
-import ke.co.definition.inkopies.presentation.shopping.common.Nameable
+import ke.co.definition.inkopies.model.shopping.*
+import ke.co.definition.inkopies.presentation.common.*
+import ke.co.definition.inkopies.presentation.shopping.common.SearchShoppingListItemResult
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
@@ -50,11 +45,11 @@ class UpsertListItemViewModel @Inject constructor(
 
     val snackBarData = SingleLiveEvent<SnackBarData>()
     val finished = SingleLiveEvent<VMShoppingListItem>()
-    val searchItemNameResult = SingleLiveEvent<List<Nameable>>()
-    val searchBrandNameResult = SingleLiveEvent<List<Nameable>>()
-    val searchQuantityResult = SingleLiveEvent<List<Nameable>>()
-    val searchMeasuringUnitResult = SingleLiveEvent<List<Nameable>>()
-    val searchUnitPriceResult = SingleLiveEvent<List<Nameable>>()
+    val searchItemNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
+    val searchBrandNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
+    val searchQuantityResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
+    val searchMeasuringUnitResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
+    val searchUnitPriceResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
 
     private lateinit var list: VMShoppingList
     private var id: String? = null
@@ -84,30 +79,56 @@ class UpsertListItemViewModel @Inject constructor(
         unitPrice.set(item.unitPrice().toString())
     }
 
-    class Value(val value: String) : Nameable {
-        override fun name(): String {
-            return value
-        }
-    }
-
     fun onSearchItemName(search: String) {
-        TODO()
+        val req = ShoppingListItemSearch(brandName.get(), search, unitPrice.get(),
+                measuringUnit.get())
+        search(req, mapFunc = {
+            return@search Pair(
+                    it.itemName(),
+                    SearchShoppingListItemResult("${it.brandName()} ${it.itemName()}",
+                            VMShoppingListItem(it, list.mode))
+            )
+        }, successFunc = { searchItemNameResult.value = it })
     }
 
     fun onSearchBrandName(search: String) {
-        TODO()
-    }
-
-    fun onSearchQuantity(search: String) {
-        TODO()
+        val req = ShoppingListItemSearch(search, itemName.get(), unitPrice.get(),
+                measuringUnit.get())
+        search(req, mapFunc = {
+            return@search Pair(
+                    it.brandName(),
+                    SearchShoppingListItemResult("${it.brandName()} ${it.itemName()}",
+                            VMShoppingListItem(it, list.mode))
+            )
+        }, successFunc = { searchBrandNameResult.value = it })
     }
 
     fun onSearchMeasuringUnit(search: String) {
-        TODO()
+        val req = ShoppingListItemSearch(brandName.get(), itemName.get(), unitPrice.get(), search)
+        search(req, mapFunc = {
+            return@search Pair(
+                    it.measuringUnitName(),
+                    SearchShoppingListItemResult(
+                            "${it.measuringUnitName()}: ${it.brandName()} ${it.itemName()}",
+                            VMShoppingListItem(it, list.mode)
+                    )
+            )
+        }, successFunc = { searchMeasuringUnitResult.value = it })
     }
 
     fun onSearchUnitPrice(search: String) {
-        TODO()
+        val req = ShoppingListItemSearch(brandName.get(), itemName.get(), search,
+                measuringUnit.get())
+        search(req, mapFunc = {
+            val unitPrice = it.unitPrice().formatPrice()
+            return@search Pair(
+                    unitPrice,
+                    SearchShoppingListItemResult(
+                            "$unitPrice: ${it.brandName()} ${it.itemName()}",
+                            VMShoppingListItem(it, list.mode)
+                    )
+            )
+        }, successFunc = { searchUnitPriceResult.value = it })
     }
 
     fun onDelete() {
@@ -118,9 +139,7 @@ class UpsertListItemViewModel @Inject constructor(
                 .doOnUnsubscribe { overlayProgress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ finished.value = null }, {
-                    snackBarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
-                })
+                .subscribe({ finished.value = null }, { onOpException(it) })
     }
 
     fun onSubmit() {
@@ -141,9 +160,30 @@ class UpsertListItemViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingListItem(it, list.mode) }
-                .subscribe({ finished.value = it }, {
-                    snackBarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
-                })
+                .subscribe({ finished.value = it }, { onOpException(it) })
+    }
+
+    private fun search(req: ShoppingListItemSearch,
+                       mapFunc: (ShoppingListItem) -> Pair<String, SearchShoppingListItemResult>,
+                       successFunc: (MutableList<SearchShoppingListItemResult>) -> Unit) {
+
+        manager.searchShoppingListItem(req)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .map {
+                    val rslt = mutableListOf<SearchShoppingListItemResult>()
+                    it.forEach {
+                        val mapped = mapFunc(it)
+                        rslt.add(SearchShoppingListItemResult(mapped.first))
+                        rslt.add(mapped.second)
+                    }
+                    return@map rslt
+                }
+                .subscribe({ successFunc(it) }, { onOpException(it) })
+    }
+
+    private fun onOpException(e: Throwable) {
+        snackBarData.value = TextSnackBarData(e, Snackbar.LENGTH_LONG)
     }
 
     private fun validate(): Boolean {

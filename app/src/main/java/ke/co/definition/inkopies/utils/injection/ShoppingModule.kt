@@ -10,6 +10,7 @@ import ke.co.definition.inkopies.repos.ms.shopping.MockShoppingClient
 import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
 import ke.co.definition.inkopies.utils.logging.Logger
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Created by tomogoma
@@ -23,6 +24,7 @@ class ShoppingModule {
 
     @Provides
     @Inject
+    @Singleton
     fun provideShopingManager(cl: ShoppingClient, auth: Authable, lg: Logger, rm: ResourceManager): ShoppingManager {
         return ShoppingManagerImpl(cl, auth, lg, rm)
     }

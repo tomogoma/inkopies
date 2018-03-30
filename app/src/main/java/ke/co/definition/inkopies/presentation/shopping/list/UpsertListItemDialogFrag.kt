@@ -21,7 +21,7 @@ import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
 import ke.co.definition.inkopies.presentation.common.hideKeyboard
 import ke.co.definition.inkopies.presentation.common.onGlobalLayoutOnce
 import ke.co.definition.inkopies.presentation.common.showKeyboard
-import ke.co.definition.inkopies.presentation.shopping.common.Nameable
+import ke.co.definition.inkopies.presentation.shopping.common.SearchShoppingListItemResult
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
@@ -148,13 +148,13 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         }
     }
 
-    class AutoCompleteAdapter<T : Nameable>(
+    class AutoCompleteAdapter(
             frag: UpsertListItemDialogFrag,
             private val search: (text: String) -> Unit,
-            resultEvent: SingleLiveEvent<List<T>>
+            resultEvent: SingleLiveEvent<List<SearchShoppingListItemResult>>
     ) : ArrayAdapter<String>(frag.context, android.R.layout.simple_dropdown_item_1line), Filterable {
 
-        private val resultItems = mutableListOf<Pair<T, Long>>()
+        private val resultItems = mutableListOf<Pair<SearchShoppingListItemResult, Long>>()
         private var lastID = AtomicLong(0)
 
         init {
@@ -167,7 +167,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             })
         }
 
-        override fun getItem(pos: Int): String = resultItems[pos].first.name()
+        override fun getItem(pos: Int): String = resultItems[pos].first.printName
 
         override fun getItemId(pos: Int): Long = resultItems[pos].second
 

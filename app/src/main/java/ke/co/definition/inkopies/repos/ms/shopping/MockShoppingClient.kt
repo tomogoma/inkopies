@@ -26,6 +26,22 @@ class MockShoppingClient : ShoppingClient {
 
     private var shoppingListItems = mutableListOf<ShoppingListItem>()
 
+    override fun searchShoppingListItem(token: String, req: ShoppingListItemSearch): Single<List<ShoppingListItem>> {
+        return Single.create {
+            val rslts = shoppingListItems.filter {
+                (req.brandName != null && req.brandName != "" && it.brandName().toLowerCase().contains(req.brandName.toLowerCase()))
+                        || (req.shoppingItemName != null && req.shoppingItemName != "" && it.itemName().toLowerCase().contains(req.shoppingItemName.toLowerCase()))
+                        || (req.brandPrice != null && req.brandPrice != "" && it.unitPrice().toString().toLowerCase().contains(req.brandPrice.toLowerCase()))
+                        || (req.measUnit != null && req.measUnit != "" && it.measuringUnitName().toLowerCase().contains(req.measUnit.toLowerCase()))
+            }
+            if (rslts.isEmpty()) {
+                it.onError(notFound())
+                return@create
+            }
+
+            it.onSuccess(rslts)
+        }
+    }
 
     override fun upsertShoppingListItem(token: String, req: ShoppingListItemRequest): Single<ShoppingListItem> {
         return Single.create {
@@ -178,12 +194,22 @@ class MockShoppingClient : ShoppingClient {
 
     private fun randWord(rand: Random): String {
         var letters = ""
-        for (i in 0..(rand.nextInt(3) + 2)) {
-            letters += Character.toString(randChar(rand))
+        for (i in 0..(rand.nextInt(7) + 2)) {
+            letters += Character.toString(
+                    if (rand.nextInt(3) == 0) {
+                        randVowel(rand)
+                    } else {
+                        randConsonant(rand)
+                    }
+            )
         }
-        return letters
+        return letters.capitalize()
     }
 
-    private fun randChar(rand: Random) = (rand.nextInt(26) + 65).toChar()
+    private fun randVowel(rand: Random) = vowels[rand.nextInt(vowels.length)]
+    private fun randConsonant(rand: Random) = consonants[rand.nextInt(consonants.length)]
 
 }
+
+const val vowels = "aeiou"
+const val consonants = "bcdfghjklmnpqrstvwxyz"

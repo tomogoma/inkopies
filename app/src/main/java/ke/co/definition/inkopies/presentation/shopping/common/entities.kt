@@ -43,6 +43,7 @@ class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
     fun unitPrice() = sli.unitPrice()
 }
 
-interface Nameable {
-    fun name(): String
-}
+data class SearchShoppingListItemResult(
+        val printName: String,
+        val sli: VMShoppingListItem? = null
+)
