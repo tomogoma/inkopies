@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Filter
 import android.widget.Filterable
 import com.google.gson.Gson
@@ -48,7 +49,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
         observeViewModel(viewModel, views)
         start(viewModel, views)
-        setUpAutoComplete(views, viewModel)
+        setUpAutoCompletables(views, viewModel)
         observeViews(views, viewModel)
 
         return views.root
@@ -59,18 +60,30 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         super.onDismiss(dialog)
     }
 
-    private fun setUpAutoComplete(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
-        vs.itemName.setAdapter(AutoCompleteAdapter(this,
-                vm::onSearchItemName, vm.searchItemNameResult))
-        vs.brandName.setAdapter(AutoCompleteAdapter(this,
-                vm::onSearchBrandName, vm.searchBrandNameResult))
-        vs.unitPrice.setAdapter(AutoCompleteAdapter(this,
-                vm::onSearchUnitPrice, vm.searchUnitPriceResult))
-        vs.measuringUnit.setAdapter(AutoCompleteAdapter(this,
-                vm::onSearchMeasuringUnit, vm.searchMeasuringUnitResult))
+    private fun setUpAutoCompletables(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
+        setUpAutoComplete(vs.itemName, vm, vm::onSearchItemName, vm.searchItemNameResult)
+        setUpAutoComplete(vs.brandName, vm, vm::onSearchBrandName, vm.searchBrandNameResult)
+        setUpAutoComplete(vs.unitPrice, vm, vm::onSearchUnitPrice, vm.searchUnitPriceResult)
+        setUpAutoComplete(vs.measuringUnit, vm, vm::onSearchMeasuringUnit,
+                vm.searchMeasuringUnitResult)
 
         observedLiveData.addAll(listOf(vm.searchItemNameResult, vm.searchBrandNameResult,
-                vm.searchQuantityResult, vm.searchUnitPriceResult, vm.searchMeasuringUnitResult))
+                vm.searchUnitPriceResult, vm.searchMeasuringUnitResult))
+    }
+
+    private fun setUpAutoComplete(textView: AutoCompleteTextView, vm: UpsertListItemViewModel,
+                                  search: (text: String) -> Unit,
+                                  resultEvent: SingleLiveEvent<List<SearchShoppingListItemResult>>) {
+
+        val adapter = AutoCompleteAdapter(this, search, resultEvent)
+        textView.setAdapter(adapter)
+        textView.setOnItemClickListener { _, _, pos, _ ->
+            val rslt = adapter.getResultItem(pos)
+            if (rslt.sli != null) {
+                vm.onChangeShoppingListItem(rslt.sli)
+            }
+            textView.setText(rslt.printName, false)
+        }
     }
 
     private fun observeViews(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
@@ -152,7 +165,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             frag: UpsertListItemDialogFrag,
             private val search: (text: String) -> Unit,
             resultEvent: SingleLiveEvent<List<SearchShoppingListItemResult>>
-    ) : ArrayAdapter<String>(frag.context, android.R.layout.simple_dropdown_item_1line), Filterable {
+    ) : ArrayAdapter<String>(frag.context, android.R.layout.simple_spinner_dropdown_item), Filterable {
 
         private val resultItems = mutableListOf<Pair<SearchShoppingListItemResult, Long>>()
         private var lastID = AtomicLong(0)
@@ -185,6 +198,8 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             }
 
         }
+
+        fun getResultItem(pos: Int) = resultItems[pos].first
 
     }
 }

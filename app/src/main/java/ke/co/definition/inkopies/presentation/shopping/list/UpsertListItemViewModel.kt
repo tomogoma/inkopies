@@ -47,7 +47,6 @@ class UpsertListItemViewModel @Inject constructor(
     val finished = SingleLiveEvent<VMShoppingListItem>()
     val searchItemNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchBrandNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
-    val searchQuantityResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchMeasuringUnitResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchUnitPriceResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
 
@@ -71,6 +70,10 @@ class UpsertListItemViewModel @Inject constructor(
         }
         title.set(R.string.edit_item_title)
         deletable.set(true)
+        onChangeShoppingListItem(item)
+    }
+
+    fun onChangeShoppingListItem(item: VMShoppingListItem) {
         id = item.id
         brandName.set(item.brandName())
         itemName.set(item.itemName())
@@ -85,7 +88,7 @@ class UpsertListItemViewModel @Inject constructor(
         search(req, mapFunc = {
             return@search Pair(
                     it.itemName(),
-                    SearchShoppingListItemResult("${it.brandName()} ${it.itemName()}",
+                    SearchShoppingListItemResult("${it.itemName()} ::. ${it.brandName()} ",
                             VMShoppingListItem(it, list.mode))
             )
         }, successFunc = { searchItemNameResult.value = it })
@@ -97,7 +100,7 @@ class UpsertListItemViewModel @Inject constructor(
         search(req, mapFunc = {
             return@search Pair(
                     it.brandName(),
-                    SearchShoppingListItemResult("${it.brandName()} ${it.itemName()}",
+                    SearchShoppingListItemResult("${it.brandName()} ::. ${it.itemName()}",
                             VMShoppingListItem(it, list.mode))
             )
         }, successFunc = { searchBrandNameResult.value = it })
@@ -109,7 +112,7 @@ class UpsertListItemViewModel @Inject constructor(
             return@search Pair(
                     it.measuringUnitName(),
                     SearchShoppingListItemResult(
-                            "${it.measuringUnitName()}: ${it.brandName()} ${it.itemName()}",
+                            "${it.measuringUnitName()} ::. ${it.brandName()} ${it.itemName()}",
                             VMShoppingListItem(it, list.mode)
                     )
             )
@@ -124,7 +127,7 @@ class UpsertListItemViewModel @Inject constructor(
             return@search Pair(
                     unitPrice,
                     SearchShoppingListItemResult(
-                            "$unitPrice: ${it.brandName()} ${it.itemName()}",
+                            "$unitPrice::. ${it.brandName()} ${it.itemName()}",
                             VMShoppingListItem(it, list.mode)
                     )
             )
