@@ -38,7 +38,7 @@ class ShoppingManagerImpl @Inject constructor(
                 }
     }
 
-    override fun upsertShoppingListItem(req: ShoppingListItemRequest): Single<ShoppingListItem> {
+    override fun upsertShoppingListItem(req: ShoppingListItemUpsert): Single<ShoppingListItem> {
         return validateShoppingListItemReq(req)
                 .toSingle {}
                 .flatMap { auth.getJWT() }
@@ -107,7 +107,7 @@ class ShoppingManagerImpl @Inject constructor(
         it.onCompleted()
     }
 
-    private fun validateShoppingListItemReq(item: ShoppingListItemRequest) = Completable.create {
+    private fun validateShoppingListItemReq(item: ShoppingListItemUpsert) = Completable.create {
         if (item.itemName == "") {
             it.onError(Exception("item name cannot be empty"))
             return@create

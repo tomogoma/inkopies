@@ -149,7 +149,7 @@ class UpsertListItemViewModel @Inject constructor(
         // TODO implement in UI (inList and inCart) e.g. have an is checked option
         val inList = true
         val inCart = list.mode == ShoppingMode.SHOPPING
-        manager.upsertShoppingListItem(ShoppingListItemRequest(
+        manager.upsertShoppingListItem(ShoppingListItemUpsert(
                 list.id, itemName.get()!!, inList, inCart, id, brandName.get(), quantity.get()?.toInt(),
                 measuringUnit.get(), unitPrice.get()?.toFloat()
         ))

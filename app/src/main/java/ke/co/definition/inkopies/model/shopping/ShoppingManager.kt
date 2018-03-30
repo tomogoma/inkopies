@@ -12,7 +12,7 @@ interface ShoppingManager {
     fun getShoppingLists(offset: Long, count: Int): Single<List<ShoppingList>>
     fun getShoppingListItems(shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>>
     fun updateShoppingListItem(item: ShoppingListItem): Single<ShoppingListItem>
-    fun upsertShoppingListItem(req: ShoppingListItemRequest): Single<ShoppingListItem>
+    fun upsertShoppingListItem(req: ShoppingListItemUpsert): Single<ShoppingListItem>
     fun deleteShoppingListItem(id: String): Completable
     fun searchShoppingListItem(req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
 }

@@ -53,8 +53,7 @@ data class ShoppingListItem(
     fun totalPrice() = unitPrice() * quantity
 }
 
-// TODO refactor to ShoppingListItemUpsert
-data class ShoppingListItemRequest(
+data class ShoppingListItemUpsert(
         val shoppingListID: String,
         val itemName: String,
         val inList: Boolean,

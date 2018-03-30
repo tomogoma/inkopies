@@ -43,7 +43,7 @@ class MockShoppingClient : ShoppingClient {
         }
     }
 
-    override fun upsertShoppingListItem(token: String, req: ShoppingListItemRequest): Single<ShoppingListItem> {
+    override fun upsertShoppingListItem(token: String, req: ShoppingListItemUpsert): Single<ShoppingListItem> {
         return Single.create {
             Thread.sleep(2000)
             var rslt: ShoppingListItem?
