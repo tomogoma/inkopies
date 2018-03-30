@@ -35,12 +35,15 @@
                 app:layout_constraintBottom_toTopOf="@id/brandNameLayout"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                tools:text="New Item" />
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/brandNameLayout"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
                 android:layout_marginEnd="@dimen/space_normal"
                 android:layout_marginStart="@dimen/space_normal"
                 app:error="@{vm.brandNameError}"
@@ -64,6 +67,7 @@
                 android:id="@+id/itemNameLayout"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
                 android:layout_marginEnd="@dimen/space_normal"
                 android:layout_marginStart="@dimen/space_normal"
                 app:error="@{vm.itemNameError}"
@@ -76,7 +80,7 @@
                     android:id="@+id/itemName"
                     android:layout_width="@dimen/input_width"
                     android:layout_height="wrap_content"
-                    android:hint="@string/name"
+                    android:hint="@string/name_required_label"
                     android:imeOptions="actionNext"
                     android:inputType="textCapWords"
                     android:maxLines="1"
@@ -87,6 +91,7 @@
                 android:id="@+id/quantityLayout"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
                 android:layout_marginEnd="@dimen/space_normal"
                 android:layout_marginStart="@dimen/space_normal"
                 app:error="@{vm.quantityError}"
@@ -95,7 +100,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/itemNameLayout">
 
-                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                <EditText
                     android:id="@+id/quantity"
                     android:layout_width="@dimen/input_width"
                     android:layout_height="wrap_content"
@@ -110,6 +115,7 @@
                 android:id="@+id/measuringUnitLayout"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
                 android:layout_marginEnd="@dimen/space_normal"
                 android:layout_marginStart="@dimen/space_normal"
                 app:error="@{vm.measuringUnitError}"
@@ -133,6 +139,7 @@
                 android:id="@+id/unitPriceLayout"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
                 android:layout_marginEnd="@dimen/space_normal"
                 android:layout_marginStart="@dimen/space_normal"
                 app:error="@{vm.unitPriceError}"
@@ -185,6 +192,7 @@
                 android:id="@+id/overlayProgress"
                 layout="@layout/progress_area"
                 android:visibility="@{vm.overlayProgress.show ? View.VISIBLE : View.GONE}"
+                app:elevation="4dp"
                 app:layout_constraintBottom_toBottomOf="@id/delete"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

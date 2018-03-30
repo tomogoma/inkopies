@@ -53,6 +53,7 @@
     <string name="gallery">Gallery</string>
     <string name="profile_photo_title">Profile Photo</string>
     <string name="name">Name</string>
+    <string name="name_required_label">Name*</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="other">Other</string>

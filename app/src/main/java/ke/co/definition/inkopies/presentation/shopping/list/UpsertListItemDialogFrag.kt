@@ -64,8 +64,6 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                 vm::onSearchItemName, vm.searchItemNameResult))
         vs.brandName.setAdapter(AutoCompleteAdapter(this,
                 vm::onSearchBrandName, vm.searchBrandNameResult))
-        vs.quantity.setAdapter(AutoCompleteAdapter(this,
-                vm::onSearchQuantity, vm.searchQuantityResult))
         vs.unitPrice.setAdapter(AutoCompleteAdapter(this,
                 vm::onSearchUnitPrice, vm.searchUnitPriceResult))
         vs.measuringUnit.setAdapter(AutoCompleteAdapter(this,
