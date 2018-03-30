@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicLong
 class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     internal var onDismissCallback: (VMShoppingListItem?) -> Unit = {}
-    private var item: VMShoppingListItem? = null
+    private var rslt: VMShoppingListItem? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
@@ -55,7 +55,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     }
 
     override fun onDismiss(dialog: DialogInterface?) {
-        onDismissCallback(item)
+        onDismissCallback(rslt)
         super.onDismiss(dialog)
     }
 
@@ -88,7 +88,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
         vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
-        vm.finished.observe(this, Observer { item = it; dialog.dismiss() })
+        vm.finished.observe(this, Observer { rslt = it; dialog.dismiss() })
         observedLiveData.addAll(mutableListOf(vm.snackBarData, vm.finished))
     }
 
