@@ -38,8 +38,8 @@ class ShoppingListsActivity : AppCompatActivity() {
         views.vm = viewModel
 
         setSupportActionBar(views.toolbar)
-        views.toolbar.setSubtitle(R.string.shopping_lists_title)
-        prepRecyclerView(views.content!!)
+        supportActionBar!!.setTitle(R.string.shopping_lists_title)
+        prepRecyclerView(views.content)
 
         observeViewModel(views)
         observeViews(views)

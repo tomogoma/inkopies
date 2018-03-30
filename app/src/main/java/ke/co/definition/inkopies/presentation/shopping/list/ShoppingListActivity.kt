@@ -37,11 +37,13 @@ class ShoppingListActivity : AppCompatActivity() {
         views.vm = viewModel
 
         val viewAdapter = prepRecyclerView(views.content)
-        setSupportActionBar(views.toolbar)
 
         observeViewModel(viewModel, views, viewAdapter)
         val list = start(viewModel)
         observeViews(list, views, viewModel, viewAdapter)
+
+        setSupportActionBar(views.toolbar)
+        supportActionBar!!.title = list.name()
     }
 
     override fun onDestroy() {

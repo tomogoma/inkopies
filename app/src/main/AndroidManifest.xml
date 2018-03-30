@@ -45,7 +45,6 @@
         <activity android:name=".presentation.shopping.lists.ShoppingListsActivity" />
         <activity
             android:name=".presentation.shopping.list.ShoppingListActivity"
-            android:label="@string/title_activity_shopping_list"
             android:parentActivityName=".presentation.shopping.lists.ShoppingListsActivity"
             android:theme="@style/AppTheme">
             <meta-data
