@@ -75,6 +75,7 @@ class UpsertListItemViewModel @Inject constructor(
         if (item == null) {
             title.set(R.string.new_item_title)
             deletable.set(false)
+            checked.set(true)
             return
         }
         title.set(R.string.edit_item_title)
