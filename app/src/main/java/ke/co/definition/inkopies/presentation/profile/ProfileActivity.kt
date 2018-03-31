@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.support.design.widget.Snackbar
 import android.support.v4.content.FileProvider
+import android.view.MenuItem
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityProfileBinding
@@ -51,6 +52,14 @@ class ProfileActivity : InkopiesActivity() {
             return
         }
         super.onActivityResult(reqCode, resultCode, result)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            onBackPressed()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed() {
