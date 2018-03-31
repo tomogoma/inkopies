@@ -61,7 +61,7 @@ abstract class InkopiesActivity : AppCompatActivity() {
             finish()
         })
 
-        observedLiveData.add(viewModel.toastData /*loggedInStatus is not observed, as it should
+        observedLiveData.add(viewModel.toastData /*loggedInStatus is not added, as it should
          only be removed on destroy*/)
     }
 }
