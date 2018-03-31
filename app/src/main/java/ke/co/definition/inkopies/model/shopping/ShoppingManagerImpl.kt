@@ -26,6 +26,12 @@ class ShoppingManagerImpl @Inject constructor(
         logger.setTag(ShoppingManagerImpl::class.java.name)
     }
 
+    override fun updateShoppingList(list: ShoppingList): Single<ShoppingList> {
+        return auth.getJWT()
+                .flatMap { client.updateShoppingList(it.value, list) }
+                .onErrorResumeNext { Single.error(handleAuthErrors(logger, auth, resMan, it, "update shopping list")) }
+    }
+
     override fun searchShoppingListItem(req: ShoppingListItemSearch): Single<List<ShoppingListItem>> {
         return auth.getJWT()
                 .flatMap { client.searchShoppingListItem(it.value, req) }

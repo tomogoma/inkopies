@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.ViewGroup
 import com.google.gson.Gson
 import ke.co.definition.inkopies.App
@@ -16,11 +18,14 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListBinding
 import ke.co.definition.inkopies.databinding.ContentShoppingListBinding
 import ke.co.definition.inkopies.databinding.ItemShoppingListBinding
+import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.presentation.common.InkopiesActivity
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 
 class ShoppingListActivity : InkopiesActivity() {
+
+    private lateinit var viewModel: ShoppingListViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +34,7 @@ class ShoppingListActivity : InkopiesActivity() {
                 R.layout.activity_shopping_list)
 
         val vmFactory = (application as App).appComponent.provideShoppingListVMFactory()
-        val viewModel = ViewModelProviders.of(this, vmFactory)
+        viewModel = ViewModelProviders.of(this, vmFactory)
                 .get(ShoppingListViewModel::class.java)
         views.vm = viewModel
 
@@ -41,6 +46,27 @@ class ShoppingListActivity : InkopiesActivity() {
 
         setSupportActionBar(views.toolbar)
         supportActionBar!!.title = list.name()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        viewModel.onCreateOptionsMenu()
+        viewModel.menuRes.observe(this, Observer {
+            menu?.clear()
+            menuInflater.inflate(it!!, menu)
+        })
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.showProfile -> showProfile()
+            R.id.logout -> logout()
+            R.id.checkout -> viewModel.onCheckout()
+            R.id.modePreparation -> viewModel.onChangeMode(ShoppingMode.PREPARATION)
+            R.id.modeShopping -> viewModel.onChangeMode(ShoppingMode.SHOPPING)
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
     private fun prepRecyclerView(vs: ContentShoppingListBinding): ShoppingListAdapter {
@@ -87,10 +113,10 @@ class ShoppingListActivity : InkopiesActivity() {
             va.updateItem(it?.first ?: return@Observer, it.second)
         })
         vm.newItem.observe(this, Observer { va.add(it ?: return@Observer) })
+        vm.clearList.observe(this, Observer { if (it == true) va.clear() })
 
         observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.nextPage, vm.itemUpdate,
-                vm.newItem
-        ))
+                vm.newItem, vm.clearList))
     }
 
     private fun start(vm: ShoppingListViewModel): VMShoppingList {
@@ -172,6 +198,11 @@ class ShoppingListActivity : InkopiesActivity() {
 
         fun setOnItemSelectedListener(l: ActionListener) {
             listener = l
+        }
+
+        fun clear() {
+            items.clear()
+            notifyDataSetChanged()
         }
 
         fun addItems(items: MutableList<VMShoppingListItem>) {

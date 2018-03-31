@@ -4,6 +4,8 @@ import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
+import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.shopping.ShoppingList
 import ke.co.definition.inkopies.model.shopping.ShoppingListItem
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.model.shopping.ShoppingMode
@@ -37,11 +39,15 @@ class ShoppingListViewModel @Inject constructor(
     val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
     val newItem = SingleLiveEvent<VMShoppingListItem>()
     val itemUpdate = SingleLiveEvent<Pair<VMShoppingListItem, Int>>()
+    val menuRes = SingleLiveEvent<Int>()
+    val clearList = SingleLiveEvent<Boolean>()
 
     private var currOffset = 0L
 
     fun start(list: VMShoppingList) {
         this.shoppingList.set(list)
+        currOffset = 0L
+        clearList.value = true
         manager.getShoppingListItems(list.id, currOffset, PRICE_FETCH_COUNT)
                 .doOnSubscribe { showProgress() }
                 .doOnUnsubscribe { hideProgress() }
@@ -53,6 +59,28 @@ class ShoppingListViewModel @Inject constructor(
                     return@map rslt
                 }
                 .subscribe({ onNextPageLoad(it) }, { showError(it) })
+    }
+
+    fun onCreateOptionsMenu() {
+        menuRes.value = when (shoppingList.get()!!.mode) {
+            ShoppingMode.PREPARATION -> R.menu.planning_main_menu
+            ShoppingMode.SHOPPING -> R.menu.shopping_main_menu
+        }
+    }
+
+    fun onCheckout() {
+        TODO()
+    }
+
+    fun onChangeMode(toMode: ShoppingMode) {
+        val list = shoppingList.get()!!
+        manager.updateShoppingList(ShoppingList(list.id, list.name(), list.sl.activeListPrice,
+                list.sl.cartPrice, toMode))
+                .doOnSubscribe { forceShowFullProgress() }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .map { VMShoppingList(it) }
+                .subscribe(this::onShoppingListUpdated, this::showError)
     }
 
     fun onItemSelectionChanged(item: VMShoppingListItem, posn: Int, toState: Boolean) {
@@ -78,6 +106,11 @@ class ShoppingListViewModel @Inject constructor(
         showItems()
     }
 
+    private fun onShoppingListUpdated(list: VMShoppingList) {
+        start(list)
+        onCreateOptionsMenu()
+    }
+
     private fun onItemUpdated(newVal: VMShoppingListItem, posn: Int) {
         itemUpdate.value = Pair(newVal, posn)
     }
@@ -89,6 +122,10 @@ class ShoppingListViewModel @Inject constructor(
     private fun onNextPageLoad(page: MutableList<VMShoppingListItem>) {
         nextPage.value = page
         currOffset += page.size
+        showItemsIfHasItems()
+    }
+
+    private fun showItemsIfHasItems() {
         if (hasItems()) {
             showItems()
         } else {
@@ -122,6 +159,13 @@ class ShoppingListViewModel @Inject constructor(
             showFullProgress.set(false)
             showNextPageLoadingProgress.set(true)
         }
+    }
+
+    private fun forceShowFullProgress() {
+        showItems.set(false)
+        showNoItemsTxt.set(false)
+        showNextPageLoadingProgress.set(false)
+        showFullProgress.set(true)
     }
 
     private fun hideProgress() {

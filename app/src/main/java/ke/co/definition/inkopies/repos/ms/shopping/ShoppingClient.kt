@@ -13,6 +13,7 @@ import rx.Single
  */
 interface ShoppingClient {
     fun addShoppingList(token: String, name: String): Single<ShoppingList>
+    fun updateShoppingList(token: String, list: ShoppingList): Single<ShoppingList>
     fun getShoppingLists(token: String, offset: Long, count: Int): Single<List<ShoppingList>>
     fun updateShoppingListItem(token: String, item: ShoppingListItem): Single<ShoppingListItem>
     fun getShoppingListItems(token: String, shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>>

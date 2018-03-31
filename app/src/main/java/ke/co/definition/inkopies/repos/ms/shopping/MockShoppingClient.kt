@@ -143,6 +143,22 @@ class MockShoppingClient : ShoppingClient {
         }
     }
 
+    override fun updateShoppingList(token: String, list: ShoppingList): Single<ShoppingList> {
+        return Single.create {
+            Thread.sleep(2000)
+            var pos = -1
+            shoppingLists.forEachIndexed { i, curr ->
+                if (curr.id == list.id) pos = i
+            }
+            if (pos == -1) {
+                it.onError(notFound())
+                return@create
+            }
+            shoppingLists[pos] = list
+            it.onSuccess(list)
+        }
+    }
+
     private fun getShoppingListItemIndex(id: String): Int {
         var indx = -1
         shoppingListItems.forEachIndexed { i, itm -> if (itm.id == id) indx = i }
