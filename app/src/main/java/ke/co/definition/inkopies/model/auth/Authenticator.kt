@@ -1,6 +1,5 @@
 package ke.co.definition.inkopies.model.auth
 
-import android.databinding.ObservableBoolean
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.google.gson.Gson
@@ -16,14 +15,13 @@ import rx.Observable
 import rx.Single
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Created by tomogoma
  * On 28/02/18.
  */
-@Singleton
 class Authenticator @Inject constructor(
         private val localStore: LocalStorable,
         private val authCl: AuthClient,
@@ -32,14 +30,26 @@ class Authenticator @Inject constructor(
         private val logger: Logger
 ) : Authable {
 
-    private val observedLoggedInStatus = ObservableBoolean(false)
+    private val loggedInStatusLock = Object()
+    private val lastLoggedInObserverID = AtomicLong(0)
+    private val loggedInStatusObservers = mutableMapOf<Long, (Boolean) -> Unit>()
 
     init {
         logger.setTag(Authenticator::class.java.name)
     }
 
-    override fun observeLoggedInStatus(): ObservableBoolean {
-        return observedLoggedInStatus
+    override fun registerLoggedInStatusObserver(observer: (Boolean) -> Unit): Long {
+        synchronized(loggedInStatusLock) {
+            val pos = lastLoggedInObserverID.addAndGet(1)
+            loggedInStatusObservers[pos] = observer
+            return pos
+        }
+    }
+
+    override fun unRegisterLoggedInStatusObserver(atPos: Long) {
+        synchronized(loggedInStatusLock) {
+            loggedInStatusObservers.remove(atPos)
+        }
     }
 
     override fun updateIdentifier(identifier: String): Single<VerifLogin> {
@@ -74,7 +84,7 @@ class Authenticator @Inject constructor(
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
-            observedLoggedInStatus.set(false)
+            updateObservedLoggedInStatus(false)
             it.onSuccess(false)
             return@create
         }
@@ -212,7 +222,7 @@ class Authenticator @Inject constructor(
 
                             val usrStr = localStore.fetch(KEY_AUTHED_USER)
                             if (usrStr.isEmpty()) {
-                                observedLoggedInStatus.set(false)
+                                updateObservedLoggedInStatus(false)
                                 it.onError(LoggedOutException(resMan.getString(R.string.please_log_in)))
                                 return@create
                             }
@@ -226,7 +236,7 @@ class Authenticator @Inject constructor(
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
-            observedLoggedInStatus.set(false)
+            updateObservedLoggedInStatus(false)
             it.onError(LoggedOutException(resMan.getString(R.string.please_log_in)))
             return@create
         }
@@ -245,7 +255,7 @@ class Authenticator @Inject constructor(
     override fun logOut(): Completable = Completable.create({
         localStore.delete(KEY_JWT)
         localStore.delete(KEY_AUTHED_USER)
-        observedLoggedInStatus.set(false)
+        updateObservedLoggedInStatus(false)
         it.onCompleted()
     })
 
@@ -274,11 +284,19 @@ class Authenticator @Inject constructor(
         upsertAuthUser(usr)
         val jwt = JWT(jwtStr)
         localStore.upsert(KEY_JWT, Gson().toJson(jwt))
-        observedLoggedInStatus.set(true)
+        updateObservedLoggedInStatus(true)
     }
 
     private fun upsertAuthUser(usr: AuthUser) {
         localStore.upsert(KEY_AUTHED_USER, Gson().toJson(usr))
+    }
+
+    private fun updateObservedLoggedInStatus(to: Boolean) {
+        Thread(Runnable {
+            synchronized(loggedInStatusLock) {
+                loggedInStatusObservers.forEach { it.value(to) }
+            }
+        }).start()
     }
 
     companion object {

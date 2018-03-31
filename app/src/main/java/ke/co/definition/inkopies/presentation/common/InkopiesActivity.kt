@@ -1,14 +1,11 @@
 package ke.co.definition.inkopies.presentation.common
 
 import android.arch.lifecycle.LiveData
-import android.databinding.Observable
-import android.databinding.ObservableBoolean
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.support.v7.app.AppCompatActivity
+import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.presentation.login.LoginActivity
-import javax.inject.Inject
 
 /**
  * Created by tomogoma
@@ -17,27 +14,19 @@ import javax.inject.Inject
 abstract class InkopiesActivity : AppCompatActivity() {
 
     internal val observedLiveData = mutableListOf<LiveData<*>>()
-    private var loggedInStatus = ObservableBoolean()
-    private var loggedInStatusChangeCallback = object : Observable.OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
-            if (loggedInStatus.get() || this@InkopiesActivity is LoginActivity) {
-                return // Only interested in change to logged out while on none-LoginActivity.
-            }
-            LoginActivity.start(this@InkopiesActivity)
-            finish()
-        }
-    }
 
-    @Inject
-    lateinit var auth: Authable
+    private var loggedInStatusObserverPos = -1L
 
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
+    private lateinit var auth: Authable
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        auth = (application as App).appComponent.provideAuthable()
         observeLoggedInStatus()
     }
 
     override fun onDestroy() {
-        loggedInStatus.removeOnPropertyChangedCallback(loggedInStatusChangeCallback)
+        auth.unRegisterLoggedInStatusObserver(loggedInStatusObserverPos)
         removeLiveDataObservers()
         super.onDestroy()
     }
@@ -46,8 +35,17 @@ abstract class InkopiesActivity : AppCompatActivity() {
         observedLiveData.forEach { it.removeObservers(this) }
     }
 
+    private fun onLoggedInStatusChange(newStatus: Boolean) {
+        if (newStatus || this@InkopiesActivity is LoginActivity) {
+            return // Only interested in change to logged out while on none-LoginActivity.
+        }
+        runOnUiThread {
+            LoginActivity.start(this@InkopiesActivity)
+            finish()
+        }
+    }
+
     private fun observeLoggedInStatus() {
-        loggedInStatus = auth.observeLoggedInStatus()
-        loggedInStatus.addOnPropertyChangedCallback(loggedInStatusChangeCallback)
+        loggedInStatusObserverPos = auth.registerLoggedInStatusObserver(this::onLoggedInStatusChange)
     }
 }

@@ -51,6 +51,7 @@ class AuthModule {
 
     @Provides
     @Inject
+    @Singleton
     fun provideAuthable(ls: LocalStorable, ac: AuthClient, v: Validatable, rm: ResourceManager, lg: Logger)
             : Authable = Authenticator(ls, ac, v, rm, lg)
 

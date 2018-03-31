@@ -1,6 +1,7 @@
 package ke.co.definition.inkopies.utils.injection
 
 import dagger.Component
+import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.presentation.login.LoginViewModel
 import ke.co.definition.inkopies.presentation.profile.GeneralProfileViewModel
 import ke.co.definition.inkopies.presentation.profile.ProfileViewModel
@@ -36,4 +37,5 @@ interface AppComponent {
     fun provideShoppingListsVMFactory(): ShoppingListsViewModel.Factory
     fun provideShoppingListVMFactory(): ShoppingListViewModel.Factory
     fun provideUpsertListItemVMFactory(): UpsertListItemViewModel.Factory
+    fun provideAuthable(): Authable
 }
