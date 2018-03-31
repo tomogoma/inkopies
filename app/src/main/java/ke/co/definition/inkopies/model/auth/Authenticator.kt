@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.model.auth
 
+import android.databinding.ObservableBoolean
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.google.gson.Gson
@@ -16,11 +17,13 @@ import rx.Single
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Created by tomogoma
  * On 28/02/18.
  */
+@Singleton
 class Authenticator @Inject constructor(
         private val localStore: LocalStorable,
         private val authCl: AuthClient,
@@ -29,8 +32,14 @@ class Authenticator @Inject constructor(
         private val logger: Logger
 ) : Authable {
 
+    private val observedLoggedInStatus = ObservableBoolean(false)
+
     init {
         logger.setTag(Authenticator::class.java.name)
+    }
+
+    override fun observeLoggedInStatus(): ObservableBoolean {
+        return observedLoggedInStatus
     }
 
     override fun updateIdentifier(identifier: String): Single<VerifLogin> {
@@ -65,13 +74,14 @@ class Authenticator @Inject constructor(
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
+            observedLoggedInStatus.set(false)
             it.onSuccess(false)
             return@create
         }
 
         val jwt = Gson().fromJson(jwtStr, JWT::class.java)
         if (jwt.isExpired()) {
-            logOut().subscribe { it.onSuccess(false) }
+            logOut().subscribe({ it.onSuccess(false) }, it::onError)
             return@create
         }
 
@@ -190,49 +200,52 @@ class Authenticator @Inject constructor(
     }
 
     override fun getUser(): Single<AuthUser> =
-            isLoggedIn().flatMap { isLoggedIn: Boolean ->
+            isLoggedIn()
+                    .flatMap { isLoggedIn: Boolean ->
 
-                if (!isLoggedIn) {
-                    return@flatMap Single.error<AuthUser>(
-                            Exception(resMan.getString(R.string.please_log_in)))
-                }
+                        if (!isLoggedIn) {
+                            return@flatMap Single.error<AuthUser>(
+                                    Exception(resMan.getString(R.string.please_log_in)))
+                        }
 
-                return@flatMap Single.create<AuthUser>({
+                        return@flatMap Single.create<AuthUser>({
 
-                    val usrStr = localStore.fetch(KEY_AUTHED_USER)
-                    if (usrStr.isEmpty()) {
-                        // TODO have special error to force activity to navigate to login screen
-                        it.onError(Exception(resMan.getString(R.string.please_log_in)))
+                            val usrStr = localStore.fetch(KEY_AUTHED_USER)
+                            if (usrStr.isEmpty()) {
+                                observedLoggedInStatus.set(false)
+                                it.onError(Exception(resMan.getString(R.string.please_log_in)))
+                                return@create
+                            }
+
+                            val usr = Gson().fromJson(usrStr, AuthUser::class.java)
+                            it.onSuccess(usr)
+                        })
                     }
-
-                    val usr = Gson().fromJson(usrStr, AuthUser::class.java)
-                    it.onSuccess(usr)
-                })
-            }
 
     override fun getJWT(): Single<JWT> = Single.create({
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
-            // TODO have special error to force activity to navigate to login screen
+            observedLoggedInStatus.set(false)
             it.onError(Exception(resMan.getString(R.string.please_log_in)))
+            return@create
         }
 
         val jwt = Gson().fromJson(jwtStr, JWT::class.java)
         if (jwt.isExpired()) {
             logOut().subscribe({
-                // TODO have special error to force activity to navigate to login screen
                 it.onError(Exception(resMan.getString(R.string.please_log_in)))
-            })
+            }, it::onError)
             return@create
         }
 
         it.onSuccess(jwt)
     })
 
-    private fun logOut(): Completable = Completable.create({
+    override fun logOut(): Completable = Completable.create({
         localStore.delete(KEY_JWT)
         localStore.delete(KEY_AUTHED_USER)
+        observedLoggedInStatus.set(false)
         it.onCompleted()
     })
 
@@ -261,6 +274,7 @@ class Authenticator @Inject constructor(
         upsertAuthUser(usr)
         val jwt = JWT(jwtStr)
         localStore.upsert(KEY_JWT, Gson().toJson(jwt))
+        observedLoggedInStatus.set(true)
     }
 
     private fun upsertAuthUser(usr: AuthUser) {

@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.model.auth
 
+import android.databinding.ObservableBoolean
 import com.bumptech.glide.load.model.GlideUrl
 import rx.Completable
 import rx.Observable
@@ -21,4 +22,6 @@ interface Authable {
     fun getUser(): Single<AuthUser>
     fun glideURL(url: String): Single<GlideUrl>
     fun getJWT(): Single<JWT>
+    fun observeLoggedInStatus(): ObservableBoolean
+    fun logOut(): Completable
 }
