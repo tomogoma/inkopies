@@ -2,7 +2,9 @@ package ke.co.definition.inkopies.presentation.shopping.list
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
+import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
+import android.databinding.ObservableInt
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
@@ -29,7 +31,7 @@ class UpsertListItemViewModel @Inject constructor(
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
 
-    val title = ObservableField<Int>()
+    val title = ObservableInt()
     val brandName = ObservableField<String>()
     val itemName = ObservableField<String>()
     val quantity = ObservableField<String>()
@@ -41,7 +43,9 @@ class UpsertListItemViewModel @Inject constructor(
     val measuringUnitError = ObservableField<String>()
     val unitPriceError = ObservableField<String>()
     val overlayProgress = ObservableField<ProgressData>()
-    val deletable = ObservableField<Boolean>()
+    val deletable = ObservableBoolean()
+    val checked = ObservableBoolean()
+    val checkedText = ObservableField<String>()
 
     val snackBarData = SingleLiveEvent<SnackbarData>()
     val finished = SingleLiveEvent<VMShoppingListItem>()
@@ -63,6 +67,11 @@ class UpsertListItemViewModel @Inject constructor(
 
     fun start(list: VMShoppingList, item: VMShoppingListItem?) {
         this.list = list
+        checkedText.set(if (list.mode == ShoppingMode.PREPARATION) {
+            resMan.getString(R.string.add_to_list)
+        } else {
+            resMan.getString(R.string.add_to_cart)
+        })
         if (item == null) {
             title.set(R.string.new_item_title)
             deletable.set(false)
@@ -80,6 +89,7 @@ class UpsertListItemViewModel @Inject constructor(
         quantity.set(item.quantity.toString())
         measuringUnit.set(item.measuringUnitName())
         unitPrice.set(item.unitPrice().toString())
+        checked.set(item.isChecked())
     }
 
     fun onSearchItemName(search: String) {
@@ -149,12 +159,10 @@ class UpsertListItemViewModel @Inject constructor(
         if (!validate()) {
             return
         }
-        // TODO implement in UI (inList and inCart) e.g. have an is checked option
-        val inList = true
-        val inCart = list.mode == ShoppingMode.SHOPPING
+        val inListCart = getInListInCart()
         manager.upsertShoppingListItem(ShoppingListItemUpsert(
-                list.id, itemName.get()!!, inList, inCart, id, brandName.get(), quantity.get()?.toInt(),
-                measuringUnit.get(), unitPrice.get()?.toFloat()
+                list.id, itemName.get()!!, inListCart.first, inListCart.second, id, brandName.get(),
+                quantity.get()?.toInt(), measuringUnit.get(), unitPrice.get()?.toFloat()
         ))
                 .doOnSubscribe {
                     overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
@@ -164,6 +172,14 @@ class UpsertListItemViewModel @Inject constructor(
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingListItem(it, list.mode) }
                 .subscribe({ finished.value = it }, { onOpException(it) })
+    }
+
+    private fun getInListInCart(): Pair<Boolean, Boolean> {
+        return if (list.mode == ShoppingMode.PREPARATION) {
+            Pair(/*inList*/checked.get(), /*inCart*/false)
+        } else {
+            Pair(/*inList*/true, /*inCart*/checked.get())
+        }
     }
 
     private fun search(req: ShoppingListItemSearch,

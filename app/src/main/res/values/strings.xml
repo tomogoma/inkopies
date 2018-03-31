@@ -79,4 +79,6 @@
     <string name="edit_item_title">Edit Item</string>
     <string name="new_item_title">New Item</string>
     <string name="saving_item">Saving item</string>
+    <string name="add_to_list">Add to list</string>
+    <string name="add_to_cart">Add to cart</string>
 </resources>
