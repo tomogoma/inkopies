@@ -3,7 +3,6 @@ package ke.co.definition.inkopies.presentation.shopping.list
 import android.app.Dialog
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.DialogInterface
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
@@ -38,7 +37,6 @@ import java.util.concurrent.atomic.AtomicLong
 class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     internal var onDismissCallback: (VMShoppingListItem?) -> Unit = {}
-    private var rslt: VMShoppingListItem? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
@@ -63,9 +61,9 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         return dialog
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
-        onDismissCallback(rslt)
-        super.onDismiss(dialog)
+    fun dismiss(result: VMShoppingListItem?) {
+        onDismissCallback(result)
+        dialog.dismiss()
     }
 
     private fun setUpAutoCompletables(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
@@ -109,7 +107,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
         vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
-        vm.finished.observe(this, Observer { rslt = it; dialog.dismiss() })
+        vm.finished.observe(this, Observer { dismiss(it) })
         observedLiveData.addAll(mutableListOf(vm.snackBarData, vm.finished))
     }
 
