@@ -26,8 +26,7 @@
         <include
             android:id="@+id/progressArea"
             layout="@layout/progress_area"
-            android:visibility="@{vm.progressData.show ? View.VISIBLE : View.GONE}"
-            bind:text="@{vm.progressData.text}"
+            bind:data="@{vm.progressData}"
             tools:visibility="visible" />
     </FrameLayout>
 </layout>

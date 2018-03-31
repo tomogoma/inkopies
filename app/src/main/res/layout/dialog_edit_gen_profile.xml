@@ -123,8 +123,7 @@
         <include
             android:id="@+id/progressArea"
             layout="@layout/progress_area"
-            android:visibility="@{vm.progressOverlay.show ? View.VISIBLE : View.GONE}"
-            bind:text="@{vm.progressOverlay.text}"
+            bind:data="@{vm.progressOverlay}"
             tools:visibility="gone" />
     </FrameLayout>
 </layout>

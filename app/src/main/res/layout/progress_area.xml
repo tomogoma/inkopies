@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -7,8 +8,8 @@
         <import type="android.view.View" />
 
         <variable
-            name="text"
-            type="String" />
+            name="data"
+            type="ke.co.definition.inkopies.presentation.common.ProgressData" />
     </data>
 
     <RelativeLayout
@@ -17,6 +18,8 @@
         android:background="@color/black82PC"
         android:clickable="true"
         android:focusable="false"
+        android:visibility="@{data.show ? View.VISIBLE : View.GONE}"
+        app:elevation="8dp"
         tools:ignore="KeyboardInaccessibleWidget">
 
         <ProgressBar
@@ -38,9 +41,9 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
             android:paddingTop="@dimen/activity_vertical_margin"
-            android:text="@{text}"
+            android:text="@{data.text}"
             android:textColor="@color/white"
-            android:visibility="@{text.isEmpty() ? View.GONE : View.VISIBLE}"
+            android:visibility="@{data.hasText() ? View.VISIBLE : View.GONE}"
             tools:text="Gathering CryptoCurrencies" />
     </RelativeLayout>
 </layout>

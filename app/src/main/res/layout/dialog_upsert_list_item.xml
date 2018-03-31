@@ -191,13 +191,12 @@
             <include
                 android:id="@+id/overlayProgress"
                 layout="@layout/progress_area"
-                android:visibility="@{vm.overlayProgress.show ? View.VISIBLE : View.GONE}"
                 app:elevation="4dp"
                 app:layout_constraintBottom_toBottomOf="@id/delete"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/brandNameLayout"
-                bind:text="@{vm.overlayProgress.text}"
+                bind:data="@{vm.overlayProgress}"
                 tools:visibility="gone" />
         </android.support.constraint.ConstraintLayout>
     </ScrollView>

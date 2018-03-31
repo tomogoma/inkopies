@@ -10,4 +10,6 @@ data class ProgressData(
 ) {
     constructor(text: String) : this(true, text)
     constructor() : this(false, "")
+
+    fun hasText() = text.isEmpty()
 }
