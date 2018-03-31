@@ -67,8 +67,16 @@ class ProfileActivity : InkopiesActivity() {
         vs.editGenButton.setOnClickListener { showEditGenProfDialog() }
         vs.email.setOnClickListener { showChangeIdentifierDialog(vs.email.text.toString()) }
         vs.phone.setOnClickListener { showChangeIdentifierDialog(vs.phone.text.toString()) }
-        vs.googleLink.setOnClickListener { TODO("Open edit identifier dialog") }
-        vs.fbLink.setOnClickListener { TODO("Open edit identifier dialog") }
+        vs.googleLink.setOnClickListener {
+            // TODO("Open edit identifier dialog")
+            Snackbar.make(vs.layoutRoot, R.string.feature_not_implemented, Snackbar.LENGTH_LONG)
+                    .show()
+        }
+        vs.fbLink.setOnClickListener {
+            // TODO("Open edit identifier dialog")
+            Snackbar.make(vs.layoutRoot, R.string.feature_not_implemented, Snackbar.LENGTH_LONG)
+                    .show()
+        }
     }
 
     private fun observeViewModel() {
@@ -79,7 +87,7 @@ class ProfileActivity : InkopiesActivity() {
                     newRequestListener { viewModel.progressProfImg.set(false) })
         })
         viewModel.snackbarData.observe(this, Observer { it?.show(views.rootLayout) })
-        viewModel.cropImage.observe(this, Observer { TODO() })
+        viewModel.cropImage.observe(this, Observer { TODO("crop image") })
         viewModel.loadEnlargedPic.observe(this, Observer {
             loadPic(it ?: return@Observer, views.content.bigAvatar, null)
         })

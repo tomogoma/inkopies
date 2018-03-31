@@ -9,6 +9,7 @@ import ke.co.definition.inkopies.model.shopping.ShoppingList
 import ke.co.definition.inkopies.model.shopping.ShoppingListItem
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.model.shopping.ShoppingMode
+import ke.co.definition.inkopies.presentation.common.ResIDSnackbarData
 import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
@@ -69,7 +70,8 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     fun onCheckout() {
-        TODO()
+        // TODO("Perform checkout")
+        snackbarData.value = ResIDSnackbarData(R.string.feature_not_implemented, Snackbar.LENGTH_LONG)
     }
 
     fun onChangeMode(toMode: ShoppingMode) {

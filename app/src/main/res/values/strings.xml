@@ -86,4 +86,5 @@
     <string name="checkout_caps">CHECKOUT</string>
     <string name="profile">Profile</string>
     <string name="logout">Logout</string>
+    <string name="feature_not_implemented">feature not implemented</string>
 </resources>
