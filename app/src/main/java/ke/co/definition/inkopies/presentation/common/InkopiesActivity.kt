@@ -1,10 +1,12 @@
 package ke.co.definition.inkopies.presentation.common
 
 import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.widget.Toast
 import ke.co.definition.inkopies.App
-import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.presentation.login.LoginActivity
 import ke.co.definition.inkopies.presentation.profile.ProfileActivity
 
@@ -16,18 +18,20 @@ abstract class InkopiesActivity : AppCompatActivity() {
 
     internal val observedLiveData = mutableListOf<LiveData<*>>()
 
-    private var loggedInStatusObserverPos = -1L
-
-    private lateinit var auth: Authable
+    private lateinit var viewModel: InkopiesActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        auth = (application as App).appComponent.provideAuthable()
-        observeLoggedInStatus()
+        val vmFactory = (application as App).appComponent.provideInkopiesActivityVMFactory()
+        viewModel = ViewModelProviders.of(this, vmFactory)
+                .get(InkopiesActivityViewModel::class.java)
+        observeViewModel()
+        viewModel.start()
     }
 
     override fun onDestroy() {
-        auth.unRegisterLoggedInStatusObserver(loggedInStatusObserverPos)
+        viewModel.onDestroy()
+        viewModel.loggedInStatus.removeObservers(this)
         removeLiveDataObservers()
         super.onDestroy()
     }
@@ -37,24 +41,27 @@ abstract class InkopiesActivity : AppCompatActivity() {
     }
 
     internal fun logout() {
-        auth.logOut() // TODO move to viewmodel
+        viewModel.onLogout({}, {})
     }
 
     internal fun showProfile() {
         ProfileActivity.start(this)
     }
 
-    private fun onLoggedInStatusChange(newStatus: Boolean) {
-        if (newStatus || this@InkopiesActivity is LoginActivity) {
-            return // Only interested in change to logged out while on none-LoginActivity.
-        }
-        runOnUiThread {
+    private fun observeViewModel() {
+        viewModel.toastData.observe(this, Observer {
+            Toast.makeText(this, it?.first ?: return@Observer, it.second).show()
+        })
+
+        viewModel.loggedInStatus.observe(this, Observer {
+            if (it == true || this@InkopiesActivity is LoginActivity) {
+                return@Observer // Only interested in change to logged out while on none-LoginActivity.
+            }
             LoginActivity.start(this@InkopiesActivity)
             finish()
-        }
-    }
+        })
 
-    private fun observeLoggedInStatus() {
-        loggedInStatusObserverPos = auth.registerLoggedInStatusObserver(this::onLoggedInStatusChange)
+        observedLiveData.add(viewModel.toastData /*loggedInStatus is not observed, as it should
+         only be removed on destroy*/)
     }
 }
