@@ -84,10 +84,10 @@ class LoginActivity : InkopiesActivity(), LoginFragCoordinator {
                 openRegisterOptsFrag()
             }
         })
-        loginVM.snackBarData.observe(this, Observer { snackBar = it?.show(binding.frame) })
+        loginVM.snackbarData.observe(this, Observer { snackBar = it?.show(binding.frame) })
 
         observedLiveData.addAll(listOf(loginVM.loggedInStatus, loginVM.registeredStatus,
-                loginVM.snackBarData))
+                loginVM.snackbarData))
     }
 
     private fun openLoginOptsFrag() {

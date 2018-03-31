@@ -8,7 +8,7 @@ import ke.co.definition.inkopies.R
  * Created by tomogoma
  * On 28/02/18.
  */
-sealed class SnackBarData {
+sealed class SnackbarData {
     abstract fun show(v: View): Snackbar
 
     internal fun show(sb: Snackbar): Snackbar {
@@ -22,17 +22,17 @@ sealed class SnackBarData {
     }
 }
 
-class ResIDSnackBarData(
+class ResIDSnackbarData(
         private val resID: Int,
         private val duration: Int
-) : SnackBarData() {
+) : SnackbarData() {
     override fun show(v: View) = show(Snackbar.make(v, resID, duration))
 }
 
-class TextSnackBarData(
+class TextSnackbarData(
         private val text: String,
         private val duration: Int
-) : SnackBarData() {
+) : SnackbarData() {
 
     constructor(error: Throwable, duration: Int) : this(error.message ?: "", duration)
 

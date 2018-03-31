@@ -51,10 +51,10 @@ class VerifyActivity : InkopiesActivity() {
             finish()
         })
 
-        viewModel.snackBarData.observe(this, Observer { it?.show(layoutRoot) })
+        viewModel.snackbarData.observe(this, Observer { it?.show(layoutRoot) })
 
         observedLiveData.addAll(listOf(viewModel.openEditDialog, viewModel.finishedEv,
-                viewModel.snackBarData))
+                viewModel.snackbarData))
     }
 
     private fun observeViews(views: ActivityVerifyBinding) {

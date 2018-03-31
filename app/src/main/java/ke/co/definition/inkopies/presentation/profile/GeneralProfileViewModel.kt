@@ -11,8 +11,8 @@ import ke.co.definition.inkopies.model.user.Gender
 import ke.co.definition.inkopies.model.user.ProfileManager
 import ke.co.definition.inkopies.model.user.UserProfile
 import ke.co.definition.inkopies.presentation.common.ProgressData
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -30,7 +30,7 @@ class GeneralProfileViewModel @Inject constructor(
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
 
-    val snackbarData: SingleLiveEvent<SnackBarData> = SingleLiveEvent()
+    val snackbarData: SingleLiveEvent<SnackbarData> = SingleLiveEvent()
     val finishEvent: SingleLiveEvent<UserProfile> = SingleLiveEvent()
 
     val name: ObservableField<String> = ObservableField()
@@ -63,7 +63,7 @@ class GeneralProfileViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ finishEvent.value = it }, {
-                    snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_INDEFINITE)
+                    snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_INDEFINITE)
                 })
     }
 

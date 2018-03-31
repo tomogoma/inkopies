@@ -7,8 +7,8 @@ import android.databinding.ObservableField
 import android.support.annotation.UiThread
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
@@ -31,7 +31,7 @@ class ShoppingListsViewModel @Inject constructor(
     val showShoppingLists = ObservableField<Boolean>()
 
     val progressNextPage = SingleLiveEvent<Boolean>()
-    val snackbarData = SingleLiveEvent<SnackBarData>()
+    val snackbarData = SingleLiveEvent<SnackbarData>()
     val nextPage = MutableLiveData<MutableList<VMShoppingList>>()
     val addedItem = MutableLiveData<VMShoppingList>()
 
@@ -49,7 +49,7 @@ class ShoppingListsViewModel @Inject constructor(
                     return@map res
                 }
                 .subscribe({ onShoppingListsFetched(it) }, {
-                    snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
+                    snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_LONG)
                 })
     }
 

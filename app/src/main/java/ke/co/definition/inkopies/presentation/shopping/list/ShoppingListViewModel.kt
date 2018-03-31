@@ -7,8 +7,8 @@ import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.model.shopping.ShoppingListItem
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.model.shopping.ShoppingMode
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
@@ -33,7 +33,7 @@ class ShoppingListViewModel @Inject constructor(
     val showFullProgress = ObservableField<Boolean>()
     val showNextPageLoadingProgress = ObservableField<Boolean>()
 
-    val snackbarData = SingleLiveEvent<SnackBarData>()
+    val snackbarData = SingleLiveEvent<SnackbarData>()
     val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
     val newItem = SingleLiveEvent<VMShoppingListItem>()
     val itemUpdate = SingleLiveEvent<Pair<VMShoppingListItem, Int>>()
@@ -83,7 +83,7 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     private fun showError(it: Throwable) {
-        snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
+        snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_LONG)
     }
 
     private fun onNextPageLoad(page: MutableList<VMShoppingListItem>) {

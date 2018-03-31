@@ -13,9 +13,9 @@ import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.user.ProfileManager
 import ke.co.definition.inkopies.model.user.UserProfile
-import ke.co.definition.inkopies.presentation.common.ResIDSnackBarData
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.ResIDSnackbarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -37,7 +37,7 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
 
     val profileImgURL = SingleLiveEvent<GlideUrl>()
-    val snackbarData = SingleLiveEvent<SnackBarData>()
+    val snackbarData = SingleLiveEvent<SnackbarData>()
     val cropImage = SingleLiveEvent<Boolean>()
     val loadEnlargedPic = SingleLiveEvent<GlideUrl>()
     val takePhotoEvent = SingleLiveEvent<Pair<Int, File>>()
@@ -56,7 +56,7 @@ class ProfileViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ onUserProfileLoaded(it) }, {
-                    snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_INDEFINITE)
+                    snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_INDEFINITE)
                 })
     }
 
@@ -83,7 +83,7 @@ class ProfileViewModel @Inject constructor(
 
         if (reqCode == REQ_CODE_CAM_CAPTURE_IMAGE) {
             if (resultCode != AppCompatActivity.RESULT_OK) {
-                snackbarData.value = ResIDSnackBarData(R.string.error_something_wicked,
+                snackbarData.value = ResIDSnackbarData(R.string.error_something_wicked,
                         Snackbar.LENGTH_LONG)
                 return true
             }
@@ -94,7 +94,7 @@ class ProfileViewModel @Inject constructor(
 
         if (reqCode == REQ_CODE_GALLERY_IMAGE) {
             if (resultCode != AppCompatActivity.RESULT_OK) {
-                snackbarData.value = ResIDSnackBarData(R.string.error_something_wicked,
+                snackbarData.value = ResIDSnackbarData(R.string.error_something_wicked,
                         Snackbar.LENGTH_LONG)
                 return true
             }
@@ -133,7 +133,7 @@ class ProfileViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ onUserProfileLoaded(it) }, {
-                    snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_INDEFINITE)
+                    snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_INDEFINITE)
                 })
     }
 

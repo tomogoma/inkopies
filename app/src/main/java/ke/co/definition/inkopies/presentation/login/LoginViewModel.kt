@@ -13,8 +13,8 @@ import ke.co.definition.inkopies.model.auth.Validatable
 import ke.co.definition.inkopies.model.auth.ValidationResult
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.ProgressData
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -36,7 +36,7 @@ class LoginViewModel @Inject constructor(
 
     val loggedInStatus: SingleLiveEvent<Boolean> = SingleLiveEvent()
     val registeredStatus: SingleLiveEvent<VerifLogin> = SingleLiveEvent()
-    val snackBarData: SingleLiveEvent<SnackBarData> = SingleLiveEvent()
+    val snackbarData: SingleLiveEvent<SnackbarData> = SingleLiveEvent()
 
     val progressData: ObservableField<ProgressData> = ObservableField()
     val identifier: ObservableField<String> = ObservableField()
@@ -86,7 +86,7 @@ class LoginViewModel @Inject constructor(
                 .subscribe({
                     loggedInStatus.value = true
                 }, {
-                    snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
+                    snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
                 })
     }
 
@@ -107,7 +107,7 @@ class LoginViewModel @Inject constructor(
                 .subscribe({
                     registeredStatus.value = it
                 }, {
-                    snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_INDEFINITE)
+                    snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_INDEFINITE)
                 })
     }
 

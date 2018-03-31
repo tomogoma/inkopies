@@ -10,9 +10,9 @@ import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.OTPStatus
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.ProgressData
-import ke.co.definition.inkopies.presentation.common.ResIDSnackBarData
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.ResIDSnackbarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -35,7 +35,7 @@ class VerificationViewModel @Inject constructor(
 
     val openEditDialog: SingleLiveEvent<Boolean> = SingleLiveEvent()
     val finishedEv: SingleLiveEvent<Boolean> = SingleLiveEvent()
-    val snackBarData: SingleLiveEvent<SnackBarData> = SingleLiveEvent()
+    val snackbarData: SingleLiveEvent<SnackbarData> = SingleLiveEvent()
 
     val resetCDTimer: ObservableField<String> = ObservableField()
     val progress: ObservableField<ProgressData> = ObservableField()
@@ -83,7 +83,7 @@ class VerificationViewModel @Inject constructor(
                 .subscribe({
                     finishedEv.value = true
                 }, {
-                    snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
+                    snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
                 })
     }
 
@@ -98,7 +98,7 @@ class VerificationViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ onOTPResent(it) }, {
-                    snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
+                    snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
                 })
     }
 
@@ -116,7 +116,7 @@ class VerificationViewModel @Inject constructor(
                 .subscribe({
                     finishedEv.value = true
                 }, {
-                    snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
+                    snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
                 })
     }
 
@@ -124,7 +124,7 @@ class VerificationViewModel @Inject constructor(
         val vl = verifLogin.get()!!
         hasBeenStarted.set(false)
         start(VerifLogin(vl.id, vl.userID, vl.value, vl.verified, it))
-        snackBarData.value = ResIDSnackBarData(R.string.verification_code_resent, Snackbar.LENGTH_LONG)
+        snackbarData.value = ResIDSnackbarData(R.string.verification_code_resent, Snackbar.LENGTH_LONG)
     }
 
     private fun countDownResetVisibility() {

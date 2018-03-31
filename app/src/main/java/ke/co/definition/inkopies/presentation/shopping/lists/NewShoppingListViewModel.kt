@@ -9,8 +9,8 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.presentation.common.ProgressData
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
@@ -34,7 +34,7 @@ class NewShoppingListViewModel @Inject constructor(
     val progress = ObservableField<ProgressData>()
 
     val finished = SingleLiveEvent<VMShoppingList>()
-    val snackbarData = SingleLiveEvent<SnackBarData>()
+    val snackbarData = SingleLiveEvent<SnackbarData>()
 
     init {
         name.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
@@ -61,7 +61,7 @@ class NewShoppingListViewModel @Inject constructor(
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingList(it) }
                 .subscribe({ finished.value = it }, {
-                    snackbarData.value = TextSnackBarData(it, Snackbar.LENGTH_LONG)
+                    snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_LONG)
                 })
     }
 

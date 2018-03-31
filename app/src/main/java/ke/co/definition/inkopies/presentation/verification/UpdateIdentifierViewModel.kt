@@ -10,8 +10,8 @@ import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.ProgressData
-import ke.co.definition.inkopies.presentation.common.SnackBarData
-import ke.co.definition.inkopies.presentation.common.TextSnackBarData
+import ke.co.definition.inkopies.presentation.common.SnackbarData
+import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
@@ -30,7 +30,7 @@ class UpdateIdentifierViewModel @Inject constructor(
 ) : ViewModel() {
 
     val finishedEvent = SingleLiveEvent<VerifLogin>()
-    val snackBarData = SingleLiveEvent<SnackBarData>()
+    val snackBarData = SingleLiveEvent<SnackbarData>()
 
     val identifier = ObservableField<String>()
     val identifierError = ObservableField<String>()
@@ -66,7 +66,7 @@ class UpdateIdentifierViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ finishedEvent.value = it }, {
-                    snackBarData.value = TextSnackBarData(it.message!!, Snackbar.LENGTH_LONG)
+                    snackBarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
                 })
     }
 

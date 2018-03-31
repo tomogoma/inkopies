@@ -43,7 +43,7 @@ class UpsertListItemViewModel @Inject constructor(
     val overlayProgress = ObservableField<ProgressData>()
     val deletable = ObservableField<Boolean>()
 
-    val snackBarData = SingleLiveEvent<SnackBarData>()
+    val snackBarData = SingleLiveEvent<SnackbarData>()
     val finished = SingleLiveEvent<VMShoppingListItem>()
     val searchItemNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchBrandNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
@@ -186,7 +186,7 @@ class UpsertListItemViewModel @Inject constructor(
     }
 
     private fun onOpException(e: Throwable) {
-        snackBarData.value = TextSnackBarData(e, Snackbar.LENGTH_LONG)
+        snackBarData.value = TextSnackbarData(e, Snackbar.LENGTH_LONG)
     }
 
     private fun validate(): Boolean {
