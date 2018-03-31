@@ -81,4 +81,9 @@
     <string name="saving_item">Saving item</string>
     <string name="add_to_list">Add to list</string>
     <string name="add_to_cart">Add to cart</string>
+    <string name="plan_caps">PLAN</string>
+    <string name="go_shopping_caps">GO SHOPPING</string>
+    <string name="checkout_caps">CHECKOUT</string>
+    <string name="profile">Profile</string>
+    <string name="logout">Logout</string>
 </resources>

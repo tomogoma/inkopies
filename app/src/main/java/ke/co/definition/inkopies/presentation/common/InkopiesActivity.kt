@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.presentation.login.LoginActivity
+import ke.co.definition.inkopies.presentation.profile.ProfileActivity
 
 /**
  * Created by tomogoma
@@ -33,6 +34,14 @@ abstract class InkopiesActivity : AppCompatActivity() {
 
     internal fun removeLiveDataObservers() {
         observedLiveData.forEach { it.removeObservers(this) }
+    }
+
+    internal fun logout() {
+        auth.logOut() // TODO move to viewmodel
+    }
+
+    internal fun showProfile() {
+        ProfileActivity.start(this)
     }
 
     private fun onLoggedInStatusChange(newStatus: Boolean) {

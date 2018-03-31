@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.ViewGroup
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
@@ -18,6 +20,7 @@ import ke.co.definition.inkopies.databinding.ItemShoppingListsBinding
 import ke.co.definition.inkopies.presentation.common.InkopiesActivity
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.list.ShoppingListActivity
+
 
 class ShoppingListsActivity : InkopiesActivity() {
 
@@ -47,6 +50,25 @@ class ShoppingListsActivity : InkopiesActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.nextPage()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.showProfile -> {
+                showProfile()
+                true
+            }
+            R.id.logout -> {
+                logout()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun observeViews(vs: ActivityShoppingListsBinding) {
