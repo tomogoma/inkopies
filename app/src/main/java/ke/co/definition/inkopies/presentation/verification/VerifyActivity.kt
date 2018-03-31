@@ -1,7 +1,6 @@
 package ke.co.definition.inkopies.presentation.verification
 
 import android.app.Activity
-import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
@@ -15,13 +14,13 @@ import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityVerifyBinding
 import ke.co.definition.inkopies.model.auth.VerifLogin
+import ke.co.definition.inkopies.presentation.common.InkopiesActivity
 
 
-class VerifyActivity : AppCompatActivity() {
+class VerifyActivity : InkopiesActivity() {
 
     private lateinit var layoutRoot: View
     private lateinit var viewModel: VerificationViewModel
-    private val liveDataObservations: MutableList<LiveData<Any>> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,11 +33,6 @@ class VerifyActivity : AppCompatActivity() {
         views.vm = viewModel
         observeViews(views)
         if (savedInstanceState == null) start()
-    }
-
-    override fun onDestroy() {
-        stopObservingViewModel()
-        super.onDestroy()
     }
 
     private fun onChangeIDDialogDismiss(vl: VerifLogin?) {
@@ -59,12 +53,8 @@ class VerifyActivity : AppCompatActivity() {
 
         viewModel.snackBarData.observe(this, Observer { it?.show(layoutRoot) })
 
-        @Suppress("UNCHECKED_CAST")
-        liveDataObservations.addAll(listOf(
-                viewModel.openEditDialog as LiveData<Any>,
-                viewModel.finishedEv as LiveData<Any>,
-                viewModel.snackBarData as LiveData<Any>
-        ))
+        observedLiveData.addAll(listOf(viewModel.openEditDialog, viewModel.finishedEv,
+                viewModel.snackBarData))
     }
 
     private fun observeViews(views: ActivityVerifyBinding) {
@@ -88,12 +78,8 @@ class VerifyActivity : AppCompatActivity() {
     }
 
     private fun openChangeIdentifierDialog() {
-        stopObservingViewModel()
+        removeLiveDataObservers()
         ChangeIDDialogFrag.start(supportFragmentManager, this@VerifyActivity::onChangeIDDialogDismiss)
-    }
-
-    private fun stopObservingViewModel() {
-        liveDataObservations.forEach { it.removeObservers(this) }
     }
 
     companion object {

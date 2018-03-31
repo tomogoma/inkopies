@@ -1,13 +1,11 @@
 package ke.co.definition.inkopies.presentation.shopping.list
 
 import android.app.Activity
-import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -18,12 +16,11 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListBinding
 import ke.co.definition.inkopies.databinding.ContentShoppingListBinding
 import ke.co.definition.inkopies.databinding.ItemShoppingListBinding
+import ke.co.definition.inkopies.presentation.common.InkopiesActivity
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 
-class ShoppingListActivity : AppCompatActivity() {
-
-    private val liveDataObservables: MutableList<LiveData<Any>> = mutableListOf()
+class ShoppingListActivity : InkopiesActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,11 +41,6 @@ class ShoppingListActivity : AppCompatActivity() {
 
         setSupportActionBar(views.toolbar)
         supportActionBar!!.title = list.name()
-    }
-
-    override fun onDestroy() {
-        liveDataObservables.forEach { it.removeObservers(this) }
-        super.onDestroy()
     }
 
     private fun prepRecyclerView(vs: ContentShoppingListBinding): ShoppingListAdapter {
@@ -96,12 +88,8 @@ class ShoppingListActivity : AppCompatActivity() {
         })
         vm.newItem.observe(this, Observer { va.add(it ?: return@Observer) })
 
-        @Suppress("UNCHECKED_CAST")
-        liveDataObservables.addAll(mutableListOf(
-                vm.snackbarData as LiveData<Any>,
-                vm.nextPage as LiveData<Any>,
-                vm.itemUpdate as LiveData<Any>,
-                vm.newItem as LiveData<Any>
+        observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.nextPage, vm.itemUpdate,
+                vm.newItem
         ))
     }
 

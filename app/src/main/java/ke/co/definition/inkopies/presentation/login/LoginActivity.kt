@@ -1,28 +1,26 @@
 package ke.co.definition.inkopies.presentation.login
 
 import android.app.Activity
-import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityLoginBinding
 import ke.co.definition.inkopies.model.auth.VerifLogin
+import ke.co.definition.inkopies.presentation.common.InkopiesActivity
 import ke.co.definition.inkopies.presentation.common.replaceFrag
 import ke.co.definition.inkopies.presentation.common.replaceFragBackStack
 import ke.co.definition.inkopies.presentation.shopping.lists.ShoppingListsActivity
 import ke.co.definition.inkopies.presentation.verification.VerifyActivity
 
-class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
+class LoginActivity : InkopiesActivity(), LoginFragCoordinator {
 
     private var snackBar: Snackbar? = null
     private lateinit var loginVM: LoginViewModel
-    private val liveDataObservations: MutableList<LiveData<Any>> = mutableListOf()
 
     // Only required if not logged in, so bind views lazily
     private val binding: ActivityLoginBinding by lazy {
@@ -59,11 +57,6 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
         super.onBackPressed()
     }
 
-    override fun onDestroy() {
-        liveDataObservations.forEach { it.removeObservers(this) }
-        super.onDestroy()
-    }
-
     override fun openRegisterOptsFrag() {
         snackBar?.dismiss()
         replaceFragBackStack(R.id.frame, RegisterOptionsFragment())
@@ -93,12 +86,8 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
         })
         loginVM.snackBarData.observe(this, Observer { snackBar = it?.show(binding.frame) })
 
-        @Suppress("UNCHECKED_CAST")
-        liveDataObservations.addAll(listOf(
-                loginVM.loggedInStatus as LiveData<Any>,
-                loginVM.registeredStatus as LiveData<Any>,
-                loginVM.snackBarData as LiveData<Any>
-        ))
+        observedLiveData.addAll(listOf(loginVM.loggedInStatus, loginVM.registeredStatus,
+                loginVM.snackBarData))
     }
 
     private fun openLoginOptsFrag() {
@@ -113,6 +102,11 @@ class LoginActivity : AppCompatActivity(), LoginFragCoordinator {
 
     companion object {
         const val REQ_CODE_VERIFY_REGISTRATION = 1
+
+        fun start(activity: InkopiesActivity) {
+            val intent = Intent(activity, LoginActivity::class.java)
+            activity.startActivity(intent)
+        }
     }
 
 }

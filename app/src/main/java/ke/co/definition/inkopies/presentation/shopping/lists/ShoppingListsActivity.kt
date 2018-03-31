@@ -1,13 +1,11 @@
 package ke.co.definition.inkopies.presentation.shopping.lists
 
 import android.app.Activity
-import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -17,12 +15,12 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListsBinding
 import ke.co.definition.inkopies.databinding.ContentShoppingListsBinding
 import ke.co.definition.inkopies.databinding.ItemShoppingListsBinding
+import ke.co.definition.inkopies.presentation.common.InkopiesActivity
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.list.ShoppingListActivity
 
-class ShoppingListsActivity : AppCompatActivity() {
+class ShoppingListsActivity : InkopiesActivity() {
 
-    private val vmObservables: MutableList<LiveData<Any>> = mutableListOf()
     private lateinit var viewAdapter: ShoppingListsAdapter
     private lateinit var viewModel: ShoppingListsViewModel
 
@@ -51,11 +49,6 @@ class ShoppingListsActivity : AppCompatActivity() {
         viewModel.nextPage()
     }
 
-    override fun onDestroy() {
-        vmObservables.forEach { it.removeObservers(this) }
-        super.onDestroy()
-    }
-
     private fun observeViews(vs: ActivityShoppingListsBinding) {
         vs.fab.setOnClickListener { showNewShoppingListDialog() }
         viewAdapter.setOnItemSelectedListener { ShoppingListActivity.start(this, it) }
@@ -70,13 +63,8 @@ class ShoppingListsActivity : AppCompatActivity() {
         })
         viewModel.snackbarData.observe(this, Observer { it?.show(vs.root) })
 
-        @Suppress("UNCHECKED_CAST")
-        vmObservables.addAll(mutableListOf(
-                viewModel.nextPage as LiveData<Any>,
-                viewModel.addedItem as LiveData<Any>,
-                viewModel.snackbarData as LiveData<Any>,
-                viewModel.progressNextPage as LiveData<Any>
-        ))
+        observedLiveData.addAll(mutableListOf(viewModel.nextPage, viewModel.addedItem,
+                viewModel.snackbarData, viewModel.progressNextPage))
     }
 
     private fun prepRecyclerView(vs: ContentShoppingListsBinding) {
