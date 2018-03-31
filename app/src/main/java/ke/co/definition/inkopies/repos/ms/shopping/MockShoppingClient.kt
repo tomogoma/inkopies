@@ -152,8 +152,12 @@ class MockShoppingClient : ShoppingClient {
         return indx
     }
 
-    private fun notFound() = HttpException(Response.error<ResponseBody>(STATUS_NOT_FOUND,
-            ResponseBody.create(MediaType.parse("text/plain"), "none found")))
+    private fun notFound() = httpException(STATUS_NOT_FOUND, "none found")
+
+    private fun httpException(code: Int, msg: String) = HttpException(
+            Response.error<ResponseBody>(code,
+                    ResponseBody.create(MediaType.parse("text/plain"), msg))
+    )
 
     private fun calcLastIndex(offset: Long, count: Int, listSize: Int): Int {
         var lastIndx = offset.toInt() + count
