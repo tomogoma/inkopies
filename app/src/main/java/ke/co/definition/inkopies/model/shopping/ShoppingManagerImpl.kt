@@ -33,7 +33,7 @@ class ShoppingManagerImpl @Inject constructor(
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorResumeNext Single.just(listOf<ShoppingListItem>())
                     }
-                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, resMan, it,
+                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "search shopping list itme"))
                 }
     }
@@ -44,7 +44,7 @@ class ShoppingManagerImpl @Inject constructor(
                 .flatMap { auth.getJWT() }
                 .flatMap { client.upsertShoppingListItem(it.value, req) }
                 .onErrorResumeNext {
-                    Single.error(handleAuthErrors(logger, resMan, it, "upsert shopping list item"))
+                    Single.error(handleAuthErrors(logger, auth, resMan, it, "upsert shopping list item"))
                 }
     }
 
@@ -55,7 +55,7 @@ class ShoppingManagerImpl @Inject constructor(
                 .toCompletable()
                 .andThen(client.deleteShoppingListItem(jwt, id))
                 .onErrorResumeNext {
-                    Completable.error(handleAuthErrors(logger, resMan, it, "delete shopping list item"))
+                    Completable.error(handleAuthErrors(logger, auth, resMan, it, "delete shopping list item"))
                 }
     }
 
@@ -65,7 +65,7 @@ class ShoppingManagerImpl @Inject constructor(
                 .flatMap { auth.getJWT() }
                 .flatMap { client.updateShoppingListItem(it.value, item) }
                 .onErrorResumeNext {
-                    Single.error(handleAuthErrors(logger, resMan, it, "update shopping list item"))
+                    Single.error(handleAuthErrors(logger, auth, resMan, it, "update shopping list item"))
                 }
     }
 
@@ -76,7 +76,7 @@ class ShoppingManagerImpl @Inject constructor(
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorResumeNext Single.just(mutableListOf<ShoppingListItem>())
                     }
-                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, resMan, it,
+                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "get shopping list items"))
                 }
     }
@@ -88,7 +88,7 @@ class ShoppingManagerImpl @Inject constructor(
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorResumeNext Single.just(mutableListOf<ShoppingList>())
                     }
-                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, resMan, it,
+                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "fetch shopping lists"))
                 }
     }
@@ -96,7 +96,7 @@ class ShoppingManagerImpl @Inject constructor(
     override fun createShoppingList(name: String): Single<ShoppingList> {
         return auth.getJWT()
                 .flatMap { client.addShoppingList(it.value, name) }
-                .onErrorResumeNext { Single.error(handleAuthErrors(logger, resMan, it, "add shopping list")) }
+                .onErrorResumeNext { Single.error(handleAuthErrors(logger, auth, resMan, it, "add shopping list")) }
     }
 
     private fun validateShoppingListItem(item: ShoppingListItem) = Completable.create {

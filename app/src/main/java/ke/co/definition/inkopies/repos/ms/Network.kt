@@ -2,6 +2,7 @@ package ke.co.definition.inkopies.repos.ms
 
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
+import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.adapter.rxjava.HttpException
 import java.io.IOException
@@ -28,11 +29,14 @@ const val STATUS_SERVER_ERROR = 500
 
 class LoggedOutException(msg: String) : Exception(msg)
 
-fun handleAuthErrors(lg: Logger, resMan: ResourceManager, err: Throwable, ctx: String = ""): Throwable {
-    if (err is HttpException && err.code() == STATUS_FORBIDDEN) {
+// TODO return reactive error instead e.g. Single.error
+fun handleAuthErrors(lg: Logger, auth: Authable, resMan: ResourceManager, err: Throwable, ctx: String = ""): Throwable {
+    if (err is HttpException && err.code() == STATUS_UNAUTHORIZED) {
         return Exception(resMan.getString(R.string.forbidden_res_access))
     }
     if (err is HttpException && err.code() == STATUS_FORBIDDEN) {
+        // TODO subscribe to logout
+        auth.logOut() // not subscribing to result, returning immediately
         return LoggedOutException(resMan.getString(R.string.log_in_again))
     }
     return handleServerErrors(lg, resMan, err, ctx)

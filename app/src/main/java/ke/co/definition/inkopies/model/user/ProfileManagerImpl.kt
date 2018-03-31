@@ -43,7 +43,7 @@ class ProfileManagerImpl @Inject constructor(
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorResumeNext Single.just(GenUserProfile())
                     }
-                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, resMan, it,
+                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "get user"))
                 }
                 .flatMap { Single.just(UserProfile(authUser!!, it)) }
@@ -57,7 +57,7 @@ class ProfileManagerImpl @Inject constructor(
                 .flatMap { auth.getJWT() }
                 .flatMap { usersCl.updateUser(it.value, it.info.userID, name, gender) }
                 .onErrorResumeNext {
-                    Single.error(handleAuthErrors(logger, resMan, it,
+                    Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "update general profile"))
                 }
                 .flatMap { Single.just(UserProfile(authUsr!!, it)) }
@@ -78,12 +78,12 @@ class ProfileManagerImpl @Inject constructor(
                 .flatMap { auth.getJWT() }
                 .flatMap { jwt = it;imageCl.uploadProfilePic(it.value, PROFILE_IMG_FOLDER, uri) }
                 .onErrorResumeNext {
-                    Single.error(handleAuthErrors(logger, resMan, it,
+                    Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "upload profile picture"))
                 }
                 .flatMap { usersCl.updateAvatar(jwt!!.value, jwt!!.info.userID, it) }
                 .onErrorResumeNext {
-                    Single.error(handleAuthErrors(logger, resMan, it,
+                    Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "update user's avatar URL"))
                 }
                 .flatMap { Single.just(UserProfile(authUsr!!, it)) }
