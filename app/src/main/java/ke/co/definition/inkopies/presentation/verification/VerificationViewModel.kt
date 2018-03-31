@@ -137,7 +137,7 @@ class VerificationViewModel @Inject constructor(
                     String.format(resMngr.getString(R.string.resend_in_s_min_s_sec),
                             it % 3600 / 60, it % 60)
                 }
-                .subscribe({ resetCDTimer.set(it) })
+                .subscribe({ resetCDTimer.set(it) }, { /*NO-OP*/ })
     }
 
     class Factory @Inject constructor(

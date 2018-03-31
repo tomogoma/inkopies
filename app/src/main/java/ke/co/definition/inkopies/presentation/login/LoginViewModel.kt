@@ -65,7 +65,7 @@ class LoginViewModel @Inject constructor(
                 .observeOn(observeOnScheduler)
                 .subscribe(
                         { loggedInStatus.value = it },
-                        { throw RuntimeException("Error checking if user is logged in") }
+                        { throw RuntimeException("Error checking if user is logged in", it) }
                 )
     }
 
