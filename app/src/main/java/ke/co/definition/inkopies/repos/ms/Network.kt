@@ -29,17 +29,34 @@ const val STATUS_SERVER_ERROR = 500
 
 class LoggedOutException(msg: String) : Exception(msg)
 
-// TODO return reactive error instead e.g. Single.error
 fun handleAuthErrors(lg: Logger, auth: Authable, resMan: ResourceManager, err: Throwable, ctx: String = ""): Throwable {
+
     if (err is HttpException && err.code() == STATUS_UNAUTHORIZED) {
         return Exception(resMan.getString(R.string.forbidden_res_access))
     }
-    if (err is HttpException && err.code() == STATUS_FORBIDDEN) {
-        // TODO subscribe to logout
-        auth.logOut() // not subscribing to result, returning immediately
-        return LoggedOutException(resMan.getString(R.string.log_in_again))
+
+    if (err is LoggedOutException) {
+        return err
     }
-    return handleServerErrors(lg, resMan, err, ctx)
+
+    var rslt: Throwable? = null
+    if (err is HttpException && err.code() == STATUS_FORBIDDEN) {
+
+        auth.logOut().subscribe({
+            rslt = LoggedOutException(resMan.getString(R.string.log_in_again))
+        }, { rslt = it })
+
+        while (rslt == null) {
+            Thread.sleep(50)
+        }
+        if (rslt is LoggedOutException) {
+            return rslt!!
+        }
+    }
+
+    return handleServerErrors(lg, resMan,
+            rslt ?: handleServerErrors(lg, resMan, err, ctx),
+            ctx)
 }
 
 fun handleServerErrors(lg: Logger, resMan: ResourceManager, err: Throwable, ctx: String = ""): Throwable {

@@ -205,7 +205,7 @@ class Authenticator @Inject constructor(
 
                         if (!isLoggedIn) {
                             return@flatMap Single.error<AuthUser>(
-                                    Exception(resMan.getString(R.string.please_log_in)))
+                                    LoggedOutException(resMan.getString(R.string.please_log_in)))
                         }
 
                         return@flatMap Single.create<AuthUser>({
@@ -213,7 +213,7 @@ class Authenticator @Inject constructor(
                             val usrStr = localStore.fetch(KEY_AUTHED_USER)
                             if (usrStr.isEmpty()) {
                                 observedLoggedInStatus.set(false)
-                                it.onError(Exception(resMan.getString(R.string.please_log_in)))
+                                it.onError(LoggedOutException(resMan.getString(R.string.please_log_in)))
                                 return@create
                             }
 
@@ -227,14 +227,14 @@ class Authenticator @Inject constructor(
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
             observedLoggedInStatus.set(false)
-            it.onError(Exception(resMan.getString(R.string.please_log_in)))
+            it.onError(LoggedOutException(resMan.getString(R.string.please_log_in)))
             return@create
         }
 
         val jwt = Gson().fromJson(jwtStr, JWT::class.java)
         if (jwt.isExpired()) {
             logOut().subscribe({
-                it.onError(Exception(resMan.getString(R.string.please_log_in)))
+                it.onError(LoggedOutException(resMan.getString(R.string.please_log_in)))
             }, it::onError)
             return@create
         }
