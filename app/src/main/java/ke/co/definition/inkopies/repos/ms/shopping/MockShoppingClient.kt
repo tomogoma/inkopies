@@ -48,7 +48,7 @@ class MockShoppingClient : ShoppingClient {
             Thread.sleep(2000)
             var rslt: ShoppingListItem?
             try {
-                val indx = getShoppingListItemIndex(req.itemID ?: throw notFound())
+                val indx = getShoppingListItemIndex(req.shoppingListItemID ?: throw notFound())
                 val curr = shoppingListItems[indx]
                 rslt = ShoppingListItem(
                         curr.id, req.quantity ?: curr.quantity,

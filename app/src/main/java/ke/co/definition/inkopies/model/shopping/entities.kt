@@ -58,7 +58,7 @@ data class ShoppingListItemUpsert(
         val itemName: String,
         val inList: Boolean,
         val inCart: Boolean,
-        val itemID: String?,
+        val shoppingListItemID: String?,
         val brandName: String?,
         val quantity: Int?,
         val measuringUnit: String?,
