@@ -101,18 +101,18 @@ class FirebaseShoppingClient @Inject constructor(
     override fun updateShoppingListItem(token: String, update: ShoppingListItemUpdate): Single<ShoppingListItem> {
 
         var curr: ShoppingListItem? = null
-        val observer = getShoppingListItem(token, update.shoppingListID, update.shoppingListItemID)
+        var observer = getShoppingListItem(token, update.shoppingListID, update.shoppingListItemID)
                 .map { curr = it }
 
         var item: ShoppingItem? = null
         if (update.itemName != null) {
-            observer.flatMap { insertNamedIfNotExists(collItems, update.itemName) }
+            observer = observer.flatMap { insertNamedIfNotExists(collItems, update.itemName) }
                     .map { item = it.second.toShoppingItem(it.first) }
         }
 
         var measUnit: MeasuringUnit? = null
         if (update.measuringUnit != null) {
-            observer.flatMap { insertNamedIfNotExists(collItems, update.measuringUnit) }
+            observer = observer.flatMap { insertNamedIfNotExists(collItems, update.measuringUnit) }
                     .map { measUnit = it.second.toMeasuringUnit(it.first) }
         }
 
@@ -120,14 +120,14 @@ class FirebaseShoppingClient @Inject constructor(
         // as it also holds possible updates of measuringUnit and shoppingItem.
         var brand: Brand? = null
         if (update.brandName != null) {
-            observer
+            observer = observer
                     .flatMap {
                         insertBrandIfNotExists(measUnit ?: curr!!.measuringUnit(),
                                 item ?: curr!!.item(), update.brandName)
                     }
                     .map { brand = it }
         } else {
-            observer.map {
+            observer = observer.map {
                 brand = Brand(curr!!.brand().id, curr!!.brandName(),
                         measUnit ?: curr!!.measuringUnit(),
                         item ?: curr!!.item())
@@ -139,13 +139,13 @@ class FirebaseShoppingClient @Inject constructor(
         // (which may have possible updates of other fields).
         var price: BrandPrice? = null
         if (update.unitPrice != null) {
-            observer
+            observer = observer
                     .flatMap {
                         insertPriceIfNotExists(update.unitPrice, brand!!)
                     }
                     .map { price = it }
         } else {
-            observer.map {
+            observer = observer.map {
                 price = BrandPrice(curr!!.id, curr!!.unitPrice(), brand!!)
             }
         }
