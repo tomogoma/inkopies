@@ -19,10 +19,7 @@ import com.google.gson.Gson
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogUpsertListItemBinding
-import ke.co.definition.inkopies.presentation.common.SLMDialogFragment
-import ke.co.definition.inkopies.presentation.common.hideKeyboard
-import ke.co.definition.inkopies.presentation.common.onGlobalLayoutOnce
-import ke.co.definition.inkopies.presentation.common.showKeyboard
+import ke.co.definition.inkopies.presentation.common.*
 import ke.co.definition.inkopies.presentation.shopping.common.SearchShoppingListItemResult
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
@@ -103,6 +100,12 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             vm.onSubmit()
             return@setOnEditorActionListener true
         }
+
+        vs.brandName.selectAllOnFocus()
+        vs.itemName.selectAllOnFocus()
+        vs.quantity.selectAllOnFocus()
+        vs.measuringUnit.selectAllOnFocus()
+        vs.unitPrice.selectAllOnFocus()
     }
 
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
