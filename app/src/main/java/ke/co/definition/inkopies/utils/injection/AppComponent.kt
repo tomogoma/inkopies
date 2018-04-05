@@ -25,7 +25,8 @@ import javax.inject.Singleton
     UserModule::class,
     ImageModule::class,
     LoggingModule::class,
-    ShoppingModule::class
+    ShoppingModule::class,
+    FirebaseModule::class
 ])
 interface AppComponent {
     fun loginVMFactory(): LoginViewModel.Factory
