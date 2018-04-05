@@ -52,7 +52,8 @@ class FirebaseShoppingClient @Inject constructor(
 
     override fun getShoppingLists(token: String, offset: Long, count: Int) = Single.create<List<ShoppingList>> {
         collShoppingLists(token)
-                .limit(count.toLong())
+                .orderBy(FirestoreShoppingList.KEY_NAME)
+//                .limit(count.toLong())
                 .get()
                 .addOnSuccessListener { qs: QuerySnapshot ->
                     if (qs.isEmpty) {
@@ -179,21 +180,33 @@ class FirebaseShoppingClient @Inject constructor(
 
     override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int) =
             Single.create<List<ShoppingListItem>> {
-                var query = collShoppingListItems(token, f.shoppingListID)
-                        .limit(count.toLong())
-                if (f.inList != null) {
-                    query = query.whereEqualTo(FirestoreShoppingListItem.KEY_IN_LIST, f.inList)
+                val query = if (f.inList != null) {
+                    collShoppingListItems(token, f.shoppingListID)
+                            .whereEqualTo(FirestoreShoppingListItem.KEY_IN_LIST, f.inList)
+//                            .orderBy(FirestoreShoppingListItem.KEY_IN_CART, Query.Direction.DESCENDING)
+                } else {
+                    collShoppingListItems(token, f.shoppingListID)
+//                            .orderBy(FirestoreShoppingListItem.KEY_IN_LIST, Query.Direction.DESCENDING)
                 }
-                query.get()
+
+                query
+//                        .orderBy(FirestoreShoppingListItem.KEY_ITEM_NAME)
+//                        .limit(count.toLong())
+                        .get()
                         .addOnSuccessListener { qs: QuerySnapshot ->
                             if (qs.isEmpty) {
                                 it.onError(httpException(STATUS_NOT_FOUND, "none found"))
                                 return@addOnSuccessListener
                             }
-                            val res = qs.documents.map {
-                                it.toObject(FirestoreShoppingListItem::class.java)
-                                        .toShoppingListItem(it.id)
-                            }
+                            val res = qs.documents
+                                    .map {
+                                        it.toObject(FirestoreShoppingListItem::class.java)
+                                                .toShoppingListItem(it.id)
+                                    }.sortedBy { it.itemName() }
+                                    .sortedByDescending {
+                                        if (f.inList != null) it.inCart
+                                        else it.inList
+                                    }
                             it.onSuccess(res)
                         }
                         .addOnFailureListener { e: Exception ->
@@ -412,6 +425,8 @@ class FirebaseShoppingClient @Inject constructor(
 
 }
 
+const val DOC_FIELD_SEPARATOR = "."
+
 data class FirestoreShoppingList(
         val name: String = "",
         val activeListPrice: Float = 0F,
@@ -424,6 +439,10 @@ data class FirestoreShoppingList(
 
     fun toShoppingList(id: String) = ShoppingList(id, name, activeListPrice, cartPrice,
             ShoppingMode.valueOf(mode))
+
+    companion object {
+        const val KEY_NAME = "name"
+    }
 }
 
 data class FirestoreShoppingListItem(
@@ -441,7 +460,10 @@ data class FirestoreShoppingListItem(
 
     companion object {
         const val KEY_BRAND_PRICE_ID = "brandPriceId"
+        const val KEY_IN_CART = "inCart"
         const val KEY_IN_LIST = "inList"
+        const val KEY_PRICE = "price"
+        const val KEY_ITEM_NAME = "$KEY_PRICE$DOC_FIELD_SEPARATOR${FirestorePrice.KEY_ITEM_NAME}"
     }
 }
 
@@ -461,6 +483,8 @@ data class FirestorePrice(
     companion object {
         const val KEY_PRICE = "price"
         const val KEY_BRAND_ID = "brandId"
+        const val KEY_BRAND = "brand"
+        const val KEY_ITEM_NAME = "$KEY_BRAND$DOC_FIELD_SEPARATOR${FirestoreBrand.KEY_ITEM_NAME}"
     }
 }
 
@@ -484,6 +508,8 @@ data class FirestoreBrand(
         const val KEY_NAME = "name"
         const val KEY_ITEM_ID = "shoppigItemId"
         const val KEY_MEASURING_UNIT_ID = "measuringUnitId"
+        const val KEY_SHOPPING_ITEM = "shoppingItem"
+        const val KEY_ITEM_NAME = "$KEY_SHOPPING_ITEM$DOC_FIELD_SEPARATOR${Named.KEY_NAME}"
     }
 }
 
