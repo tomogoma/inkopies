@@ -8,12 +8,14 @@ import rx.Single
  * On 22/03/18.
  */
 interface ShoppingManager {
+
     fun createShoppingList(name: String): Single<ShoppingList>
     fun updateShoppingList(list: ShoppingList): Single<ShoppingList>
     fun getShoppingLists(offset: Long, count: Int): Single<List<ShoppingList>>
+
+    fun insertShoppingListItem(item: ShoppingListItemInsert): Single<ShoppingListItem>
+    fun updateShoppingListItem(req: ShoppingListItemUpdate): Single<ShoppingListItem>
+    fun deleteShoppingListItem(shoppingListID: String, id: String): Completable
     fun getShoppingListItems(shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>>
-    fun updateShoppingListItem(item: ShoppingListItem): Single<ShoppingListItem>
-    fun upsertShoppingListItem(req: ShoppingListItemUpsert): Single<ShoppingListItem>
-    fun deleteShoppingListItem(id: String): Completable
     fun searchShoppingListItem(req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
 }

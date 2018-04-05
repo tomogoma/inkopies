@@ -1,9 +1,6 @@
 package ke.co.definition.inkopies.repos.ms.shopping
 
-import ke.co.definition.inkopies.model.shopping.ShoppingList
-import ke.co.definition.inkopies.model.shopping.ShoppingListItem
-import ke.co.definition.inkopies.model.shopping.ShoppingListItemSearch
-import ke.co.definition.inkopies.model.shopping.ShoppingListItemUpsert
+import ke.co.definition.inkopies.model.shopping.*
 import rx.Completable
 import rx.Single
 
@@ -12,12 +9,14 @@ import rx.Single
  * On 23/03/18.
  */
 interface ShoppingClient {
+
     fun addShoppingList(token: String, name: String): Single<ShoppingList>
     fun updateShoppingList(token: String, list: ShoppingList): Single<ShoppingList>
     fun getShoppingLists(token: String, offset: Long, count: Int): Single<List<ShoppingList>>
-    fun updateShoppingListItem(token: String, item: ShoppingListItem): Single<ShoppingListItem>
+
+    fun insertShoppingListItem(token: String, req: ShoppingListItemInsert): Single<ShoppingListItem>
+    fun updateShoppingListItem(token: String, update: ShoppingListItemUpdate): Single<ShoppingListItem>
+    fun deleteShoppingListItem(token: String, shoppingListID: String, id: String): Completable
     fun getShoppingListItems(token: String, shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>>
-    fun upsertShoppingListItem(token: String, req: ShoppingListItemUpsert): Single<ShoppingListItem>
-    fun deleteShoppingListItem(token: String, id: String): Completable
     fun searchShoppingListItem(token: String, req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
 }

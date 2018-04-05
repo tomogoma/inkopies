@@ -44,32 +44,32 @@ class ShoppingManagerImpl @Inject constructor(
                 }
     }
 
-    override fun upsertShoppingListItem(req: ShoppingListItemUpsert): Single<ShoppingListItem> {
-        return validateShoppingListItemReq(req)
+    override fun insertShoppingListItem(item: ShoppingListItemInsert): Single<ShoppingListItem> {
+        return validateShoppingListItemInsert(item)
                 .toSingle {}
                 .flatMap { auth.getJWT() }
-                .flatMap { client.upsertShoppingListItem(it.value, req) }
+                .flatMap { client.insertShoppingListItem(it.value, item) }
                 .onErrorResumeNext {
                     Single.error(handleAuthErrors(logger, auth, resMan, it, "upsert shopping list item"))
                 }
     }
 
-    override fun deleteShoppingListItem(id: String): Completable {
+    override fun deleteShoppingListItem(shoppingListID: String, id: String): Completable {
         var jwt = ""
         return auth.getJWT()
                 .map { jwt = it.value }
                 .toCompletable()
-                .andThen(client.deleteShoppingListItem(jwt, id))
+                .andThen(client.deleteShoppingListItem(jwt, shoppingListID, id))
                 .onErrorResumeNext {
                     Completable.error(handleAuthErrors(logger, auth, resMan, it, "delete shopping list item"))
                 }
     }
 
-    override fun updateShoppingListItem(item: ShoppingListItem): Single<ShoppingListItem> {
-        return validateShoppingListItem(item)
+    override fun updateShoppingListItem(req: ShoppingListItemUpdate): Single<ShoppingListItem> {
+        return validateShoppingListItemUpdate(req)
                 .toSingle {}
                 .flatMap { auth.getJWT() }
-                .flatMap { client.updateShoppingListItem(it.value, item) }
+                .flatMap { client.updateShoppingListItem(it.value, req) }
                 .onErrorResumeNext {
                     Single.error(handleAuthErrors(logger, auth, resMan, it, "update shopping list item"))
                 }
@@ -105,17 +105,25 @@ class ShoppingManagerImpl @Inject constructor(
                 .onErrorResumeNext { Single.error(handleAuthErrors(logger, auth, resMan, it, "add shopping list")) }
     }
 
-    private fun validateShoppingListItem(item: ShoppingListItem) = Completable.create {
-        if (item.itemName() == "") {
-            it.onError(Exception("item name cannot be empty"))
+    private fun validateShoppingListItemInsert(item: ShoppingListItemInsert) = Completable.create {
+        if (item.shoppingListID == "") {
+            it.onError(Exception("shoppingListID cannot be empty"))
+            return@create
+        }
+        if (item.itemName == "") {
+            it.onError(Exception("itemName cannot be empty"))
             return@create
         }
         it.onCompleted()
     }
 
-    private fun validateShoppingListItemReq(item: ShoppingListItemUpsert) = Completable.create {
-        if (item.itemName == "") {
-            it.onError(Exception("item name cannot be empty"))
+    private fun validateShoppingListItemUpdate(item: ShoppingListItemUpdate) = Completable.create {
+        if (item.shoppingListID == "") {
+            it.onError(Exception("shoppingListID cannot be empty"))
+            return@create
+        }
+        if (item.shoppingListItemID == "") {
+            it.onError(Exception("shoppingListItemID name cannot be empty"))
             return@create
         }
         it.onCompleted()

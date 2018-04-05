@@ -29,7 +29,6 @@ class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
     val id: String = sli.id
     val inList: Boolean = sli.inList
     val inCart: Boolean = sli.inCart
-    val shoppingList: ShoppingList = sli.shoppingList
     val brandPrice: BrandPrice = sli.brandPrice
     val quantity: Int = sli.quantity
 

@@ -146,7 +146,7 @@ class UpsertListItemViewModel @Inject constructor(
     }
 
     fun onDelete() {
-        manager.deleteShoppingListItem(id!!)
+        manager.deleteShoppingListItem(list.id, id!!)
                 .doOnSubscribe {
                     overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
                 }
@@ -157,14 +157,22 @@ class UpsertListItemViewModel @Inject constructor(
     }
 
     fun onSubmit() {
+
         if (!validate()) {
             return
         }
         val inListCart = getInListInCart()
-        manager.upsertShoppingListItem(ShoppingListItemUpsert(
-                list.id, itemName.get()!!, inListCart.first, inListCart.second, id, brandName.get(),
-                quantity.get()?.toInt(), measuringUnit.get(), unitPrice.get()?.toFloat()
-        ))
+
+        val currID = id
+        if (currID == null || currID == "") {
+            manager.insertShoppingListItem(ShoppingListItemInsert(list.id, itemName.get()!!,
+                    inListCart.first, inListCart.second, brandName.get(), quantity.get()?.toInt(),
+                    measuringUnit.get(), unitPrice.get()?.toFloat()))
+        } else {
+            manager.updateShoppingListItem(ShoppingListItemUpdate(list.id, currID, itemName.get()!!,
+                    inListCart.first, inListCart.second, brandName.get(), quantity.get()?.toInt(),
+                    measuringUnit.get(), unitPrice.get()?.toFloat()))
+        }
                 .doOnSubscribe {
                     overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
                 }

@@ -6,7 +6,7 @@ import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.shopping.ShoppingList
-import ke.co.definition.inkopies.model.shopping.ShoppingListItem
+import ke.co.definition.inkopies.model.shopping.ShoppingListItemUpdate
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.presentation.common.ResIDSnackbarData
@@ -92,8 +92,9 @@ class ShoppingListViewModel @Inject constructor(
             ShoppingMode.SHOPPING -> inCart = toState
             else -> inList = toState
         }
-        manager.updateShoppingListItem(ShoppingListItem(item.id, item.quantity, item.shoppingList,
-                item.brandPrice, inList, inCart))
+        val list = shoppingList.get()!!
+        manager.updateShoppingListItem(ShoppingListItemUpdate(list.id, item.id,
+                inList = inList, inCart = inCart))
                 .doOnSubscribe { item.isUpdating.set(true) }
                 .doOnUnsubscribe { item.isUpdating.set(false) }
                 .subscribeOn(subscribeOnScheduler)

@@ -31,9 +31,11 @@ data class BrandPrice(
         val id: String,
         val price: Float,
         val brand: Brand,
-        val atStoreBranch: StoreBranch
+        val atStoreBranch: StoreBranch? = null
 ) {
+    fun measuringUnit() = brand.measuringUnit
     fun measuringUnitName() = brand.measuringUnitName()
+    fun item() = brand.shoppingItem
     fun itemName() = brand.itemName()
     fun brandName() = brand.name
 }
@@ -41,28 +43,41 @@ data class BrandPrice(
 data class ShoppingListItem(
         val id: String,
         val quantity: Int,
-        val shoppingList: ShoppingList,
         val brandPrice: BrandPrice,
         val inList: Boolean,
         val inCart: Boolean
 ) {
+    fun measuringUnit() = brandPrice.measuringUnit()
     fun measuringUnitName() = brandPrice.measuringUnitName()
+    fun item() = brandPrice.item()
     fun itemName() = brandPrice.itemName()
+    fun brand() = brandPrice.brand
     fun brandName() = brandPrice.brandName()
     fun unitPrice() = brandPrice.price
     fun totalPrice() = unitPrice() * quantity
 }
 
-data class ShoppingListItemUpsert(
+data class ShoppingListItemInsert(
         val shoppingListID: String,
         val itemName: String,
         val inList: Boolean,
         val inCart: Boolean,
-        val shoppingListItemID: String?,
-        val brandName: String?,
-        val quantity: Int?,
-        val measuringUnit: String?,
-        val unitPrice: Float?
+        val brandName: String? = null,
+        val quantity: Int? = null,
+        val measuringUnit: String? = null,
+        val unitPrice: Float? = null
+)
+
+data class ShoppingListItemUpdate(
+        val shoppingListID: String,
+        val shoppingListItemID: String,
+        val itemName: String? = null,
+        val inList: Boolean? = null,
+        val inCart: Boolean? = null,
+        val brandName: String? = null,
+        val quantity: Int? = null,
+        val measuringUnit: String? = null,
+        val unitPrice: Float? = null
 )
 
 data class ShoppingListItemSearch(
