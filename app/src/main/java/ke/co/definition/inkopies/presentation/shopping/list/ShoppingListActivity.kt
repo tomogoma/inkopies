@@ -167,32 +167,32 @@ class ShoppingListActivity : InkopiesActivity() {
 
         override fun getItemCount() = items.size
 
-        override fun onBindViewHolder(holder: ItemShoppingListHolder, position: Int) {
+        override fun onBindViewHolder(holder: ItemShoppingListHolder, bindPos: Int) {
 
-            val item = items[position]
+            val item = items[bindPos]
             holder.binding.item = item
 
             holder.binding.brand.setOnClickListener {
-                listener.onItemSelected(item, position, ItemFocus.BRAND)
+                listener.onItemSelected(item, items.indexOf(item), ItemFocus.BRAND)
             }
             holder.binding.name.setOnClickListener {
-                listener.onItemSelected(item, position, ItemFocus.ITEM)
+                listener.onItemSelected(item, items.indexOf(item), ItemFocus.ITEM)
             }
             holder.binding.measuringUnit.setOnClickListener {
-                listener.onItemSelected(item, position, ItemFocus.MEASUREMENT_UNIT)
+                listener.onItemSelected(item, items.indexOf(item), ItemFocus.MEASUREMENT_UNIT)
             }
             holder.binding.unitPrice.setOnClickListener {
-                listener.onItemSelected(item, position, ItemFocus.UNIT_PRICE)
+                listener.onItemSelected(item, items.indexOf(item), ItemFocus.UNIT_PRICE)
             }
             holder.binding.x.setOnClickListener {
-                listener.onItemSelected(item, position, ItemFocus.QUANTITY)
+                listener.onItemSelected(item, items.indexOf(item), ItemFocus.QUANTITY)
             }
             holder.binding.quantity.setOnClickListener {
-                listener.onItemSelected(item, position, ItemFocus.QUANTITY)
+                listener.onItemSelected(item, items.indexOf(item), ItemFocus.QUANTITY)
             }
             holder.binding.checked.setOnCheckedChangeListener { _, state ->
                 if (item.isChecked() == state) return@setOnCheckedChangeListener
-                listener.onCheckChanged(item, position, state)
+                listener.onCheckChanged(item, items.indexOf(item), state)
             }
         }
 
@@ -201,30 +201,89 @@ class ShoppingListActivity : InkopiesActivity() {
         }
 
         fun clear() {
-            items.clear()
-            notifyDataSetChanged()
+            synchronized(this) {
+                items.clear()
+                notifyDataSetChanged()
+            }
         }
 
         fun addItems(items: MutableList<VMShoppingListItem>) {
-            val origiSize = this.items.size
-            this.items.addAll(items)
-            notifyItemRangeInserted(origiSize, items.size)
+            synchronized(this) {
+                val origiSize = this.items.size
+                this.items.addAll(items)
+                notifyItemRangeInserted(origiSize, items.size)
+            }
         }
 
         fun updateItem(newVal: VMShoppingListItem, pos: Int) {
-            this.items.removeAt(pos)
-            this.items.add(pos, newVal)
-            notifyItemChanged(pos)
+            synchronized(this) {
+                this.items.removeAt(pos)
+                val newPos = calculateNewPos(newVal)
+                this.items.add(newPos, newVal)
+                if (newPos == pos) {
+                    notifyItemChanged(pos)
+                } else {
+                    notifyItemMoved(pos, newPos)
+                }
+            }
         }
 
         fun removeItem(pos: Int) {
-            this.items.removeAt(pos)
-            notifyItemRemoved(pos)
+            synchronized(this) {
+                this.items.removeAt(pos)
+                notifyItemRemoved(pos)
+            }
         }
 
         fun add(item: VMShoppingListItem) {
-            items.add(item)
-            notifyItemInserted(items.size - 1)
+            synchronized(this) {
+                val newPos = calculateNewPos(item)
+                items.add(newPos, item)
+                notifyItemInserted(newPos)
+            }
+        }
+
+        private fun calculateNewPos(item: VMShoppingListItem): Int {
+            synchronized(this) {
+
+                if (items.size == 0) {
+                    return 0
+                }
+
+                var firstUncheckedPos = items.indexOfFirst { !it.isChecked() }
+                if (firstUncheckedPos == -1) {
+                    firstUncheckedPos = items.size
+                }
+
+                return if (item.isChecked()) {
+                    calculateNewPos(item, 0, firstUncheckedPos)
+                } else {
+                    calculateNewPos(item, firstUncheckedPos, items.size)
+                }
+            }
+        }
+
+        /**
+         * calculateNewPos calculates the position of item in the items list limited to the
+         * range defined by offsetPos (inclusive) and lastPos (exclusive). Returns 0 if the list
+         * is empty or lastPos is 0.
+         */
+        private fun calculateNewPos(item: VMShoppingListItem, offsetPos: Int, lastPos: Int): Int {
+            synchronized(this) {
+
+                if (items.size == 0 || lastPos == 0) {
+                    return 0
+                }
+
+                val orderPos = items
+                        .subList(offsetPos, lastPos)
+                        .indexOfFirst { it.itemName() >= item.itemName() }
+                return if (orderPos == -1) {
+                    lastPos
+                } else {
+                    offsetPos + orderPos
+                }
+            }
         }
 
         data class ItemShoppingListHolder(internal val binding: ItemShoppingListBinding) :
