@@ -178,6 +178,9 @@ class ShoppingListActivity : InkopiesActivity() {
             holder.binding.name.setOnClickListener {
                 listener.onItemSelected(item, items.indexOf(item), ItemFocus.ITEM)
             }
+            holder.binding.root.setOnClickListener {
+                listener.onItemSelected(item, items.indexOf(item), ItemFocus.ITEM)
+            }
             holder.binding.measuringUnit.setOnClickListener {
                 listener.onItemSelected(item, items.indexOf(item), ItemFocus.MEASUREMENT_UNIT)
             }
