@@ -45,10 +45,6 @@ class ShoppingListsActivity : InkopiesActivity() {
         observeViewModel(views)
         observeViews(views)
 
-    }
-
-    override fun onResume() {
-        super.onResume()
         viewModel.nextPage()
     }
 
