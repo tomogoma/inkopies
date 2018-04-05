@@ -25,6 +25,7 @@ import javax.inject.Inject
 class Authenticator @Inject constructor(
         private val localStore: LocalStorable,
         private val authCl: AuthClient,
+        private val jwtHelper: JWTHelper,
         private val validator: Validatable,
         private val resMan: ResourceManager,
         private val logger: Logger
@@ -282,7 +283,7 @@ class Authenticator @Inject constructor(
 
     private fun saveLoggedInDetails(usr: AuthUser, jwtStr: String) {
         upsertAuthUser(usr)
-        val jwt = JWT(jwtStr)
+        val jwt = jwtHelper.extractJWT(jwtStr)
         localStore.upsert(KEY_JWT, Gson().toJson(jwt))
         updateObservedLoggedInStatus(true)
     }

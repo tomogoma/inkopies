@@ -5,10 +5,7 @@ import dagger.Module
 import dagger.Provides
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import ke.co.definition.inkopies.model.ResourceManager
-import ke.co.definition.inkopies.model.auth.Authable
-import ke.co.definition.inkopies.model.auth.Authenticator
-import ke.co.definition.inkopies.model.auth.Validatable
-import ke.co.definition.inkopies.model.auth.Validator
+import ke.co.definition.inkopies.model.auth.*
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.local.LocalStore
 import ke.co.definition.inkopies.repos.ms.AUTH_MS_ADDRESS
@@ -50,10 +47,14 @@ class AuthModule {
     fun provideLocalStorable(app: Application): LocalStorable = LocalStore(app)
 
     @Provides
+    fun provideJWTHelper(): JWTHelper = JWTHelperImpl()
+
+    @Provides
     @Inject
     @Singleton
-    fun provideAuthable(ls: LocalStorable, ac: AuthClient, v: Validatable, rm: ResourceManager, lg: Logger)
-            : Authable = Authenticator(ls, ac, v, rm, lg)
+    fun provideAuthable(ls: LocalStorable, ac: AuthClient, jwtH: JWTHelper, v: Validatable,
+                        rm: ResourceManager, lg: Logger): Authable =
+            Authenticator(ls, ac, jwtH, v, rm, lg)
 
     companion object {
         const val MS = "authms"
