@@ -177,11 +177,14 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun getShoppingListItems(token: String, shoppingListID: String, offset: Long, count: Int) =
+    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int) =
             Single.create<List<ShoppingListItem>> {
-                collShoppingListItems(token, shoppingListID)
+                var query = collShoppingListItems(token, f.shoppingListID)
                         .limit(count.toLong())
-                        .get()
+                if (f.inList != null) {
+                    query = query.whereEqualTo(FirestoreShoppingListItem.KEY_IN_LIST, f.inList)
+                }
+                query.get()
                         .addOnSuccessListener { qs: QuerySnapshot ->
                             if (qs.isEmpty) {
                                 it.onError(httpException(STATUS_NOT_FOUND, "none found"))
@@ -438,6 +441,7 @@ data class FirestoreShoppingListItem(
 
     companion object {
         const val KEY_BRAND_PRICE_ID = "brandPriceId"
+        const val KEY_IN_LIST = "inList"
     }
 }
 

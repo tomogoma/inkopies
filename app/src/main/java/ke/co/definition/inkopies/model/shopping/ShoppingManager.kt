@@ -16,6 +16,6 @@ interface ShoppingManager {
     fun insertShoppingListItem(item: ShoppingListItemInsert): Single<ShoppingListItem>
     fun updateShoppingListItem(req: ShoppingListItemUpdate): Single<ShoppingListItem>
     fun deleteShoppingListItem(shoppingListID: String, id: String): Completable
-    fun getShoppingListItems(shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>>
+    fun getShoppingListItems(f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>>
     fun searchShoppingListItem(req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
 }

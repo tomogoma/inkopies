@@ -93,7 +93,7 @@ class MockShoppingClient : ShoppingClient {
         }
     }
 
-    override fun getShoppingListItems(token: String, shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>> {
+    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>> {
         return Single.create {
             Thread.sleep(2000)
             if (shoppingListItems.size == 0) {

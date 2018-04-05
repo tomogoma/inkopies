@@ -75,9 +75,9 @@ class ShoppingManagerImpl @Inject constructor(
                 }
     }
 
-    override fun getShoppingListItems(shoppingListID: String, offset: Long, count: Int): Single<List<ShoppingListItem>> {
+    override fun getShoppingListItems(f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>> {
         return auth.getJWT()
-                .flatMap { client.getShoppingListItems(it.value, shoppingListID, offset, count) }
+                .flatMap { client.getShoppingListItems(it.value, f, offset, count) }
                 .onErrorResumeNext {
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorResumeNext Single.just(mutableListOf<ShoppingListItem>())

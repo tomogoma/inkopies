@@ -5,10 +5,7 @@ import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
-import ke.co.definition.inkopies.model.shopping.ShoppingList
-import ke.co.definition.inkopies.model.shopping.ShoppingListItemUpdate
-import ke.co.definition.inkopies.model.shopping.ShoppingManager
-import ke.co.definition.inkopies.model.shopping.ShoppingMode
+import ke.co.definition.inkopies.model.shopping.*
 import ke.co.definition.inkopies.presentation.common.ResIDSnackbarData
 import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
@@ -49,7 +46,11 @@ class ShoppingListViewModel @Inject constructor(
         this.shoppingList.set(list)
         currOffset = 0L
         clearList.value = true
-        manager.getShoppingListItems(list.id, currOffset, PRICE_FETCH_COUNT)
+        val filter = when (list.mode) {
+            ShoppingMode.PREPARATION -> ShoppingListItemsFilter(list.id)
+            ShoppingMode.SHOPPING -> ShoppingListItemsFilter(list.id, inList = true)
+        }
+        manager.getShoppingListItems(filter, currOffset, PRICE_FETCH_COUNT)
                 .doOnSubscribe { showProgress() }
                 .doOnUnsubscribe { hideProgress() }
                 .subscribeOn(subscribeOnScheduler)

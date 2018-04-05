@@ -80,6 +80,11 @@ data class ShoppingListItemUpdate(
         val unitPrice: Float? = null
 )
 
+data class ShoppingListItemsFilter(
+        val shoppingListID: String,
+        val inList: Boolean? = null
+)
+
 data class ShoppingListItemSearch(
         val brandName: String?,
         val shoppingItemName: String?,
