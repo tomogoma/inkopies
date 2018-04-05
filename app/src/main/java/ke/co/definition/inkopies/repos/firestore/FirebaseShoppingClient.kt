@@ -77,12 +77,10 @@ class FirebaseShoppingClient @Inject constructor(
         var measUnit: MeasuringUnit? = null
         var price: BrandPrice? = null
 
-        // 1. Insert measuring unit
-        return insertNamedIfNotExists(collMeasUnits, req.measuringUnit ?: "")
+        return insertMeasUnitIfNotExists(req.measuringUnit ?: "")
                 .map { measUnit = it.second.toMeasuringUnit(it.first) }
 
-                // 2. Insert shopping item
-                .flatMap { insertNamedIfNotExists(collItems, req.itemName) }
+                .flatMap { insertItemIfNotExists(req.itemName) }
                 .map { it.second.toShoppingItem(it.first) }
 
                 .flatMap {
@@ -106,13 +104,13 @@ class FirebaseShoppingClient @Inject constructor(
 
         var item: ShoppingItem? = null
         if (update.itemName != null) {
-            observer = observer.flatMap { insertNamedIfNotExists(collItems, update.itemName) }
+            observer = observer.flatMap { insertItemIfNotExists(update.itemName) }
                     .map { item = it.second.toShoppingItem(it.first) }
         }
 
         var measUnit: MeasuringUnit? = null
         if (update.measuringUnit != null) {
-            observer = observer.flatMap { insertNamedIfNotExists(collItems, update.measuringUnit) }
+            observer = observer.flatMap { insertMeasUnitIfNotExists(update.measuringUnit) }
                     .map { measUnit = it.second.toMeasuringUnit(it.first) }
         }
 
@@ -339,6 +337,12 @@ class FirebaseShoppingClient @Inject constructor(
                 }
                 .addOnFailureListener(it::onError)
     }
+
+    private fun insertItemIfNotExists(name: String) =
+            insertNamedIfNotExists(collItems, name)
+
+    private fun insertMeasUnitIfNotExists(name: String) =
+            insertNamedIfNotExists(collMeasUnits, name)
 
     private fun insertNamedIfNotExists(collection: CollectionReference, name: String) =
             getNamed(collection, name)
