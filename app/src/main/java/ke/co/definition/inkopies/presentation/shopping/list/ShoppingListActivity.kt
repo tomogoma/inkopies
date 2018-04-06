@@ -89,19 +89,19 @@ class ShoppingListActivity : InkopiesActivity() {
                     { vm.onItemAdded(it ?: return@start) })
         }
         va.setOnItemSelectedListener(object : ActionListener {
-            override fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus) {
+            override fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus) {
                 UpsertListItemDialogFrag.start(supportFragmentManager, vm.shoppingList.get()!!, item, focus,
                         {
                             if (it != null) {
-                                vm.onItemUpdated(item, it, pos)
+                                vm.onItemUpdated(item, it)
                             } else {
-                                vm.onItemDeleted(item, pos)
+                                vm.onItemDeleted(item)
                             }
                         })
             }
 
-            override fun onCheckChanged(item: VMShoppingListItem, pos: Int, newState: Boolean) {
-                vm.onItemSelectionChanged(item, pos, newState)
+            override fun onCheckChanged(item: VMShoppingListItem, newState: Boolean) {
+                vm.onItemSelectionChanged(item, newState)
             }
         })
     }
@@ -110,7 +110,7 @@ class ShoppingListActivity : InkopiesActivity() {
         vm.snackbarData.observe(this, Observer { it?.show(vs.root) })
         vm.nextPage.observe(this, Observer { va.addItems(it ?: return@Observer) })
         vm.itemUpdate.observe(this, Observer {
-            va.updateItem(it?.first ?: return@Observer, it.second)
+            va.updateItem(it ?: return@Observer)
         })
         vm.newItem.observe(this, Observer { va.add(it ?: return@Observer) })
         vm.itemDelete.observe(this, Observer { va.removeItem(it ?: return@Observer) })
@@ -138,19 +138,19 @@ class ShoppingListActivity : InkopiesActivity() {
     }
 
     interface ActionListener {
-        fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus)
-        fun onCheckChanged(item: VMShoppingListItem, pos: Int, newState: Boolean)
+        fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus)
+        fun onCheckChanged(item: VMShoppingListItem, newState: Boolean)
     }
 
     class ShoppingListAdapter :
             RecyclerView.Adapter<ShoppingListAdapter.ItemShoppingListHolder>() {
 
         private var listener: ActionListener = object : ActionListener {
-            override fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus) {
+            override fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus) {
                 /* No-op */
             }
 
-            override fun onCheckChanged(item: VMShoppingListItem, pos: Int, newState: Boolean) {
+            override fun onCheckChanged(item: VMShoppingListItem, newState: Boolean) {
                 /* No-op */
             }
         }
@@ -173,29 +173,29 @@ class ShoppingListActivity : InkopiesActivity() {
             holder.binding.item = item
 
             holder.binding.brand.setOnClickListener {
-                listener.onItemSelected(item, items.indexOf(item), ItemFocus.BRAND)
+                listener.onItemSelected(item, ItemFocus.BRAND)
             }
             holder.binding.name.setOnClickListener {
-                listener.onItemSelected(item, items.indexOf(item), ItemFocus.ITEM)
+                listener.onItemSelected(item, ItemFocus.ITEM)
             }
             holder.binding.root.setOnClickListener {
-                listener.onItemSelected(item, items.indexOf(item), ItemFocus.ITEM)
+                listener.onItemSelected(item, ItemFocus.ITEM)
             }
             holder.binding.measuringUnit.setOnClickListener {
-                listener.onItemSelected(item, items.indexOf(item), ItemFocus.MEASUREMENT_UNIT)
+                listener.onItemSelected(item, ItemFocus.MEASUREMENT_UNIT)
             }
             holder.binding.unitPrice.setOnClickListener {
-                listener.onItemSelected(item, items.indexOf(item), ItemFocus.UNIT_PRICE)
+                listener.onItemSelected(item, ItemFocus.UNIT_PRICE)
             }
             holder.binding.x.setOnClickListener {
-                listener.onItemSelected(item, items.indexOf(item), ItemFocus.QUANTITY)
+                listener.onItemSelected(item, ItemFocus.QUANTITY)
             }
             holder.binding.quantity.setOnClickListener {
-                listener.onItemSelected(item, items.indexOf(item), ItemFocus.QUANTITY)
+                listener.onItemSelected(item, ItemFocus.QUANTITY)
             }
             holder.binding.checked.setOnCheckedChangeListener { _, state ->
                 if (item.isChecked() == state) return@setOnCheckedChangeListener
-                listener.onCheckChanged(item, items.indexOf(item), state)
+                listener.onCheckChanged(item, state)
             }
         }
 
@@ -218,21 +218,31 @@ class ShoppingListActivity : InkopiesActivity() {
             }
         }
 
-        fun updateItem(newVal: VMShoppingListItem, pos: Int) {
+        fun updateItem(newVal: VMShoppingListItem) {
             synchronized(this) {
-                this.items.removeAt(pos)
+                val pos = items.indexOfFirst { it.sli.id == newVal.sli.id }
+                if (pos >= 0) {
+                    this.items.removeAt(pos)
+                }
                 val newPos = calculateNewPos(newVal)
                 this.items.add(newPos, newVal)
-                if (newPos == pos) {
-                    notifyItemChanged(pos)
-                } else {
-                    notifyItemMoved(pos, newPos)
+                when (pos) {
+                    newPos -> notifyItemChanged(newPos)
+                    -1 -> notifyItemInserted(newPos)
+                    else -> {
+                        notifyItemMoved(pos, newPos)
+                        notifyItemChanged(newPos)
+                    }
                 }
             }
         }
 
-        fun removeItem(pos: Int) {
+        fun removeItem(item: VMShoppingListItem) {
             synchronized(this) {
+                val pos = items.indexOfFirst { it.sli.id == item.sli.id }
+                if (pos < 0) {
+                    return@synchronized
+                }
                 this.items.removeAt(pos)
                 notifyItemRemoved(pos)
             }
@@ -253,6 +263,7 @@ class ShoppingListActivity : InkopiesActivity() {
                     return 0
                 }
 
+                // We know checked items come first, followed by unchecked items.
                 var firstUncheckedPos = items.indexOfFirst { !it.isChecked() }
                 if (firstUncheckedPos == -1) {
                     firstUncheckedPos = items.size

@@ -36,8 +36,8 @@ class ShoppingListViewModel @Inject constructor(
     val snackbarData = SingleLiveEvent<SnackbarData>()
     val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
     val newItem = SingleLiveEvent<VMShoppingListItem>()
-    val itemUpdate = SingleLiveEvent<Pair<VMShoppingListItem, Int>>()
-    val itemDelete = SingleLiveEvent<Int>()
+    val itemUpdate = SingleLiveEvent<VMShoppingListItem>()
+    val itemDelete = SingleLiveEvent<VMShoppingListItem>()
     val menuRes = SingleLiveEvent<Int>()
     val clearList = SingleLiveEvent<Boolean>()
 
@@ -87,7 +87,7 @@ class ShoppingListViewModel @Inject constructor(
                 .subscribe(this::onShoppingListUpdated, this::showError)
     }
 
-    fun onItemSelectionChanged(item: VMShoppingListItem, posn: Int, toState: Boolean) {
+    fun onItemSelectionChanged(item: VMShoppingListItem, toState: Boolean) {
         var inList = item.inList
         var inCart = item.inCart
         when (item.mode) {
@@ -112,7 +112,7 @@ class ShoppingListViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingListItem(it, item.mode) }
-                .subscribe({ onItemUpdated(item, it, posn) }, { showError(it) })
+                .subscribe({ onItemUpdated(item, it) }, { showError(it) })
     }
 
     fun onItemAdded(item: VMShoppingListItem) {
@@ -122,16 +122,16 @@ class ShoppingListViewModel @Inject constructor(
         showItems()
     }
 
-    fun onItemUpdated(old: VMShoppingListItem, new: VMShoppingListItem, posn: Int) {
+    fun onItemUpdated(old: VMShoppingListItem, new: VMShoppingListItem) {
         val list = shoppingList.get()!!
         shoppingList.set(list.accumulateUpdatePrices(list.id, old, new))
-        itemUpdate.value = Pair(new, posn)
+        itemUpdate.value = new
     }
 
-    fun onItemDeleted(item: VMShoppingListItem, posn: Int) {
+    fun onItemDeleted(item: VMShoppingListItem) {
         currOffset--
         shoppingList.set(shoppingList.get()!!.accumulateDeletePrices(item))
-        itemDelete.value = posn
+        itemDelete.value = item
     }
 
     private fun onShoppingListUpdated(list: VMShoppingList) {
