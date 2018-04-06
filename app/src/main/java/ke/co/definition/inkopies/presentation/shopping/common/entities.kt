@@ -1,10 +1,7 @@
 package ke.co.definition.inkopies.presentation.shopping.common
 
 import android.databinding.ObservableField
-import ke.co.definition.inkopies.model.shopping.BrandPrice
-import ke.co.definition.inkopies.model.shopping.ShoppingList
-import ke.co.definition.inkopies.model.shopping.ShoppingListItem
-import ke.co.definition.inkopies.model.shopping.ShoppingMode
+import ke.co.definition.inkopies.model.shopping.*
 import ke.co.definition.inkopies.presentation.common.formatPrice
 
 /**
@@ -21,6 +18,20 @@ class VMShoppingList(val sl: ShoppingList) {
     fun isShowActiveListPrice() = sl.activeListPrice > 0
     fun isShowCartPrice() = sl.cartPrice > 0
     fun name() = sl.name
+
+    fun accumulateInsertPrices(toInsert: VMShoppingListItem) =
+            VMShoppingList(sl.accumulateInsertPrices(toInsert.totalPrice(), toInsert.inList,
+                    toInsert.inCart))
+
+    fun accumulateDeletePrices(toDelete: VMShoppingListItem) =
+            VMShoppingList(sl.accumulateDeletePrices(toDelete.sli))
+
+    fun accumulateUpdatePrices(shoppingListID: String, old: VMShoppingListItem, new: VMShoppingListItem) =
+            VMShoppingList(sl.accumulateUpdatePrices(old.sli, ShoppingListItemUpdate(
+                    shoppingListID, new.id, new.itemName(), new.inList, new.inCart, new.brandName(),
+                    new.quantity, new.measuringUnitName(), new.unitPrice()
+            )))
+
 }
 
 class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
@@ -40,6 +51,7 @@ class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
     fun brandName() = sli.brandName()
     fun fmtQuantity() = quantity.toString()
     fun unitPrice() = sli.unitPrice()
+    fun totalPrice() = sli.totalPrice()
 }
 
 data class SearchShoppingListItemResult(

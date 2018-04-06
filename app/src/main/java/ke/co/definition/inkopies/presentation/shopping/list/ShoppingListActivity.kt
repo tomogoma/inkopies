@@ -93,9 +93,9 @@ class ShoppingListActivity : InkopiesActivity() {
                 UpsertListItemDialogFrag.start(supportFragmentManager, list, item, focus,
                         {
                             if (it != null) {
-                                va.updateItem(it, pos)
+                                vm.onItemUpdated(item, it, pos)
                             } else {
-                                va.removeItem(pos)
+                                vm.onItemDeleted(item, pos)
                             }
                         })
             }
@@ -113,10 +113,11 @@ class ShoppingListActivity : InkopiesActivity() {
             va.updateItem(it?.first ?: return@Observer, it.second)
         })
         vm.newItem.observe(this, Observer { va.add(it ?: return@Observer) })
+        vm.itemDelete.observe(this, Observer { va.removeItem(it ?: return@Observer) })
         vm.clearList.observe(this, Observer { if (it == true) va.clear() })
 
         observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.nextPage, vm.itemUpdate,
-                vm.newItem, vm.clearList))
+                vm.newItem, vm.itemDelete, vm.clearList))
     }
 
     private fun start(vm: ShoppingListViewModel): VMShoppingList {

@@ -37,6 +37,7 @@ class ShoppingListViewModel @Inject constructor(
     val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
     val newItem = SingleLiveEvent<VMShoppingListItem>()
     val itemUpdate = SingleLiveEvent<Pair<VMShoppingListItem, Int>>()
+    val itemDelete = SingleLiveEvent<Int>()
     val menuRes = SingleLiveEvent<Int>()
     val clearList = SingleLiveEvent<Boolean>()
 
@@ -101,22 +102,31 @@ class ShoppingListViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingListItem(it, item.mode) }
-                .subscribe({ onItemUpdated(it, posn) }, { showError(it) })
+                .subscribe({ onItemUpdated(item, it, posn) }, { showError(it) })
     }
 
     fun onItemAdded(item: VMShoppingListItem) {
         currOffset++
+        shoppingList.set(shoppingList.get()!!.accumulateInsertPrices(item))
         newItem.value = item
         showItems()
+    }
+
+    fun onItemUpdated(old: VMShoppingListItem, new: VMShoppingListItem, posn: Int) {
+        val list = shoppingList.get()!!
+        shoppingList.set(list.accumulateUpdatePrices(list.id, old, new))
+        itemUpdate.value = Pair(new, posn)
+    }
+
+    fun onItemDeleted(item: VMShoppingListItem, posn: Int) {
+        currOffset--
+        shoppingList.set(shoppingList.get()!!.accumulateDeletePrices(item))
+        itemDelete.value = posn
     }
 
     private fun onShoppingListUpdated(list: VMShoppingList) {
         start(list)
         onCreateOptionsMenu()
-    }
-
-    private fun onItemUpdated(newVal: VMShoppingListItem, posn: Int) {
-        itemUpdate.value = Pair(newVal, posn)
     }
 
     private fun showError(it: Throwable) {
