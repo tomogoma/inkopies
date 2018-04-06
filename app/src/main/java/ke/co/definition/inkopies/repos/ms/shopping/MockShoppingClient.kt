@@ -9,6 +9,7 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
+import rx.Observable
 import rx.Single
 import java.util.*
 
@@ -108,15 +109,15 @@ class MockShoppingClient : ShoppingClient {
         }
     }
 
-    override fun getShoppingLists(token: String, offset: Long, count: Int): Single<List<ShoppingList>> {
-        return Single.create {
+    override fun getShoppingLists(token: String, offset: Long, count: Int): Observable<List<ShoppingList>> {
+        return Observable.create {
             Thread.sleep(2000)
             if (offset >= shoppingLists.size) {
                 it.onError(notFound())
                 return@create
             }
             val lastIndx = calcLastIndex(offset, count, shoppingLists.size)
-            it.onSuccess(shoppingLists.subList(offset.toInt(), lastIndx))
+            it.onNext(shoppingLists.subList(offset.toInt(), lastIndx))
         }
     }
 

@@ -1,6 +1,7 @@
 package ke.co.definition.inkopies.model.shopping
 
 import rx.Completable
+import rx.Observable
 import rx.Single
 
 /**
@@ -11,7 +12,7 @@ interface ShoppingManager {
 
     fun createShoppingList(name: String): Single<ShoppingList>
     fun updateShoppingList(list: ShoppingList): Single<ShoppingList>
-    fun getShoppingLists(offset: Long, count: Int): Single<List<ShoppingList>>
+    fun getShoppingLists(offset: Long, count: Int): Observable<List<ShoppingList>>
 
     fun insertShoppingListItem(item: ShoppingListItemInsert): Single<ShoppingListItem>
     fun updateShoppingListItem(req: ShoppingListItemUpdate): Single<ShoppingListItem>

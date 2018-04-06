@@ -32,13 +32,10 @@ class ShoppingListsViewModel @Inject constructor(
 
     val progressNextPage = SingleLiveEvent<Boolean>()
     val snackbarData = SingleLiveEvent<SnackbarData>()
-    val nextPage = MutableLiveData<MutableList<VMShoppingList>>()
-    val addedItem = MutableLiveData<VMShoppingList>()
+    val shoppingLists = MutableLiveData<MutableList<VMShoppingList>>()
 
-    private var currPage: Long = 0
-
-    fun nextPage() {
-        manager.getShoppingLists(currPage, LISTS_PER_PAGE)
+    fun start() {
+        manager.getShoppingLists(0, LISTS_PER_PAGE)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .doOnSubscribe { showProgressShoppingLists() }
@@ -53,16 +50,9 @@ class ShoppingListsViewModel @Inject constructor(
                 })
     }
 
-    fun onItemAdded(sl: VMShoppingList) {
-        currPage++
-        addedItem.value = sl
-        showShoppingLists()
-    }
-
     private fun onShoppingListsFetched(sls: MutableList<VMShoppingList>) {
-        currPage += sls.size
-        nextPage.value = sls
-        if (haveShoppingListItems())
+        shoppingLists.value = sls
+        if (sls.size == 0)
             showNoShoppingListsText()
         else
             showShoppingLists()
@@ -76,11 +66,7 @@ class ShoppingListsViewModel @Inject constructor(
 
     private fun showProgressShoppingLists() {
         showNoShoppingListsText.set(false)
-        if (haveShoppingListItems()) {
-            progressShoppingLists.set(true)
-        } else {
-            progressNextPage.value = true
-        }
+        progressShoppingLists.set(true)
     }
 
     @UiThread
@@ -94,8 +80,6 @@ class ShoppingListsViewModel @Inject constructor(
         progressShoppingLists.set(false)
         showNoShoppingListsText.set(true)
     }
-
-    private fun haveShoppingListItems() = currPage == 0L
 
     companion object {
         private const val LISTS_PER_PAGE = 100

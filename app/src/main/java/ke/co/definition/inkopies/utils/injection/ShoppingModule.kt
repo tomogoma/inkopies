@@ -23,8 +23,8 @@ class ShoppingModule {
 
     @Provides
     @Inject
-    fun provideShoppingClient(jwtHelper: JWTHelper, firestore: FirebaseFirestore):
-            ShoppingClient = FirebaseShoppingClient(jwtHelper, firestore)
+    fun provideShoppingClient(jwtHelper: JWTHelper, lg: Logger, firestore: FirebaseFirestore):
+            ShoppingClient = FirebaseShoppingClient(jwtHelper, lg, firestore)
 
     @Provides
     @Inject

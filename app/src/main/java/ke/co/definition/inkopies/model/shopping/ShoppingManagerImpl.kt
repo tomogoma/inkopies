@@ -8,6 +8,7 @@ import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
 import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
+import rx.Observable
 import rx.Single
 import javax.inject.Inject
 
@@ -88,15 +89,15 @@ class ShoppingManagerImpl @Inject constructor(
                 }
     }
 
-    override fun getShoppingLists(offset: Long, count: Int): Single<List<ShoppingList>> {
+    override fun getShoppingLists(offset: Long, count: Int): Observable<List<ShoppingList>> {
         return auth.getJWT()
+                .toObservable()
                 .flatMap { client.getShoppingLists(it.value, offset, count) }
-                .onErrorResumeNext {
+                .onErrorReturn {
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
-                        return@onErrorResumeNext Single.just(mutableListOf<ShoppingList>())
+                        return@onErrorReturn mutableListOf<ShoppingList>()
                     }
-                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
-                            "fetch shopping lists"))
+                    throw handleAuthErrors(logger, auth, resMan, it, "fetch shopping lists")
                 }
     }
 

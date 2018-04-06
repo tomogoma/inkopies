@@ -45,7 +45,7 @@ class ShoppingListsActivity : InkopiesActivity() {
         observeViewModel(views)
         observeViews(views)
 
-        viewModel.nextPage()
+        viewModel.start()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -68,21 +68,20 @@ class ShoppingListsActivity : InkopiesActivity() {
     }
 
     private fun observeViews(vs: ActivityShoppingListsBinding) {
-        vs.fab.setOnClickListener { showNewShoppingListDialog() }
+        vs.fab.setOnClickListener {
+            NewShoppingListDialogFrag.start(supportFragmentManager, onDismissCallback = {})
+        }
         viewAdapter.setOnItemSelectedListener { ShoppingListActivity.start(this, it) }
     }
 
     private fun observeViewModel(vs: ActivityShoppingListsBinding) {
-        viewModel.nextPage.observe(this, Observer {
-            viewAdapter.addShoppingLists(it ?: return@Observer)
-        })
-        viewModel.addedItem.observe(this, Observer {
-            viewAdapter.add(it ?: return@Observer)
+        viewModel.shoppingLists.observe(this, Observer {
+            viewAdapter.setShoppingLists(it ?: return@Observer)
         })
         viewModel.snackbarData.observe(this, Observer { it?.show(vs.root) })
 
-        observedLiveData.addAll(mutableListOf(viewModel.nextPage, viewModel.addedItem,
-                viewModel.snackbarData, viewModel.progressNextPage))
+        observedLiveData.addAll(mutableListOf(viewModel.shoppingLists, viewModel.snackbarData,
+                viewModel.progressNextPage))
     }
 
     private fun prepRecyclerView(vs: ContentShoppingListsBinding) {
@@ -95,12 +94,6 @@ class ShoppingListsActivity : InkopiesActivity() {
             layoutManager = viewManager
             adapter = viewAdapter
         }
-    }
-
-    private fun showNewShoppingListDialog() {
-        NewShoppingListDialogFrag.start(supportFragmentManager, {
-            viewModel.onItemAdded(it ?: return@start)
-        })
     }
 
     companion object {
@@ -139,10 +132,9 @@ class ShoppingListsAdapter :
         onItemSelectedListener = l
     }
 
-    fun addShoppingLists(shoppingLists: MutableList<VMShoppingList>) {
-        val origiSize = this.shoppingLists.size
-        this.shoppingLists.addAll(shoppingLists)
-        notifyItemRangeInserted(origiSize, shoppingLists.size)
+    fun setShoppingLists(shoppingLists: MutableList<VMShoppingList>) {
+        this.shoppingLists = shoppingLists
+        notifyDataSetChanged()
     }
 
     fun add(shoppingList: VMShoppingList) {

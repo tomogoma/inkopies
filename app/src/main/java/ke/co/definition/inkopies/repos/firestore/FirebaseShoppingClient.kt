@@ -6,11 +6,13 @@ import ke.co.definition.inkopies.model.shopping.*
 import ke.co.definition.inkopies.repos.ms.STATUS_CONFLICT
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
 import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
+import ke.co.definition.inkopies.utils.logging.Logger
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
+import rx.Observable
 import rx.Single
 import java.lang.Exception
 import javax.inject.Inject
@@ -21,6 +23,7 @@ import javax.inject.Inject
  */
 class FirebaseShoppingClient @Inject constructor(
         private val jwtHelper: JWTHelper,
+        private val logger: Logger,
         private val db: FirebaseFirestore
 ) : ShoppingClient {
 
@@ -28,6 +31,10 @@ class FirebaseShoppingClient @Inject constructor(
     private val collMeasUnits = db.collection(COLLECTION_MEASURING_UNITS)
     private val collBrands = db.collection(COLLECTION_BRANDS)
     private val collPrices = db.collection(COLLECTION_PRICES)
+
+    init {
+        logger.setTag(FirebaseShoppingClient::class.java.name)
+    }
 
     override fun addShoppingList(token: String, name: String) = Single.create<ShoppingList> {
         val doc = FirestoreShoppingList(name)
@@ -50,27 +57,29 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun getShoppingLists(token: String, offset: Long, count: Int) = Single.create<List<ShoppingList>> {
+    override fun getShoppingLists(token: String, offset: Long, count: Int) = Observable.create<List<ShoppingList>> {
+
         collShoppingLists(token)
                 .orderBy(FirestoreShoppingList.KEY_NAME)
 //                .limit(count.toLong())
-                .get()
-                .addOnSuccessListener { qs: QuerySnapshot ->
+                .addSnapshotListener { qs, e ->
+                    if (e != null) {
+                        logger.error("error listening for shopping list updates", e)
+                        return@addSnapshotListener
+                    }
+                    if (qs == null) {
+                        logger.warn("got null query snapshot listening for shopping list updates")
+                        return@addSnapshotListener
+                    }
                     if (qs.isEmpty) {
-                        it.onError(httpException(STATUS_NOT_FOUND, "none found"))
-                        return@addOnSuccessListener
+                        logger.warn("got empty snapshot, clearing list")
+                        it.onNext(listOf())
+                        return@addSnapshotListener
                     }
-                    val res: MutableList<ShoppingList> = mutableListOf()
-                    qs.forEach {
-                        res.add(
-                                it.toObject(FirestoreShoppingList::class.java)
-                                        .toShoppingList(it.id)
-                        )
+                    val res = qs.map {
+                        it.toObject(FirestoreShoppingList::class.java).toShoppingList(it.id)
                     }
-                    it.onSuccess(res)
-                }
-                .addOnFailureListener { e: Exception ->
-                    it.onError(httpException(STATUS_NOT_FOUND, e.message ?: "reported by firebase"))
+                    it.onNext(res)
                 }
     }
 
@@ -313,7 +322,7 @@ class FirebaseShoppingClient @Inject constructor(
 
     private fun getShoppingListItemByPriceID(token: String, shoppingListID: String, priceID: String) = Single.create<ShoppingListItem> {
         collShoppingListItems(token, shoppingListID)
-                .whereEqualTo(FirestoreShoppingListItem.KEY_BRAND_PRICE_ID, priceID)
+                .whereEqualTo(FirestoreShoppingListItem.KEY_PRICE_ID, priceID)
                 .get()
                 .addOnSuccessListener { qs: QuerySnapshot ->
                     if (qs.isEmpty) {
@@ -386,7 +395,7 @@ class FirebaseShoppingClient @Inject constructor(
         collBrands
                 .whereEqualTo(FirestoreBrand.KEY_NAME, name)
                 .whereEqualTo(FirestoreBrand.KEY_MEASURING_UNIT_ID, measUnitID)
-                .whereEqualTo(FirestoreBrand.KEY_ITEM_ID, itemID)
+                .whereEqualTo(FirestoreBrand.KEY_SHOPPING_ITEM_ID, itemID)
                 .get()
                 .addOnSuccessListener { qs: QuerySnapshot ->
                     if (qs.isEmpty) {
@@ -505,7 +514,7 @@ data class FirestoreShoppingListItem(
     fun toShoppingListItem(id: String) = ShoppingListItem(id, quantity, price.toPrice(priceID), inList, inCart)
 
     companion object {
-        const val KEY_BRAND_PRICE_ID = "brandPriceId"
+        const val KEY_PRICE_ID = "priceId"
         const val KEY_IN_CART = "inCart"
         const val KEY_IN_LIST = "inList"
         const val KEY_PRICE = "price"
@@ -552,7 +561,7 @@ data class FirestoreBrand(
 
     companion object {
         const val KEY_NAME = "name"
-        const val KEY_ITEM_ID = "shoppigItemId"
+        const val KEY_SHOPPING_ITEM_ID = "shoppigItemId"
         const val KEY_MEASURING_UNIT_ID = "measuringUnitId"
         const val KEY_SHOPPING_ITEM = "shoppingItem"
         const val KEY_ITEM_NAME = "$KEY_SHOPPING_ITEM$DOC_FIELD_SEPARATOR${Named.KEY_NAME}"
