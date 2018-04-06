@@ -55,6 +55,7 @@ data class ShoppingListItem(
     fun brandName() = brandPrice.brandName()
     fun unitPrice() = brandPrice.price
     fun totalPrice() = unitPrice() * quantity
+    fun isValid() = !(inCart && !inList)
 }
 
 data class ShoppingListItemInsert(
@@ -102,4 +103,75 @@ data class ShoppingList(
         val activeListPrice: Float,
         val cartPrice: Float,
         val mode: ShoppingMode = ShoppingMode.PREPARATION
-)
+) {
+
+    fun accumulateInsertPrices(totalPrice: Float, inList: Boolean, inCart: Boolean): ShoppingList {
+
+        var newListPrice = activeListPrice
+        var newCartPrice = cartPrice
+        if (inList) {
+            newListPrice += totalPrice
+        }
+        if (inCart) {
+            newCartPrice += totalPrice
+        }
+        return ShoppingList(id, name, newListPrice, newCartPrice, mode)
+    }
+
+    fun accumulateDeletePrices(toDelete: ShoppingListItem)
+            : ShoppingList {
+
+        var newListPrice = activeListPrice
+        var newCartPrice = cartPrice
+        if (toDelete.inList) {
+            newListPrice -= toDelete.totalPrice()
+        }
+        if (toDelete.inCart) {
+            newCartPrice -= toDelete.totalPrice()
+        }
+        return ShoppingList(id, name, newListPrice, newCartPrice, mode)
+    }
+
+    fun accumulateUpdatePrices(curr: ShoppingListItem, update: ShoppingListItemUpdate): ShoppingList {
+
+        var newListPrice = activeListPrice
+        var newCartPrice = cartPrice
+
+        var newTotalPrice = curr.totalPrice()
+        // Have change in total price.
+        if (update.unitPrice != null || update.quantity != null) {
+
+            newTotalPrice =
+                    (update.unitPrice ?: curr.unitPrice()) * (update.quantity ?: curr.quantity)
+            val priceDelta = newTotalPrice - curr.totalPrice()
+
+            if (curr.inList) {
+                newListPrice += priceDelta
+            }
+
+            if (curr.inCart) {
+                newCartPrice += priceDelta
+            }
+        }
+
+        if (update.inList != null) {
+            when {
+            // Added to list.
+                !curr.inList && update.inList -> newListPrice += newTotalPrice
+            // Removed from list.
+                curr.inList && !update.inList -> newListPrice -= newTotalPrice
+            }
+        }
+
+        if (update.inCart != null) {
+            when {
+            // Added to cart.
+                !curr.inCart && update.inCart -> newCartPrice += newTotalPrice
+            // Removed from cart.
+                curr.inCart && !update.inCart -> newCartPrice -= newTotalPrice
+            }
+        }
+
+        return ShoppingList(id, name, newListPrice, newCartPrice, mode)
+    }
+}

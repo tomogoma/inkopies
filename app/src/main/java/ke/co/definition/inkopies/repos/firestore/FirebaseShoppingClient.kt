@@ -159,9 +159,23 @@ class FirebaseShoppingClient @Inject constructor(
                                 update.inCart ?: curr!!.inCart,
                                 price!!
                         )
-                        collShoppingListItems(token, update.shoppingListID)
-                                .document(update.shoppingListItemID)
-                                .set(doc)
+                        db
+                                .runTransaction { tx ->
+
+                                    val shoppingListRef = collShoppingLists(token)
+                                            .document(update.shoppingListID)
+                                    val shoppingList = tx.get(shoppingListRef)
+                                            .toObject(FirestoreShoppingList::class.java)
+                                            .toShoppingList(update.shoppingListID)
+                                            .accumulateUpdatePrices(curr!!, update)
+                                    tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
+
+                                    val listItemRef = collShoppingListItems(token, update.shoppingListID)
+                                            .document(update.shoppingListItemID)
+                                    tx.set(listItemRef, doc)
+
+                                    return@runTransaction null
+                                }
                                 .addOnSuccessListener { _ ->
                                     it.onSuccess(doc.toShoppingListItem(update.shoppingListItemID))
                                 }
@@ -171,9 +185,26 @@ class FirebaseShoppingClient @Inject constructor(
     }
 
     override fun deleteShoppingListItem(token: String, shoppingListID: String, id: String) = Completable.create {
-        collShoppingListItems(token, shoppingListID)
-                .document(id)
-                .delete()
+        db
+                .runTransaction { tx ->
+
+                    val listItemRef = collShoppingListItems(token, shoppingListID)
+                            .document(id)
+                    val listItem = tx.get(listItemRef)
+                            .toObject(FirestoreShoppingListItem::class.java)
+                            .toShoppingListItem(id)
+
+                    val shoppingListRef = collShoppingLists(token).document(shoppingListID)
+                    val shoppingList = tx.get(shoppingListRef)
+                            .toObject(FirestoreShoppingList::class.java)
+                            .toShoppingList(shoppingListID)
+                            .accumulateDeletePrices(listItem)
+                    tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
+
+                    tx.delete(listItemRef)
+
+                    return@runTransaction null
+                }
                 .addOnSuccessListener { _ -> it.onCompleted() }
                 .addOnFailureListener(it::onError)
     }
@@ -245,11 +276,26 @@ class FirebaseShoppingClient @Inject constructor(
     private fun insertShoppingListItem(token: String, shoppingListID: String, quantity: Int,
                                        inList: Boolean, inCart: Boolean,
                                        price: BrandPrice) = Single.create<ShoppingListItem> {
+
         val doc = FirestoreShoppingListItem(quantity, inList, inCart, price)
-        collShoppingListItems(token, shoppingListID)
-                .add(doc)
-                .addOnSuccessListener { dr: DocumentReference ->
-                    it.onSuccess(doc.toShoppingListItem(dr.id))
+        val docRef = collShoppingListItems(token, shoppingListID).document()
+
+        db
+                .runTransaction { tx ->
+
+                    val shoppingListRef = collShoppingLists(token).document(shoppingListID)
+                    val shoppingList = tx.get(shoppingListRef)
+                            .toObject(FirestoreShoppingList::class.java)
+                            .toShoppingList(shoppingListID)
+                            .accumulateInsertPrices(price.price * quantity, inList, inCart)
+                    tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
+
+                    tx.set(docRef, doc)
+
+                    return@runTransaction null
+                }
+                .addOnSuccessListener { _ ->
+                    it.onSuccess(doc.toShoppingListItem(docRef.id))
                 }
                 .addOnFailureListener(it::onError)
     }
