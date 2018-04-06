@@ -41,11 +41,11 @@ class ShoppingListActivity : InkopiesActivity() {
         val viewAdapter = prepRecyclerView(views.content)
 
         observeViewModel(viewModel, views, viewAdapter)
-        val list = start(viewModel)
-        observeViews(list, views, viewModel, viewAdapter)
+        start(viewModel)
+        observeViews(views, viewModel, viewAdapter)
 
         setSupportActionBar(views.toolbar)
-        supportActionBar!!.title = list.name()
+        supportActionBar!!.title = viewModel.shoppingList.get()!!.name()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -83,14 +83,14 @@ class ShoppingListActivity : InkopiesActivity() {
         return viewAdapter
     }
 
-    private fun observeViews(list: VMShoppingList, vs: ActivityShoppingListBinding, vm: ShoppingListViewModel, va: ShoppingListAdapter) {
+    private fun observeViews(vs: ActivityShoppingListBinding, vm: ShoppingListViewModel, va: ShoppingListAdapter) {
         vs.fab.setOnClickListener {
-            UpsertListItemDialogFrag.start(supportFragmentManager, list, null, null,
+            UpsertListItemDialogFrag.start(supportFragmentManager, vm.shoppingList.get()!!, null, null,
                     { vm.onItemAdded(it ?: return@start) })
         }
         va.setOnItemSelectedListener(object : ActionListener {
             override fun onItemSelected(item: VMShoppingListItem, pos: Int, focus: ItemFocus) {
-                UpsertListItemDialogFrag.start(supportFragmentManager, list, item, focus,
+                UpsertListItemDialogFrag.start(supportFragmentManager, vm.shoppingList.get()!!, item, focus,
                         {
                             if (it != null) {
                                 vm.onItemUpdated(item, it, pos)
@@ -120,11 +120,10 @@ class ShoppingListActivity : InkopiesActivity() {
                 vm.newItem, vm.itemDelete, vm.clearList))
     }
 
-    private fun start(vm: ShoppingListViewModel): VMShoppingList {
+    private fun start(vm: ShoppingListViewModel) {
         val slStr = intent.getStringExtra(EXTRA_SHOPPING_LIST)
         val sl = Gson().fromJson(slStr, VMShoppingList::class.java)
         vm.start(sl)
-        return sl
     }
 
     companion object {
