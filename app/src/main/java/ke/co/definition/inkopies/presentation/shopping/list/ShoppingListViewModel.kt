@@ -91,8 +91,18 @@ class ShoppingListViewModel @Inject constructor(
         var inList = item.inList
         var inCart = item.inCart
         when (item.mode) {
-            ShoppingMode.SHOPPING -> inCart = toState
-            else -> inList = toState
+            ShoppingMode.SHOPPING -> {
+                inCart = toState
+                if (toState) {
+                    inList = true
+                }
+            }
+            ShoppingMode.PREPARATION -> {
+                inList = toState
+                if (!toState) {
+                    inCart = false
+                }
+            }
         }
         val list = shoppingList.get()!!
         manager.updateShoppingListItem(ShoppingListItemUpdate(list.id, item.id,

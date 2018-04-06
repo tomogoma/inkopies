@@ -28,6 +28,7 @@ class ShoppingManagerImpl @Inject constructor(
 
     override fun updateShoppingList(list: ShoppingList): Single<ShoppingList> {
         return auth.getJWT()
+                .map { throw list.validate() ?: return@map it }
                 .flatMap { client.updateShoppingList(it.value, list) }
                 .onErrorResumeNext { Single.error(handleAuthErrors(logger, auth, resMan, it, "update shopping list")) }
     }
@@ -114,6 +115,10 @@ class ShoppingManagerImpl @Inject constructor(
             it.onError(Exception("itemName cannot be empty"))
             return@create
         }
+        if (item.inCart && !item.inList) {
+            it.onError(Exception("cannot be inCart but not inList"))
+            return@create
+        }
         it.onCompleted()
     }
 
@@ -124,6 +129,16 @@ class ShoppingManagerImpl @Inject constructor(
         }
         if (item.shoppingListItemID == "") {
             it.onError(Exception("shoppingListItemID name cannot be empty"))
+            return@create
+        }
+        // Only one of inCart or inList provided. Need either both or none provided.
+        if ((item.inCart != null).xor(item.inList != null)) {
+            it.onError(Exception("inCart and inList must be provided together"))
+            return@create
+        }
+        // xor operator above guarantees inList will not be null if inCart is not null.
+        if (item.inCart != null && item.inCart && !item.inList!!) {
+            it.onError(Exception("cannot be inCart but not inList"))
             return@create
         }
         it.onCompleted()

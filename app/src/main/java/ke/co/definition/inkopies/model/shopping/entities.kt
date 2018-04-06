@@ -55,7 +55,6 @@ data class ShoppingListItem(
     fun brandName() = brandPrice.brandName()
     fun unitPrice() = brandPrice.price
     fun totalPrice() = unitPrice() * quantity
-    fun isValid() = !(inCart && !inList)
 }
 
 data class ShoppingListItemInsert(
@@ -104,6 +103,13 @@ data class ShoppingList(
         val cartPrice: Float,
         val mode: ShoppingMode = ShoppingMode.PREPARATION
 ) {
+
+    fun validate(): Throwable? {
+        if (name == "") {
+            return Exception("name cannot be empty")
+        }
+        return null
+    }
 
     fun accumulateInsertPrices(totalPrice: Float, inList: Boolean, inCart: Boolean): ShoppingList {
 
