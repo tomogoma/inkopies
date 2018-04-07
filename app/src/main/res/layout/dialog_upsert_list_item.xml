@@ -165,6 +165,7 @@
                 android:layout_height="wrap_content"
                 android:checked="@={vm.checked}"
                 android:text="@{vm.checkedText}"
+                android:layout_marginBottom="@dimen/space_normal"
                 app:layout_constraintBottom_toTopOf="@+id/submit"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
