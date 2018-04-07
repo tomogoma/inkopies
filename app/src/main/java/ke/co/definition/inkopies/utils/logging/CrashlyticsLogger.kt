@@ -1,6 +1,7 @@
 package ke.co.definition.inkopies.utils.logging
 
 import android.app.Application
+import android.util.Log
 import com.crashlytics.android.Crashlytics
 import io.fabric.sdk.android.Fabric
 import ke.co.definition.inkopies.App
@@ -23,11 +24,12 @@ class CrashlyticsLogger @Inject constructor(app: Application) : Logger {
     }
 
     override fun warn(msg: String) {
-        Crashlytics.log(msg)
+        Crashlytics.log(Log.WARN, tag, msg)
     }
 
     override fun error(msg: String, e: Throwable?) {
-        Crashlytics.log(msg)
+        val noDetails = "<no details>"
+        Crashlytics.log(Log.ERROR, tag, "$msg: ${e?.message ?: noDetails}")
         Crashlytics.logException(e)
     }
 
