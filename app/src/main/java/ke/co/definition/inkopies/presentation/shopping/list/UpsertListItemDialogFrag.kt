@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class UpsertListItemDialogFrag : SLMDialogFragment() {
 
-    internal var onDismissCallback: (VMShoppingListItem?) -> Unit = {}
+    internal var onUpsertCallback: (VMShoppingListItem?) -> Unit = {}
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
@@ -59,7 +59,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     }
 
     fun dismiss(result: VMShoppingListItem?) {
-        onDismissCallback(result)
+        onUpsertCallback(result)
         dialog.dismiss()
     }
 
@@ -111,7 +111,15 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
         vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
         vm.finished.observe(this, Observer { dismiss(it) })
-        observedLiveData.addAll(mutableListOf(vm.snackBarData, vm.finished))
+        vm.finishedAddNext.observe(this, Observer {
+            onFinishedAddNext(vs, it ?: return@Observer)
+        })
+        observedLiveData.addAll(mutableListOf(vm.snackBarData, vm.finished, vm.finishedAddNext))
+    }
+
+    private fun onFinishedAddNext(vs: DialogUpsertListItemBinding, prev: VMShoppingListItem) {
+        onUpsertCallback(prev)
+        focusOn(vs, ItemFocus.BRAND)
     }
 
     private fun start(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
@@ -131,16 +139,21 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
             val focusStr = arguments!!.getString(EXTRA_FOCUS)
             val focus = ItemFocus.valueOf(focusStr)
+            focusOn(vs, focus)
+        }
 
-            when (focus) {
-                ItemFocus.BRAND -> vs.brandName.showKeyboard(activity!!)
-                ItemFocus.ITEM -> vs.itemName.showKeyboard(activity!!)
-                ItemFocus.MEASUREMENT_UNIT -> vs.measuringUnit.showKeyboard(activity!!)
-                ItemFocus.UNIT_PRICE -> vs.unitPrice.showKeyboard(activity!!)
-                ItemFocus.QUANTITY -> vs.quantity.showKeyboard(activity!!)
-                ItemFocus.NONE -> {
-                    /* no-op */
-                }
+    }
+
+    private fun focusOn(vs: DialogUpsertListItemBinding, focus: ItemFocus) {
+
+        when (focus) {
+            ItemFocus.BRAND -> vs.brandName.showKeyboard(activity!!)
+            ItemFocus.ITEM -> vs.itemName.showKeyboard(activity!!)
+            ItemFocus.MEASUREMENT_UNIT -> vs.measuringUnit.showKeyboard(activity!!)
+            ItemFocus.UNIT_PRICE -> vs.unitPrice.showKeyboard(activity!!)
+            ItemFocus.QUANTITY -> vs.quantity.showKeyboard(activity!!)
+            ItemFocus.NONE -> {
+                /* no-op */
             }
         }
 
@@ -152,10 +165,10 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         private const val EXTRA_LIST = "EXTRA_LIST"
 
         fun start(fm: FragmentManager, list: VMShoppingList, item: VMShoppingListItem?,
-                  focus: ItemFocus?, onDismissCallback: (vl: VMShoppingListItem?) -> Unit = {}) {
+                  focus: ItemFocus?, onUpsertCallback: (vl: VMShoppingListItem?) -> Unit = {}) {
             UpsertListItemDialogFrag().apply {
 
-                this.onDismissCallback = onDismissCallback
+                this.onUpsertCallback = onUpsertCallback
 
                 arguments = Bundle().apply {
                     if (item != null) {

@@ -163,13 +163,26 @@
                 android:id="@+id/checked"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_normal"
                 android:checked="@={vm.checked}"
                 android:text="@{vm.checkedText}"
-                android:layout_marginBottom="@dimen/space_normal"
-                app:layout_constraintBottom_toTopOf="@+id/submit"
+                app:layout_constraintBottom_toTopOf="@+id/addAnother"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/unitPriceLayout" />
+
+            <CheckBox
+                android:id="@+id/addAnother"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_normal"
+                android:checked="@={vm.addAnother}"
+                android:text="@string/add_another"
+                android:visibility="@{vm.deletable ? View.GONE : View.VISIBLE}"
+                app:layout_constraintBottom_toTopOf="@+id/submit"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/checked" />
 
             <android.support.constraint.Guideline
                 android:id="@+id/startMarginGuideline"
@@ -198,7 +211,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/delete"
-                app:layout_constraintTop_toBottomOf="@id/checked" />
+                app:layout_constraintTop_toBottomOf="@id/addAnother" />
 
             <include
                 android:id="@+id/overlayProgress"

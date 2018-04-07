@@ -45,10 +45,12 @@ class UpsertListItemViewModel @Inject constructor(
     val overlayProgress = ObservableField<ProgressData>()
     val deletable = ObservableBoolean()
     val checked = ObservableBoolean()
+    val addAnother = ObservableBoolean()
     val checkedText = ObservableField<String>()
 
     val snackBarData = SingleLiveEvent<SnackbarData>()
     val finished = SingleLiveEvent<VMShoppingListItem>()
+    val finishedAddNext = SingleLiveEvent<VMShoppingListItem>()
     val searchItemNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchBrandNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchMeasuringUnitResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
@@ -85,6 +87,7 @@ class UpsertListItemViewModel @Inject constructor(
 
     fun onChangeShoppingListItem(item: VMShoppingListItem) {
         id = item.id
+        clearFields()
         brandName.set(item.brandName())
         itemName.set(item.itemName())
         quantity.set(item.quantity.toString())
@@ -180,7 +183,24 @@ class UpsertListItemViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingListItem(it, list.mode) }
-                .subscribe({ finished.value = it }, { onOpException(it) })
+                .subscribe(this::onAdded, this::onOpException)
+    }
+
+    private fun onAdded(item: VMShoppingListItem) {
+        if (addAnother.get()) {
+            finishedAddNext.value = item
+            clearFields()
+        } else {
+            finished.value = item
+        }
+    }
+
+    private fun clearFields() {
+        brandName.set("")
+        itemName.set("")
+        quantity.set("1")
+        measuringUnit.set("")
+        unitPrice.set("")
     }
 
     private fun getInListInCart(): Pair<Boolean, Boolean> {
