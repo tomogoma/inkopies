@@ -11,6 +11,7 @@ import ke.co.definition.inkopies.presentation.shopping.lists.NewShoppingListView
 import ke.co.definition.inkopies.presentation.shopping.lists.ShoppingListsViewModel
 import ke.co.definition.inkopies.presentation.verification.UpdateIdentifierViewModel
 import ke.co.definition.inkopies.presentation.verification.VerificationViewModel
+import ke.co.definition.inkopies.utils.logging.Logger
 import javax.inject.Singleton
 
 /**
@@ -39,4 +40,5 @@ interface AppComponent {
     fun provideShoppingListVMFactory(): ShoppingListViewModel.Factory
     fun provideUpsertListItemVMFactory(): UpsertListItemViewModel.Factory
     fun provideInkopiesActivityVMFactory(): InkopiesActivityViewModel.Factory
+    fun instantiateLogging(): Logger
 }

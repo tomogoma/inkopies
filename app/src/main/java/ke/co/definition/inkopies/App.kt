@@ -16,6 +16,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         appComponent = initDagger(this)
+        appComponent.instantiateLogging()// In case logger monitors crashes.
     }
 
     private fun initDagger(app: App): AppComponent =
