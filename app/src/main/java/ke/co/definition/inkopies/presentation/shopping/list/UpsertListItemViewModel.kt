@@ -68,18 +68,22 @@ class UpsertListItemViewModel @Inject constructor(
     }
 
     fun start(list: VMShoppingList, item: VMShoppingListItem?) {
+
         this.list = list
         checkedText.set(if (list.mode == ShoppingMode.PREPARATION) {
             resMan.getString(R.string.add_to_list)
         } else {
             resMan.getString(R.string.add_to_cart)
         })
+        clearFields()
+
         if (item == null) {
             title.set(R.string.new_item_title)
             deletable.set(false)
             checked.set(true)
             return
         }
+
         title.set(R.string.edit_item_title)
         deletable.set(true)
         onChangeShoppingListItem(item)
@@ -87,7 +91,6 @@ class UpsertListItemViewModel @Inject constructor(
 
     fun onChangeShoppingListItem(item: VMShoppingListItem) {
         id = item.id
-        clearFields()
         brandName.set(item.brandName())
         itemName.set(item.itemName())
         quantity.set(item.quantity.toString())
