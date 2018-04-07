@@ -57,11 +57,14 @@ class ShoppingManagerImpl @Inject constructor(
     }
 
     override fun deleteShoppingListItem(shoppingListID: String, id: String): Completable {
-        var jwt = ""
-        return auth.getJWT()
-                .map { jwt = it.value }
-                .toCompletable()
-                .andThen(client.deleteShoppingListItem(jwt, shoppingListID, id))
+        return Completable
+                .create {
+                    auth.getJWT()
+                            .subscribe({ jwt ->
+                                client.deleteShoppingListItem(jwt.value, shoppingListID, id)
+                                        .subscribe(it::onCompleted, it::onError)
+                            }, it::onError)
+                }
                 .onErrorResumeNext {
                     Completable.error(handleAuthErrors(logger, auth, resMan, it, "delete shopping list item"))
                 }
