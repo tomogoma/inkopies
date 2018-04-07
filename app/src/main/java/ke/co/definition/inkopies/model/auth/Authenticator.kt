@@ -14,6 +14,7 @@ import rx.Completable
 import rx.Observable
 import rx.Single
 import java.util.*
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
@@ -31,26 +32,24 @@ class Authenticator @Inject constructor(
         private val logger: Logger
 ) : Authable {
 
-    private val loggedInStatusLock = Object()
     private val lastLoggedInObserverID = AtomicLong(0)
     private val loggedInStatusObservers = mutableMapOf<Long, (Boolean) -> Unit>()
+    private val loggedInStatusDispatchQueue = ArrayBlockingQueue<Boolean>(2)
 
     init {
         logger.setTag(Authenticator::class.java.name)
+        Thread(Runnable(this::watchLoggedInStatusDispatchQueue))
+                .start()
     }
 
     override fun registerLoggedInStatusObserver(observer: (Boolean) -> Unit): Long {
-        synchronized(loggedInStatusLock) {
-            val pos = lastLoggedInObserverID.addAndGet(1)
-            loggedInStatusObservers[pos] = observer
-            return pos
-        }
+        val pos = lastLoggedInObserverID.addAndGet(1)
+        loggedInStatusObservers[pos] = observer
+        return pos
     }
 
     override fun unRegisterLoggedInStatusObserver(atPos: Long) {
-        synchronized(loggedInStatusLock) {
-            loggedInStatusObservers.remove(atPos)
-        }
+        loggedInStatusObservers.remove(atPos)
     }
 
     override fun updateIdentifier(identifier: String): Single<VerifLogin> {
@@ -293,11 +292,16 @@ class Authenticator @Inject constructor(
     }
 
     private fun updateObservedLoggedInStatus(to: Boolean) {
-        Thread(Runnable {
-            synchronized(loggedInStatusLock) {
-                loggedInStatusObservers.forEach { it.value(to) }
-            }
-        }).start()
+        loggedInStatusDispatchQueue.add(to)
+    }
+
+    private fun watchLoggedInStatusDispatchQueue() {
+        while (true) {
+            val status = loggedInStatusDispatchQueue.poll() ?: continue
+            loggedInStatusObservers
+                    .toMap() // prevent concurrent modification exception
+                    .forEach { it.value(status) }
+        }
     }
 
     companion object {
