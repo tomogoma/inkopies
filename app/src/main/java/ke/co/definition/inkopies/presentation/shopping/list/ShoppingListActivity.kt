@@ -59,8 +59,6 @@ class ShoppingListActivity : InkopiesActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
-            R.id.showProfile -> showProfile()
-            R.id.logout -> logout()
             R.id.checkout -> viewModel.onCheckout()
             R.id.modePreparation -> viewModel.onChangeMode(ShoppingMode.PREPARATION)
             R.id.modeShopping -> viewModel.onChangeMode(ShoppingMode.SHOPPING)
