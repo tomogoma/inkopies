@@ -71,7 +71,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onReqCaptureCamera() {
-        val img = fileHelper.createFile()
+        val img = fileHelper.createTempFile(".jpg")
         takePhotoEvent.value = Pair(REQ_CODE_CAM_CAPTURE_IMAGE, img)
     }
 

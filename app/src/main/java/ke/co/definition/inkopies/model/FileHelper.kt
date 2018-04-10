@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.model
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Environment
+import ke.co.definition.inkopies.R
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -15,17 +16,37 @@ import javax.inject.Inject
  * On 10/03/18.
  */
 interface FileHelper {
-    fun createFile(): File
+    fun createTempFile(ext: String): File
+    fun newExternalPublicFile(name: String, ext: String): File
 }
 
 class FileHelperImpl @Inject constructor(val app: Application) : FileHelper {
 
-    @SuppressLint("SimpleDateFormat")
     @Throws(IOException::class)
-    override fun createFile(): File {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName = "JPEG_" + timeStamp + "_"
+    override fun createTempFile(ext: String): File {
         val storageDir = app.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(imageFileName, ".jpg", storageDir)
+        return File.createTempFile(genTimestampedFileName("Inkopies_temp_", ext), "", storageDir)
+    }
+
+    override fun newExternalPublicFile(name: String, ext: String): File {
+        if (!isExternalStorageWritable()) {
+            throw ExternalStorageUnavailableException()
+        }
+        val appName = app.getString(R.string.app_name)
+        val dir = File(Environment.getExternalStoragePublicDirectory(appName).absolutePath)
+        dir.mkdirs()
+        return File(dir, genTimestampedFileName(name, ext))
+    }
+
+    private fun genTimestampedFileName(name: String, ext: String): String {
+        @SuppressLint("SimpleDateFormat")
+        val date = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        return "${name}_$date.$ext"
+    }
+
+    private fun isExternalStorageWritable(): Boolean {
+        return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
     }
 }
+
+class ExternalStorageUnavailableException : Exception("external storage unavailable")
