@@ -6,7 +6,10 @@ import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.annotation.UiThread
 import android.support.design.widget.Snackbar
+import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.backup.Exporter
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
+import ke.co.definition.inkopies.presentation.common.ResIDSnackbarData
 import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
@@ -22,6 +25,7 @@ import javax.inject.Named
  */
 class ShoppingListsViewModel @Inject constructor(
         private val manager: ShoppingManager,
+        private val exporter: Exporter,
         @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
@@ -45,9 +49,23 @@ class ShoppingListsViewModel @Inject constructor(
                     it.forEach { res.add(VMShoppingList(it)) }
                     return@map res
                 }
-                .subscribe({ onShoppingListsFetched(it) }, {
-                    snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_LONG)
-                })
+                .subscribe(this::onShoppingListsFetched, this::showError)
+    }
+
+    fun onExport() {
+        exporter.exportShoppingLists()
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe(this::onExportSuccessful, this::showError)
+    }
+
+    private fun onExportSuccessful() {
+        snackbarData.value = ResIDSnackbarData(R.string.export_successful,
+                Snackbar.LENGTH_LONG)
+    }
+
+    private fun showError(err: Throwable) {
+        snackbarData.value = TextSnackbarData(err, Snackbar.LENGTH_LONG)
     }
 
     private fun onShoppingListsFetched(sls: MutableList<VMShoppingList>) {
@@ -87,12 +105,13 @@ class ShoppingListsViewModel @Inject constructor(
 
     class Factory @Inject constructor(
             private val manager: ShoppingManager,
+            private val exporter: Exporter,
             @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
             @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return ShoppingListsViewModel(manager, subscribeOnScheduler, observeOnScheduler)
+            return ShoppingListsViewModel(manager, exporter, subscribeOnScheduler, observeOnScheduler)
                     as T
         }
     }

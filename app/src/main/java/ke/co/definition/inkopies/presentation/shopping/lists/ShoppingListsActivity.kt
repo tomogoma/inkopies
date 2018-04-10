@@ -1,11 +1,16 @@
 package ke.co.definition.inkopies.presentation.shopping.lists
 
+import android.Manifest
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.support.design.widget.Snackbar
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -26,11 +31,12 @@ class ShoppingListsActivity : InkopiesActivity() {
 
     private lateinit var viewAdapter: ShoppingListsAdapter
     private lateinit var viewModel: ShoppingListsViewModel
+    private lateinit var views: ActivityShoppingListsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val views: ActivityShoppingListsBinding = DataBindingUtil.setContentView(this,
+        views = DataBindingUtil.setContentView(this,
                 R.layout.activity_shopping_lists)
 
         val vmFactory = (application as App).appComponent.provideShoppingListsVMFactory()
@@ -54,18 +60,51 @@ class ShoppingListsActivity : InkopiesActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when (item?.itemId) {
-            R.id.showProfile -> {
-                showProfile()
-                true
+        when (item?.itemId) {
+            R.id.showProfile -> showProfile()
+            R.id.logout -> logout()
+            R.id.export -> onExport()
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when (requestCode) {
+            PERM_REQ_WRITE_EXT_STORAGE -> {
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    return // permission not granted
+                }
+                onExport()
             }
-            R.id.logout -> {
-                logout()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
+
+    private fun onExport() {
+        if (haveWriteExtFilePerms()) {
+            viewModel.onExport()
+            return
+        }
+        if (shouldShowWriteExtFileRationale()) {
+            Snackbar.make(views.rootLayout, R.string.allow_storage_access_to_export, Snackbar.LENGTH_LONG)
+                    .show()
+        }
+        requestWriteExtFilePerm()
+    }
+
+    private fun requestWriteExtFilePerm() =
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERM_REQ_WRITE_EXT_STORAGE)
+
+    private fun shouldShowWriteExtFileRationale() =
+            ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+    private fun haveWriteExtFilePerms() =
+            (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED)
 
     private fun observeViews(vs: ActivityShoppingListsBinding) {
         vs.fab.setOnClickListener {
@@ -97,6 +136,8 @@ class ShoppingListsActivity : InkopiesActivity() {
     }
 
     companion object {
+
+        const val PERM_REQ_WRITE_EXT_STORAGE = 0
 
         fun start(activity: Activity) {
             val intent = Intent(activity, ShoppingListsActivity::class.java)
