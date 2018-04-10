@@ -172,12 +172,14 @@ class UpsertListItemViewModel @Inject constructor(
         val currID = id
         if (currID == null || currID == "") {
             manager.insertShoppingListItem(ShoppingListItemInsert(list.id, itemName.get()!!,
-                    inListCart.first, inListCart.second, brandName.get(), quantity.get()?.toInt(),
-                    measuringUnit.get(), unitPrice.get()?.toFloat()))
+                    inListCart.first, inListCart.second, brandName.get(),
+                    quantity.get()?.toIntOrNull(), measuringUnit.get(),
+                    unitPrice.get()?.toFloatOrNull()))
         } else {
             manager.updateShoppingListItem(ShoppingListItemUpdate(list.id, currID, itemName.get()!!,
-                    inListCart.first, inListCart.second, brandName.get(), quantity.get()?.toInt(),
-                    measuringUnit.get(), unitPrice.get()?.toFloat()))
+                    inListCart.first, inListCart.second, brandName.get(),
+                    quantity.get()?.toIntOrNull(), measuringUnit.get(),
+                    unitPrice.get()?.toFloatOrNull()))
         }
                 .doOnSubscribe {
                     overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
