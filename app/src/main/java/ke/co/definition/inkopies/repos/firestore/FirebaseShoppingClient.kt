@@ -161,61 +161,128 @@ class FirebaseShoppingClient @Inject constructor(
         // finally overwrite the existing shoppingListItem.
         return observer
                 .flatMap { _ ->
-                    Single.create<ShoppingListItem> {
-                        val doc = FirestoreShoppingListItem(
-                                update.quantity ?: curr!!.quantity,
-                                update.inList ?: curr!!.inList,
-                                update.inCart ?: curr!!.inCart,
-                                price!!
-                        )
-                        db
-                                .runTransaction { tx ->
+                    val shoppingListRef = collShoppingLists(token)
+                            .document(update.shoppingListID)
+                    // 1. Get Shopping List
+                    Single
+                            .create<FirestoreShoppingList> {
+                                shoppingListRef.get()
+                                        .addOnSuccessListener { ds ->
+                                            it.onSuccess(ds.toObject(FirestoreShoppingList::class.java))
+                                        }
+                                        .addOnFailureListener { ex -> it.onError(ex) }
+                            }
+                            .map { it.toShoppingList(update.shoppingListID) }
 
-                                    val shoppingListRef = collShoppingLists(token)
-                                            .document(update.shoppingListID)
-                                    val shoppingList = tx.get(shoppingListRef)
-                                            .toObject(FirestoreShoppingList::class.java)
-                                            .toShoppingList(update.shoppingListID)
-                                            .accumulateUpdatePrices(curr!!, update)
-                                    tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
+                            // 3. Calculate new Shopping List price
+                            .map { it.accumulateUpdatePrices(curr!!, update) }
 
-                                    val listItemRef = collShoppingListItems(token, update.shoppingListID)
+                            // 4. Update Shopping List Price in db.
+                            .flatMap { sl ->
+                                Single.create<ShoppingList> {
+                                    shoppingListRef.set(FirestoreShoppingList(sl))
+                                            .addOnSuccessListener { ds -> it.onSuccess(sl) }
+                                            .addOnFailureListener { ex -> it.onError(ex) }
+                                }
+                            }
+
+                            // 5. Update Shopping List Item ...or roll back #4 on failure.
+                            .flatMap { sl ->
+                                Single.create<ShoppingListItem> {
+                                    val doc = FirestoreShoppingListItem(
+                                            update.quantity ?: curr!!.quantity,
+                                            update.inList ?: curr!!.inList,
+                                            update.inCart ?: curr!!.inCart,
+                                            price!!
+                                    )
+                                    collShoppingListItems(token, update.shoppingListID)
                                             .document(update.shoppingListItemID)
-                                    tx.set(listItemRef, doc)
+                                            .set(doc)
+                                            .addOnSuccessListener { dr ->
+                                                it.onSuccess(doc.toShoppingListItem(update.shoppingListItemID))
+                                            }
+                                            .addOnFailureListener { ex ->
+                                                // i. Reverse update of Shopping list.
+                                                val negUpd = ShoppingListItemUpdate(
+                                                        update.shoppingListID,
+                                                        update.shoppingListItemID, update.itemName,
+                                                        update.inList, update.inCart,
+                                                        update.brandName, update.quantity,
+                                                        update.measuringUnit,
+                                                        if (update.unitPrice == null) 0F else 0F - update.unitPrice
+                                                )
+                                                val nsl = sl.accumulateUpdatePrices(curr!!, negUpd)
+                                                shoppingListRef.set(FirestoreShoppingList(nsl))
 
-                                    return@runTransaction null
+                                                // ii. Report error.
+                                                it.onError(ex)
+                                            }
                                 }
-                                .addOnSuccessListener { _ ->
-                                    it.onSuccess(doc.toShoppingListItem(update.shoppingListItemID))
-                                }
-                                .addOnFailureListener(it::onError)
-                    }
+                            }
                 }
     }
 
-    override fun deleteShoppingListItem(token: String, shoppingListID: String, id: String) = Completable.create {
-        db
-                .runTransaction { tx ->
+    override fun deleteShoppingListItem(token: String, shoppingListID: String, id: String): Completable {
 
-                    val listItemRef = collShoppingListItems(token, shoppingListID)
-                            .document(id)
-                    val listItem = tx.get(listItemRef)
-                            .toObject(FirestoreShoppingListItem::class.java)
-                            .toShoppingListItem(id)
+        val listItemRef = collShoppingListItems(token, shoppingListID)
+                .document(id)
+        val shoppingListRef = collShoppingLists(token).document(shoppingListID)
 
-                    val shoppingListRef = collShoppingLists(token).document(shoppingListID)
-                    val shoppingList = tx.get(shoppingListRef)
-                            .toObject(FirestoreShoppingList::class.java)
-                            .toShoppingList(shoppingListID)
-                            .accumulateDeletePrices(listItem)
-                    tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
-
-                    tx.delete(listItemRef)
-
-                    return@runTransaction null
+        return Single
+                // 1. Fetch Shopping List Item to delete.
+                .create<FirestoreShoppingListItem> {
+                    listItemRef.get()
+                            .addOnSuccessListener { ds ->
+                                it.onSuccess(ds.toObject(FirestoreShoppingListItem::class.java))
+                            }
+                            .addOnFailureListener { ex -> it.onError(ex) }
                 }
-                .addOnSuccessListener { _ -> it.onCompleted() }
-                .addOnFailureListener(it::onError)
+                .map { it.toShoppingListItem(id) }
+
+                // 2. Fetch the affected Shopping List.
+                .flatMap { sli ->
+                    Single.create<Pair<FirestoreShoppingList, ShoppingListItem>> {
+                        shoppingListRef.get()
+                                .addOnSuccessListener { ds ->
+                                    it.onSuccess(Pair(ds.toObject(FirestoreShoppingList::class.java), sli))
+                                }
+                                .addOnFailureListener { ex -> it.onError(ex) }
+                    }
+                }
+                .map { Pair(it.first.toShoppingList(shoppingListID), it.second) }
+
+                // 3. Calculate new Shopping List price
+                .map { Pair(it.first.accumulateDeletePrices(it.second), it.second) }
+
+                // 4. Update Shopping List Price in db.
+                .flatMap { vals ->
+                    Single.create<Pair<ShoppingList, ShoppingListItem>> {
+                        shoppingListRef.set(FirestoreShoppingList(vals.first))
+                                .addOnSuccessListener { ds -> it.onSuccess(vals) }
+                                .addOnFailureListener { ex -> it.onError(ex) }
+                    }
+                }
+
+                // 5. Delete Shopping List Item ...or roll back #4 on failure.
+                .flatMap { vals ->
+                    Single.create<Unit> {
+                        listItemRef.delete()
+                                .addOnSuccessListener { ds -> it.onSuccess(Unit) }
+                                .addOnFailureListener { ex ->
+                                    // i. Reverse update of Shopping list.
+                                    val sl = vals.first.accumulateInsertPrices(
+                                            vals.second.totalPrice(), vals.second.inList,
+                                            vals.second.inCart
+                                    )
+                                    shoppingListRef.set(FirestoreShoppingList(sl))
+
+                                    // ii. Report error.
+                                    it.onError(ex)
+                                }
+                    }
+                }
+
+                .toCompletable()
     }
 
     override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int) =
@@ -284,29 +351,52 @@ class FirebaseShoppingClient @Inject constructor(
 
     private fun insertShoppingListItem(token: String, shoppingListID: String, quantity: Int,
                                        inList: Boolean, inCart: Boolean,
-                                       price: BrandPrice) = Single.create<ShoppingListItem> {
+                                       price: BrandPrice): Single<ShoppingListItem> {
 
-        val doc = FirestoreShoppingListItem(quantity, inList, inCart, price)
-        val docRef = collShoppingListItems(token, shoppingListID).document()
+        val shoppingListRef = collShoppingLists(token).document(shoppingListID)
 
-        db
-                .runTransaction { tx ->
-
-                    val shoppingListRef = collShoppingLists(token).document(shoppingListID)
-                    val shoppingList = tx.get(shoppingListRef)
-                            .toObject(FirestoreShoppingList::class.java)
-                            .toShoppingList(shoppingListID)
-                            .accumulateInsertPrices(price.price * quantity, inList, inCart)
-                    tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
-
-                    tx.set(docRef, doc)
-
-                    return@runTransaction null
+        return Single
+                // 1. Get Shopping List
+                .create<FirestoreShoppingList> {
+                    shoppingListRef.get()
+                            .addOnSuccessListener { ds ->
+                                it.onSuccess(ds.toObject(FirestoreShoppingList::class.java))
+                            }
+                            .addOnFailureListener { ex -> it.onError(ex) }
                 }
-                .addOnSuccessListener { _ ->
-                    it.onSuccess(doc.toShoppingListItem(docRef.id))
+                .map { it.toShoppingList(shoppingListID) }
+
+                // 3. Calculate new Shopping List price
+                .map { it.accumulateInsertPrices(price.price * quantity, inList, inCart) }
+
+                // 4. Update Shopping List Price in db.
+                .flatMap { sl ->
+                    Single.create<ShoppingList> {
+                        shoppingListRef.set(FirestoreShoppingList(sl))
+                                .addOnSuccessListener { ds -> it.onSuccess(sl) }
+                                .addOnFailureListener { ex -> it.onError(ex) }
+                    }
                 }
-                .addOnFailureListener(it::onError)
+
+                // 5. Insert Shopping List Item ...or roll back #4 on failure.
+                .flatMap { sl ->
+                    Single.create<ShoppingListItem> {
+                        val doc = FirestoreShoppingListItem(quantity, inList, inCart, price)
+                        collShoppingListItems(token, shoppingListID)
+                                .add(doc)
+                                .addOnSuccessListener { dr ->
+                                    it.onSuccess(doc.toShoppingListItem(dr.id))
+                                }
+                                .addOnFailureListener { ex ->
+                                    // i. Reverse update of Shopping list.
+                                    val nsl = sl.accumulateDeletePrices(doc.toShoppingListItem("none"))
+                                    shoppingListRef.set(FirestoreShoppingList(nsl))
+
+                                    // ii. Report error.
+                                    it.onError(ex)
+                                }
+                    }
+                }
     }
 
     private fun getShoppingListItem(token: String, shoppingListID: String, ID: String) = Single.create<ShoppingListItem> {
