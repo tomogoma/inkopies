@@ -253,7 +253,9 @@ class FirebaseShoppingClient @Inject constructor(
                                     .map {
                                         it.toObject(FirestoreShoppingListItem::class.java)!!
                                                 .toShoppingListItem(it.id)
-                                    }.sortedBy { it.itemName() }
+                                    }
+                                    .sortedBy { it.itemName() }
+                                    .sortedBy { it.categoryName() }
                                     .sortedByDescending {
                                         if (f.inList != null) it.inCart
                                         else it.inList
