@@ -33,11 +33,13 @@ class UpsertListItemViewModel @Inject constructor(
 
     val title = ObservableInt()
     val brandName = ObservableField<String>()
+    val categoryName = ObservableField<String>()
     val itemName = ObservableField<String>()
     val quantity = ObservableField<String>()
     val measuringUnit = ObservableField<String>()
     val unitPrice = ObservableField<String>()
     val brandNameError = ObservableField<String>()
+    val categoryNameError = ObservableField<String>()
     val itemNameError = ObservableField<String>()
     val quantityError = ObservableField<String>()
     val measuringUnitError = ObservableField<String>()
@@ -55,11 +57,13 @@ class UpsertListItemViewModel @Inject constructor(
     val searchBrandNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchMeasuringUnitResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchUnitPriceResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
+    val searchCategoryResult = SingleLiveEvent<List<String>>()
 
     private lateinit var list: VMShoppingList
     private var id: String? = null
 
     init {
+        categoryName.clearErrorOnChange(categoryNameError)
         brandName.clearErrorOnChange(brandNameError)
         itemName.clearErrorOnChange(brandNameError)
         quantity.clearErrorOnChange(brandNameError)
@@ -91,6 +95,7 @@ class UpsertListItemViewModel @Inject constructor(
 
     fun onChangeShoppingListItem(item: VMShoppingListItem) {
         id = item.id
+        categoryName.set(item.categoryName())
         brandName.set(item.brandName())
         itemName.set(item.itemName())
         quantity.set(item.quantity.toString())
@@ -121,6 +126,14 @@ class UpsertListItemViewModel @Inject constructor(
                             VMShoppingListItem(it, list.mode))
             )
         }, successFunc = { searchBrandNameResult.value = it })
+    }
+
+    fun onSearchCategory(search: String) {
+        manager.searchCategory(search)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .map { it.map { it.name } }
+                .subscribe({ searchCategoryResult.value = it }, { onOpException(it) })
     }
 
     fun onSearchMeasuringUnit(search: String) {
@@ -172,12 +185,12 @@ class UpsertListItemViewModel @Inject constructor(
         val currID = id
         if (currID == null || currID == "") {
             manager.insertShoppingListItem(ShoppingListItemInsert(list.id, itemName.get()!!,
-                    inListCart.first, inListCart.second, brandName.get(),
+                    inListCart.first, inListCart.second, categoryName.get(), brandName.get(),
                     quantity.get()?.toIntOrNull(), measuringUnit.get(),
                     unitPrice.get()?.toFloatOrNull()))
         } else {
             manager.updateShoppingListItem(ShoppingListItemUpdate(list.id, currID, itemName.get()!!,
-                    inListCart.first, inListCart.second, brandName.get(),
+                    inListCart.first, inListCart.second, categoryName.get(), brandName.get(),
                     quantity.get()?.toIntOrNull(), measuringUnit.get(),
                     unitPrice.get()?.toFloatOrNull()))
         }
@@ -201,6 +214,7 @@ class UpsertListItemViewModel @Inject constructor(
     }
 
     private fun clearFields() {
+        categoryName.set("")
         brandName.set("")
         itemName.set("")
         quantity.set("1")

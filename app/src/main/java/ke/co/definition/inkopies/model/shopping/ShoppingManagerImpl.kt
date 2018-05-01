@@ -34,6 +34,18 @@ class ShoppingManagerImpl @Inject constructor(
                 .onErrorResumeNext { Single.error(handleAuthErrors(logger, auth, resMan, it, "update shopping list")) }
     }
 
+    override fun searchCategory(q: String): Single<List<Category>> {
+        return auth.getJWT()
+                .flatMap { client.searchCategory(it.value, q) }
+                .onErrorResumeNext {
+                    if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
+                        return@onErrorResumeNext Single.just(listOf<Category>())
+                    }
+                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
+                            "search category"))
+                }
+    }
+
     override fun searchShoppingListItem(req: ShoppingListItemSearch): Single<List<ShoppingListItem>> {
         return auth.getJWT()
                 .flatMap { client.searchShoppingListItem(it.value, req) }
@@ -42,7 +54,7 @@ class ShoppingManagerImpl @Inject constructor(
                         return@onErrorResumeNext Single.just(listOf<ShoppingListItem>())
                     }
                     return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
-                            "search shopping list itme"))
+                            "search shopping list item"))
                 }
     }
 

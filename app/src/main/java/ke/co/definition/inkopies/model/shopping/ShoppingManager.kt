@@ -19,4 +19,5 @@ interface ShoppingManager {
     fun deleteShoppingListItem(shoppingListID: String, id: String): Completable
     fun getShoppingListItems(f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>>
     fun searchShoppingListItem(req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
+    fun searchCategory(q: String): Single<List<Category>>
 }

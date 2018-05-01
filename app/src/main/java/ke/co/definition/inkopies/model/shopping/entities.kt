@@ -7,6 +7,11 @@ import ke.co.definition.inkopies.model.stores.StoreBranch
  * On 25/03/18.
  */
 
+data class Category(
+        val id: String,
+        val name: String
+)
+
 data class MeasuringUnit(
         val id: String,
         val name: String
@@ -44,6 +49,7 @@ data class ShoppingListItem(
         val id: String,
         val quantity: Int,
         val brandPrice: BrandPrice,
+        val category: Category,
         val inList: Boolean,
         val inCart: Boolean
 ) {
@@ -55,6 +61,7 @@ data class ShoppingListItem(
     fun brandName() = brandPrice.brandName()
     fun unitPrice() = brandPrice.price
     fun totalPrice() = unitPrice() * quantity
+    fun categoryName() = category.name
 }
 
 data class ShoppingListItemInsert(
@@ -62,6 +69,7 @@ data class ShoppingListItemInsert(
         val itemName: String,
         val inList: Boolean,
         val inCart: Boolean,
+        val categoryName: String? = null,
         val brandName: String? = null,
         val quantity: Int? = null,
         val measuringUnit: String? = null,
@@ -74,6 +82,7 @@ data class ShoppingListItemUpdate(
         val itemName: String? = null,
         val inList: Boolean? = null,
         val inCart: Boolean? = null,
+        val categoryName: String?,
         val brandName: String? = null,
         val quantity: Int? = null,
         val measuringUnit: String? = null,

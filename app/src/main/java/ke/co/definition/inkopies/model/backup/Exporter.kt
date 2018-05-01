@@ -118,14 +118,15 @@ class ExporterImpl @Inject constructor(
         val osw = OutputStreamWriter(FileOutputStream(file))
         val csvW = CsvBeanWriter(osw, CsvPreference.STANDARD_PREFERENCE)
 
-        val headers = arrayOf("itemName", "inList", "inCart", "brandName", "quantity",
+        val headers = arrayOf("categoryName", "itemName", "inList", "inCart", "brandName", "quantity",
                 "measuringUnit", "unitPrice")
         csvW.use {
             it.writeHeader(*headers)
             items
                     .map {
                         ShoppingListItemInsert("", it.itemName(), it.inList, it.inCart,
-                                it.brandName(), it.quantity, it.measuringUnitName(), it.unitPrice())
+                                it.categoryName(), it.brandName(), it.quantity,
+                                it.measuringUnitName(), it.unitPrice())
                     }
                     .forEach { item ->
                         it.write(item, *headers)

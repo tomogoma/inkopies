@@ -105,8 +105,8 @@ class ShoppingListViewModel @Inject constructor(
             }
         }
         val list = shoppingList.get()!!
-        manager.updateShoppingListItem(ShoppingListItemUpdate(list.id, item.id,
-                inList = inList, inCart = inCart))
+        manager.updateShoppingListItem(ShoppingListItemUpdate(list.id,
+                item.id, categoryName = item.categoryName(), inList = inList, inCart = inCart))
                 .doOnSubscribe { item.isUpdating.set(true) }
                 .doOnUnsubscribe { item.isUpdating.set(false) }
                 .subscribeOn(subscribeOnScheduler)

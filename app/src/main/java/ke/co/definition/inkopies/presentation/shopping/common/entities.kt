@@ -1,7 +1,10 @@
 package ke.co.definition.inkopies.presentation.shopping.common
 
 import android.databinding.ObservableField
-import ke.co.definition.inkopies.model.shopping.*
+import ke.co.definition.inkopies.model.shopping.ShoppingList
+import ke.co.definition.inkopies.model.shopping.ShoppingListItem
+import ke.co.definition.inkopies.model.shopping.ShoppingListItemUpdate
+import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.presentation.common.formatPrice
 
 /**
@@ -28,8 +31,9 @@ class VMShoppingList(val sl: ShoppingList) {
 
     fun accumulateUpdatePrices(shoppingListID: String, old: VMShoppingListItem, new: VMShoppingListItem) =
             VMShoppingList(sl.accumulateUpdatePrices(old.sli, ShoppingListItemUpdate(
-                    shoppingListID, new.id, new.itemName(), new.inList, new.inCart, new.brandName(),
-                    new.quantity, new.measuringUnitName(), new.unitPrice()
+                    shoppingListID, new.id, new.itemName(), new.inList, new.inCart,
+                    new.categoryName(), new.brandName(), new.quantity, new.measuringUnitName(),
+                    new.unitPrice()
             )))
 
 }
@@ -40,7 +44,6 @@ class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
     val id: String = sli.id
     val inList: Boolean = sli.inList
     val inCart: Boolean = sli.inCart
-    val brandPrice: BrandPrice = sli.brandPrice
     val quantity: Int = sli.quantity
 
     fun isChecked() = (mode == ShoppingMode.PREPARATION && sli.inList) || (mode == ShoppingMode.SHOPPING && sli.inCart)
@@ -52,9 +55,12 @@ class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
     fun fmtQuantity() = quantity.toString()
     fun unitPrice() = sli.unitPrice()
     fun totalPrice() = sli.totalPrice()
+    fun categoryName() = sli.categoryName()
 }
 
 data class SearchShoppingListItemResult(
-        val printName: String,
+        private val printName: String,
         val sli: VMShoppingListItem? = null
-)
+) {
+    override fun toString() = printName
+}

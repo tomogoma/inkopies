@@ -69,23 +69,34 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         setUpAutoComplete(vs.unitPrice, vm, vm::onSearchUnitPrice, vm.searchUnitPriceResult)
         setUpAutoComplete(vs.measuringUnit, vm, vm::onSearchMeasuringUnit,
                 vm.searchMeasuringUnitResult)
+        setUpCategoryAutoComplete(vs.categoryName, vm)
 
         observedLiveData.addAll(listOf(vm.searchItemNameResult, vm.searchBrandNameResult,
                 vm.searchUnitPriceResult, vm.searchMeasuringUnitResult))
+    }
+
+    private fun setUpCategoryAutoComplete(categoryV: AutoCompleteTextView, vm: UpsertListItemViewModel) {
+
+        val adapter = AutoCompleteAdapter(this, vm::onSearchCategory, vm.searchCategoryResult)
+        categoryV.setAdapter(adapter)
+        categoryV.setOnItemClickListener { _, _, pos, _ ->
+            val rslt = adapter.getResultItem(pos)
+            categoryV.setText(rslt, false)
+        }
     }
 
     private fun setUpAutoComplete(textView: AutoCompleteTextView, vm: UpsertListItemViewModel,
                                   search: (text: String) -> Unit,
                                   resultEvent: SingleLiveEvent<List<SearchShoppingListItemResult>>) {
 
-        val adapter = AutoCompleteAdapter(this, search, resultEvent)
+        val adapter = AutoCompleteAdapter<SearchShoppingListItemResult>(this, search, resultEvent)
         textView.setAdapter(adapter)
         textView.setOnItemClickListener { _, _, pos, _ ->
             val rslt = adapter.getResultItem(pos)
             if (rslt.sli != null) {
                 vm.onChangeShoppingListItem(rslt.sli)
             }
-            textView.setText(rslt.printName, false)
+            textView.setText(rslt.toString(), false)
         }
     }
 
@@ -101,6 +112,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             return@setOnEditorActionListener true
         }
 
+        vs.categoryName.selectAllOnFocus()
         vs.brandName.selectAllOnFocus()
         vs.itemName.selectAllOnFocus()
         vs.quantity.selectAllOnFocus()
@@ -147,6 +159,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     private fun focusOn(vs: DialogUpsertListItemBinding, focus: ItemFocus) {
 
         when (focus) {
+            ItemFocus.CATEGORY -> vs.categoryName.showKeyboard(activity!!)
             ItemFocus.BRAND -> vs.brandName.showKeyboard(activity!!)
             ItemFocus.ITEM -> vs.itemName.showKeyboard(activity!!)
             ItemFocus.MEASUREMENT_UNIT -> vs.measuringUnit.showKeyboard(activity!!)
@@ -174,7 +187,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                     if (item != null) {
                         putString(EXTRA_LIST_ITEM, Gson().toJson(item))
                     }
-                    putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.BRAND.name)
+                    putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.CATEGORY.name)
                     putString(EXTRA_LIST, Gson().toJson(list))
                 }
 
@@ -183,13 +196,13 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         }
     }
 
-    class AutoCompleteAdapter(
+    class AutoCompleteAdapter<T>(
             frag: UpsertListItemDialogFrag,
             private val search: (text: String) -> Unit,
-            resultEvent: SingleLiveEvent<List<SearchShoppingListItemResult>>
+            resultEvent: SingleLiveEvent<List<T>>
     ) : ArrayAdapter<String>(frag.context, android.R.layout.simple_spinner_dropdown_item), Filterable {
 
-        private val resultItems = mutableListOf<Pair<SearchShoppingListItemResult, Long>>()
+        private val resultItems = mutableListOf<Pair<T, Long>>()
         private var lastID = AtomicLong(0)
 
         init {
@@ -202,7 +215,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             })
         }
 
-        override fun getItem(pos: Int): String = resultItems[pos].first.printName
+        override fun getItem(pos: Int): String = resultItems[pos].first.toString()
 
         override fun getItemId(pos: Int): Long = resultItems[pos].second
 

@@ -27,6 +27,7 @@ class FirebaseShoppingClient @Inject constructor(
         private val db: FirebaseFirestore
 ) : ShoppingClient {
 
+    private val collCategories = db.collection(COLLECTION_CATEGORIES)
     private val collItems = db.collection(COLLECTION_ITEMS)
     private val collMeasUnits = db.collection(COLLECTION_MEASURING_UNITS)
     private val collBrands = db.collection(COLLECTION_BRANDS)
@@ -86,9 +87,13 @@ class FirebaseShoppingClient @Inject constructor(
     override fun insertShoppingListItem(token: String, req: ShoppingListItemInsert): Single<ShoppingListItem> {
         var measUnit: MeasuringUnit? = null
         var price: BrandPrice? = null
+        var cat: Category? = null
 
         return insertMeasUnitIfNotExists(req.measuringUnit ?: "")
                 .map { measUnit = it.second.toMeasuringUnit(it.first) }
+
+                .flatMap { insertCategoryIfNotExist(req.categoryName ?: "") }
+                .map { cat = it.second.toCategory(it.first) }
 
                 .flatMap { insertItemIfNotExists(req.itemName) }
                 .map { it.second.toShoppingItem(it.first) }
@@ -101,7 +106,7 @@ class FirebaseShoppingClient @Inject constructor(
                 .map { price = it }
 
                 .flatMap {
-                    insertShoppingListItemIfNotExists(token, req.shoppingListID,
+                    insertShoppingListItemIfNotExists(token, req.shoppingListID, cat!!,
                             req.quantity ?: 0, req.inList, req.inCart, price!!)
                 }
     }
@@ -122,6 +127,12 @@ class FirebaseShoppingClient @Inject constructor(
         if (update.measuringUnit != null) {
             observer = observer.flatMap { insertMeasUnitIfNotExists(update.measuringUnit) }
                     .map { measUnit = it.second.toMeasuringUnit(it.first) }
+        }
+
+        var cat: Category? = null
+        if (update.categoryName != null) {
+            observer = observer.flatMap { insertCategoryIfNotExist(update.categoryName) }
+                    .map { cat = it.second.toCategory(it.first) }
         }
 
         // An update for brand has to be created whether provided or not
@@ -166,7 +177,7 @@ class FirebaseShoppingClient @Inject constructor(
                                 update.quantity ?: curr!!.quantity,
                                 update.inList ?: curr!!.inList,
                                 update.inCart ?: curr!!.inCart,
-                                price!!
+                                price!!, cat!!
                         )
                         db
                                 .runTransaction { tx ->
@@ -255,11 +266,32 @@ class FirebaseShoppingClient @Inject constructor(
                         }
             }
 
+    override fun searchCategory(token: String, q: String): Single<List<Category>> {
+        return Single.create<List<Category>> {
+            collCategories.get()
+                    .addOnSuccessListener { qs: QuerySnapshot ->
+                        if (qs.isEmpty) {
+                            it.onError(httpException(STATUS_NOT_FOUND, "none found"))
+                            return@addOnSuccessListener
+                        }
+                        val res = qs.documents
+                                .map {
+                                    it.toObject(Named::class.java)!!
+                                            .toCategory(it.id)
+                                }
+                                .filter { it.name.toLowerCase().contains(q.toLowerCase()) }
+                                .sortedBy { it.name }
+                        it.onSuccess(res)
+                    }
+                    .addOnFailureListener { ex -> it.onError(ex) }
+        }
+    }
+
     override fun searchShoppingListItem(token: String, req: ShoppingListItemSearch): Single<List<ShoppingListItem>> {
         return Single.error(httpException(STATUS_NOT_FOUND, "not even implemented"))
     }
 
-    private fun insertShoppingListItemIfNotExists(token: String, shoppingListID: String,
+    private fun insertShoppingListItemIfNotExists(token: String, shoppingListID: String, cat: Category,
                                                   quantity: Int, inList: Boolean, inCart: Boolean,
                                                   price: BrandPrice): Single<ShoppingListItem> {
 
@@ -270,7 +302,7 @@ class FirebaseShoppingClient @Inject constructor(
                         return@onErrorResumeNext Single.error(e)
                     }
                     hasInserted = true
-                    return@onErrorResumeNext insertShoppingListItem(token, shoppingListID,
+                    return@onErrorResumeNext insertShoppingListItem(token, shoppingListID, cat,
                             quantity, inList, inCart, price)
                 }
                 .flatMap {
@@ -282,11 +314,11 @@ class FirebaseShoppingClient @Inject constructor(
                 }
     }
 
-    private fun insertShoppingListItem(token: String, shoppingListID: String, quantity: Int,
+    private fun insertShoppingListItem(token: String, shoppingListID: String, cat: Category, quantity: Int,
                                        inList: Boolean, inCart: Boolean,
                                        price: BrandPrice) = Single.create<ShoppingListItem> {
 
-        val doc = FirestoreShoppingListItem(quantity, inList, inCart, price)
+        val doc = FirestoreShoppingListItem(quantity, inList, inCart, price, cat)
         val docRef = collShoppingListItems(token, shoppingListID).document()
 
         db
@@ -409,6 +441,9 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
+    private fun insertCategoryIfNotExist(name: String) =
+            insertNamedIfNotExists(collCategories, name)
+
     private fun insertItemIfNotExists(name: String) =
             insertNamedIfNotExists(collItems, name)
 
@@ -476,6 +511,7 @@ class FirebaseShoppingClient @Inject constructor(
         const val COLLECTION_BRANDS = "brands"
         const val COLLECTION_MEASURING_UNITS = "measuring_units"
         const val COLLECTION_ITEMS = "items"
+        const val COLLECTION_CATEGORIES = "categories"
     }
 
 }
@@ -505,13 +541,17 @@ data class FirestoreShoppingListItem(
         val inList: Boolean = false,
         val inCart: Boolean = false,
         val priceID: String = "",
-        val price: FirestorePrice = FirestorePrice()
+        val categoryID: String = "",
+        val price: FirestorePrice = FirestorePrice(),
+        val category: Named = Named()
 ) {
 
-    constructor(quantity: Int, inList: Boolean, inCart: Boolean, price: BrandPrice) :
-            this(quantity, inList, inCart, price.id, FirestorePrice(price))
+    constructor(quantity: Int, inList: Boolean, inCart: Boolean, price: BrandPrice, cat: Category) :
+            this(quantity, inList, inCart, price.id, cat.id, FirestorePrice(price), Named(cat.name))
 
-    fun toShoppingListItem(id: String) = ShoppingListItem(id, quantity, price.toPrice(priceID), inList, inCart)
+    fun toShoppingListItem(id: String) =
+            ShoppingListItem(id, quantity, price.toPrice(priceID), category.toCategory(categoryID),
+                    inList, inCart)
 
     companion object {
         const val KEY_PRICE_ID = "priceId"
@@ -570,6 +610,7 @@ data class FirestoreBrand(
 
 data class Named(val name: String = "") {
 
+    fun toCategory(id: String) = Category(id, name)
     fun toShoppingItem(id: String) = ShoppingItem(id, name)
     fun toMeasuringUnit(id: String) = MeasuringUnit(id, name)
 

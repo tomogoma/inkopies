@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:bind="http://schemas.android.com/tools"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -32,12 +32,36 @@
                 android:text="@{vm.title}"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="@dimen/text_size_large"
-                app:layout_constraintBottom_toTopOf="@id/brandNameLayout"
+                app:layout_constraintBottom_toTopOf="@id/categoryNameLayout"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_chainStyle="packed"
                 tools:text="New Item" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/categoryNameLayout"
+                android:layout_width="@dimen/input_width"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_small"
+                android:layout_marginEnd="@dimen/space_normal"
+                android:layout_marginStart="@dimen/space_normal"
+                app:error="@{vm.categoryNameError}"
+                app:layout_constraintBottom_toTopOf="@id/brandNameLayout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/title">
+
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                    android:id="@+id/categoryName"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/category"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapWords"
+                    android:maxLines="1"
+                    android:text="@={vm.categoryName}" />
+            </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/brandNameLayout"
@@ -50,7 +74,7 @@
                 app:layout_constraintBottom_toTopOf="@id/itemNameLayout"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/title">
+                app:layout_constraintTop_toBottomOf="@id/categoryNameLayout">
 
                 <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                     android:id="@+id/brandName"
@@ -169,7 +193,8 @@
                 app:layout_constraintBottom_toTopOf="@+id/addAnother"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/unitPriceLayout" />
+                app:layout_constraintTop_toBottomOf="@id/unitPriceLayout"
+                tools:text="In List" />
 
             <CheckBox
                 android:id="@+id/addAnother"

@@ -20,4 +20,5 @@ interface ShoppingClient {
     fun deleteShoppingListItem(token: String, shoppingListID: String, id: String): Completable
     fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>>
     fun searchShoppingListItem(token: String, req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
+    fun searchCategory(token: String, q: String): Single<List<Category>>
 }

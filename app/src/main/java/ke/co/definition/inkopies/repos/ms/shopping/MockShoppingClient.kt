@@ -44,6 +44,19 @@ class MockShoppingClient : ShoppingClient {
         }
     }
 
+    override fun searchCategory(token: String, q: String): Single<List<Category>> {
+        return Single.create {
+            val rslts = shoppingListItems.filter { it.categoryName().toLowerCase().contains(q.toLowerCase()) }
+                    .map { it.category }
+            if (rslts.isEmpty()) {
+                it.onError(notFound())
+                return@create
+            }
+
+            it.onSuccess(rslts)
+        }
+    }
+
     override fun insertShoppingListItem(token: String, req: ShoppingListItemInsert): Single<ShoppingListItem> {
         return Single.create {
             Thread.sleep(2000)
@@ -56,6 +69,7 @@ class MockShoppingClient : ShoppingClient {
                                     ShoppingItem(randID(rand), req.itemName)),
                             StoreBranch(randID(rand), randWord(rand),
                                     Store(randID(rand), randWord(rand)))),
+                    Category(randID(rand), req.categoryName ?: ""),
                     req.inList, req.inCart
             )
             shoppingListItems.add(rslt)
@@ -87,6 +101,7 @@ class MockShoppingClient : ShoppingClient {
                                     ShoppingItem(curr.brandPrice.brand.shoppingItem.id,
                                             update.itemName ?: curr.itemName())),
                             curr.brandPrice.atStoreBranch),
+                    Category(curr.category.id, update.categoryName ?: curr.categoryName()),
                     update.inList ?: curr.inList, update.inCart ?: curr.inCart
             )
             shoppingListItems[indx] = rslt
@@ -191,6 +206,7 @@ class MockShoppingClient : ShoppingClient {
                     StoreBranch(randID(rand), randWord(rand), Store(randID(rand),
                             randWord(rand)))
             ),
+            Category(randID(rand), randWord(rand)),
             rand.nextBoolean(),
             rand.nextBoolean()
     )
