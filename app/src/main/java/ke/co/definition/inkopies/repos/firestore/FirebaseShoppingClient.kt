@@ -174,7 +174,7 @@ class FirebaseShoppingClient @Inject constructor(
                                     val shoppingListRef = collShoppingLists(token)
                                             .document(update.shoppingListID)
                                     val shoppingList = tx.get(shoppingListRef)
-                                            .toObject(FirestoreShoppingList::class.java)
+                                            .toObject(FirestoreShoppingList::class.java)!!
                                             .toShoppingList(update.shoppingListID)
                                             .accumulateUpdatePrices(curr!!, update)
                                     tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
@@ -200,12 +200,12 @@ class FirebaseShoppingClient @Inject constructor(
                     val listItemRef = collShoppingListItems(token, shoppingListID)
                             .document(id)
                     val listItem = tx.get(listItemRef)
-                            .toObject(FirestoreShoppingListItem::class.java)
+                            .toObject(FirestoreShoppingListItem::class.java)!!
                             .toShoppingListItem(id)
 
                     val shoppingListRef = collShoppingLists(token).document(shoppingListID)
                     val shoppingList = tx.get(shoppingListRef)
-                            .toObject(FirestoreShoppingList::class.java)
+                            .toObject(FirestoreShoppingList::class.java)!!
                             .toShoppingList(shoppingListID)
                             .accumulateDeletePrices(listItem)
                     tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
@@ -240,7 +240,7 @@ class FirebaseShoppingClient @Inject constructor(
                             }
                             val res = qs.documents
                                     .map {
-                                        it.toObject(FirestoreShoppingListItem::class.java)
+                                        it.toObject(FirestoreShoppingListItem::class.java)!!
                                                 .toShoppingListItem(it.id)
                                     }.sortedBy { it.itemName() }
                                     .sortedByDescending {
@@ -294,7 +294,7 @@ class FirebaseShoppingClient @Inject constructor(
 
                     val shoppingListRef = collShoppingLists(token).document(shoppingListID)
                     val shoppingList = tx.get(shoppingListRef)
-                            .toObject(FirestoreShoppingList::class.java)
+                            .toObject(FirestoreShoppingList::class.java)!!
                             .toShoppingList(shoppingListID)
                             .accumulateInsertPrices(price.price * quantity, inList, inCart)
                     tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
@@ -314,7 +314,7 @@ class FirebaseShoppingClient @Inject constructor(
                 .document(ID)
                 .get()
                 .addOnSuccessListener { ds: DocumentSnapshot ->
-                    val fsListItem = ds.toObject(FirestoreShoppingListItem::class.java)
+                    val fsListItem = ds.toObject(FirestoreShoppingListItem::class.java)!!
                     it.onSuccess(fsListItem.toShoppingListItem(ds.id))
                 }
                 .addOnFailureListener(it::onError)
