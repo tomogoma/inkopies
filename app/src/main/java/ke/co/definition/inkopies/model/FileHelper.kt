@@ -2,10 +2,12 @@ package ke.co.definition.inkopies.model
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.net.Uri
 import android.os.Environment
 import ke.co.definition.inkopies.R
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -18,6 +20,7 @@ import javax.inject.Inject
 interface FileHelper {
     fun createTempFile(ext: String): File
     fun newExternalPublicFile(name: String, ext: String): File
+    fun getInputStream(uri: Uri): InputStream
 }
 
 class FileHelperImpl @Inject constructor(val app: Application) : FileHelper {
@@ -36,6 +39,10 @@ class FileHelperImpl @Inject constructor(val app: Application) : FileHelper {
         val dir = File(Environment.getExternalStoragePublicDirectory(appName).absolutePath)
         dir.mkdirs()
         return File(dir, genTimestampedFileName(name, ext))
+    }
+
+    override fun getInputStream(uri: Uri): InputStream {
+        return app.contentResolver.openInputStream(uri)
     }
 
     private fun genTimestampedFileName(name: String, ext: String): String {

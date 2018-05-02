@@ -97,4 +97,8 @@
     <string name="export_list_title">Export List</string>
     <string name="allow_storage_access_to_export">Allow the app to access your device storage in order to export</string>
     <string name="category">Category</string>
+    <string name="import_lists_title">Import Lists</string>
+    <string name="import_successful">Import completed successfully</string>
+    <string name="error_reading_csv">Unable to read CSV file</string>
+    <string name="csv_missing_itemName">missing itemName in CSV file</string>
 </resources>
