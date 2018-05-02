@@ -4,6 +4,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
+import android.net.Uri
 import android.support.annotation.UiThread
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
@@ -59,8 +60,20 @@ class ShoppingListsViewModel @Inject constructor(
                 .subscribe(this::onExportSuccessful, this::showError)
     }
 
+    fun onImport(uri: Uri) {
+        exporter.importLists(uri)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe(this::onImportSuccessful, this::showError)
+    }
+
     private fun onExportSuccessful() {
         snackbarData.value = ResIDSnackbarData(R.string.export_successful,
+                Snackbar.LENGTH_LONG)
+    }
+
+    private fun onImportSuccessful() {
+        snackbarData.value = ResIDSnackbarData(R.string.import_successful,
                 Snackbar.LENGTH_LONG)
     }
 

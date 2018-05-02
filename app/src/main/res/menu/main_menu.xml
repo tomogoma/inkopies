@@ -13,6 +13,11 @@
         app:showAsAction="never|withText" />
 
     <item
+        android:id="@+id/importLists"
+        android:title="@string/import_lists_title"
+        app:showAsAction="never|withText" />
+
+    <item
         android:id="@+id/logout"
         android:title="@string/logout"
         app:showAsAction="never|withText" />

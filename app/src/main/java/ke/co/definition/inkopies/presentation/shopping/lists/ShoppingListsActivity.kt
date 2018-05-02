@@ -61,6 +61,7 @@ class ShoppingListsActivity : InkopiesActivity() {
             R.id.showProfile -> showProfile()
             R.id.logout -> logout()
             R.id.export -> onExport()
+            R.id.importLists -> onImport()
             else -> return super.onOptionsItemSelected(item)
         }
         return true
@@ -76,6 +77,22 @@ class ShoppingListsActivity : InkopiesActivity() {
             }
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (data != null) {
+                viewModel.onImport(data.data)
+            }
+        }
+    }
+
+    fun onImport() {
+
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "text/*"
+        startActivityForResult(intent, READ_REQUEST_CODE)
     }
 
     private fun onExport() {
@@ -120,6 +137,8 @@ class ShoppingListsActivity : InkopiesActivity() {
     }
 
     companion object {
+
+        private const val READ_REQUEST_CODE = 2
 
         fun start(activity: Activity) {
             val intent = Intent(activity, ShoppingListsActivity::class.java)
