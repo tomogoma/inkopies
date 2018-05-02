@@ -1,6 +1,5 @@
 package ke.co.definition.inkopies.presentation.shopping.lists
 
-import android.Manifest
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -9,8 +8,6 @@ import android.content.pm.PackageManager
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.design.widget.Snackbar
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -93,19 +90,6 @@ class ShoppingListsActivity : InkopiesActivity() {
         requestWriteExtFilePerm()
     }
 
-    private fun requestWriteExtFilePerm() =
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    PERM_REQ_WRITE_EXT_STORAGE)
-
-    private fun shouldShowWriteExtFileRationale() =
-            ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
-    private fun haveWriteExtFilePerms() =
-            (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED)
-
     private fun observeViews(vs: ActivityShoppingListsBinding) {
         vs.fab.setOnClickListener {
             NewShoppingListDialogFrag.start(supportFragmentManager, onDismissCallback = {})
@@ -136,8 +120,6 @@ class ShoppingListsActivity : InkopiesActivity() {
     }
 
     companion object {
-
-        const val PERM_REQ_WRITE_EXT_STORAGE = 0
 
         fun start(activity: Activity) {
             val intent = Intent(activity, ShoppingListsActivity::class.java)

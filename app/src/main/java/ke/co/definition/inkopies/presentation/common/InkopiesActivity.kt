@@ -1,9 +1,13 @@
 package ke.co.definition.inkopies.presentation.common
 
+import android.Manifest
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import ke.co.definition.inkopies.App
@@ -36,6 +40,19 @@ abstract class InkopiesActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    internal fun requestWriteExtFilePerm() =
+            ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    PERM_REQ_WRITE_EXT_STORAGE)
+
+    internal fun shouldShowWriteExtFileRationale() =
+            ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+    internal fun haveWriteExtFilePerms() =
+            (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED)
+
     internal fun removeLiveDataObservers() {
         observedLiveData.forEach { it.removeObservers(this) }
     }
@@ -63,5 +80,10 @@ abstract class InkopiesActivity : AppCompatActivity() {
 
         observedLiveData.add(viewModel.toastData /*loggedInStatus is not added, as it should
          only be removed on destroy*/)
+    }
+
+    companion object {
+
+        const val PERM_REQ_WRITE_EXT_STORAGE = 0
     }
 }
