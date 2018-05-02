@@ -287,13 +287,29 @@ class ShoppingListActivity : InkopiesActivity() {
                     return 0
                 }
 
+                var frstSameCatPos = 0
+                var lstSameCatPos = 0
+
                 val orderPos = items
                         .subList(offsetPos, lastPos)
+                        .apply {
+
+                            frstSameCatPos = indexOfFirst { it.categoryName() == item.categoryName() }
+                            if (frstSameCatPos > -1) {
+                                lstSameCatPos = indexOfLast { it.categoryName() == item.categoryName() } + 1
+                                return@apply
+                            }
+
+                            frstSameCatPos = indexOfFirst { it.categoryName() > item.categoryName() }
+                            if (frstSameCatPos == -1) frstSameCatPos = size
+                            lstSameCatPos = frstSameCatPos
+                        }
+                        .subList(frstSameCatPos, lstSameCatPos)
                         .indexOfFirst { it.itemName() >= item.itemName() }
                 return if (orderPos == -1) {
-                    lastPos
+                    offsetPos + lstSameCatPos
                 } else {
-                    offsetPos + orderPos
+                    offsetPos + frstSameCatPos + orderPos
                 }
             }
         }
