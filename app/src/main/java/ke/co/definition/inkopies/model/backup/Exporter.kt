@@ -1,12 +1,12 @@
 package ke.co.definition.inkopies.model.backup
 
-import android.annotation.SuppressLint
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ExternalStorageUnavailableException
 import ke.co.definition.inkopies.model.FileHelper
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
-import ke.co.definition.inkopies.model.shopping.*
+import ke.co.definition.inkopies.model.shopping.ShoppingListItemsFilter
+import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.repos.ms.handleAuthErrors
 import ke.co.definition.inkopies.utils.logging.Logger
 import org.supercsv.io.CsvBeanWriter
@@ -34,31 +34,40 @@ class ExporterImpl @Inject constructor(
         private val resMan: ResourceManager
 ) : Exporter {
 
-    override fun exportShoppingLists(): Completable {
+    override fun exportShoppingLists(): Completable = Completable.create {
 
-        return shopping.getShoppingLists(0, 100)
+        val items = mutableListOf<ExporterShoppingListItem>()
+
+        shopping.getShoppingLists(0, 100)
                 .first()
                 .toSingle()
                 .onErrorResumeNext {
                     Single.error(handleAuthErrors(logger, auth, resMan, it,
                             "get first shopping lists"))
                 }
-                .flatMap { shoppingListsToCSV(it) }
 
                 .toObservable()
                 .flatMap { lists ->
 
-                    var rsltObsvbl: Observable<Pair<ShoppingList, List<ShoppingListItem>>>? = null
+                    var rsltObsvbl: Observable<List<ExporterShoppingListItem>>? = null
+
                     lists.forEachIndexed { i, list ->
 
                         val filter = ShoppingListItemsFilter(list.id)
                         val currObsvbl = shopping.getShoppingListItems(filter, 0, 1000)
+                                .map {
+                                    it.map {
+                                        ExporterShoppingListItem(list.name, it.itemName(),
+                                                it.categoryName(), it.brandName(), it.quantity,
+                                                it.measuringUnitName(), it.unitPrice(), it.inList,
+                                                it.inCart)
+                                    }
+                                }
                                 .toObservable()
                                 .onErrorResumeNext {
                                     Observable.error(handleAuthErrors(logger, auth, resMan, it,
                                             "get shopping list items for ${list.name} -> ${list.id}"))
                                 }
-                                .map { Pair(list, it) }
 
                         if (i == 0) {
                             rsltObsvbl = currObsvbl
@@ -71,9 +80,10 @@ class ExporterImpl @Inject constructor(
                     return@flatMap rsltObsvbl
                 }
 
-                .map {
+                .doOnCompleted {
                     try {
-                        shoppingListItemsToCSV(it.first.name, it.second)
+                        shoppingListItemsToCSV(items)
+                        it.onCompleted()
                     } catch (e: Exception) {
                         logger.error("Unable to export shopping list items", e)
                         if (e is ExternalStorageUnavailableException) {
@@ -82,56 +92,33 @@ class ExporterImpl @Inject constructor(
                         throw Exception(resMan.getString(R.string.error_writing_list_items_to_csv))
                     }
                 }
-
-                .toCompletable()
+                .subscribe({ items.addAll(it) }, { ex -> it.onError(ex) })
     }
 
-    @SuppressLint("SimpleDateFormat")
-    private fun shoppingListsToCSV(lists: List<ShoppingList>) =
-            Single.create<List<ShoppingList>> {
-                val file = files.newExternalPublicFile("ShoppingLists", "csv")
-                val osw = OutputStreamWriter(FileOutputStream(file))
-                val csvW = CsvBeanWriter(osw, CsvPreference.STANDARD_PREFERENCE)
+    private fun shoppingListItemsToCSV(items: List<ExporterShoppingListItem>) {
 
-                val headers = arrayOf("id", "name", "activeListPrice", "cartPrice", "mode")
-                csvW.use {
-                    it.writeHeader(*headers)
-                    lists.forEach { list ->
-                        it.write(list, *headers)
-                    }
-                }
-
-                it.onSuccess(lists)
-            }.onErrorResumeNext {
-                logger.error("Unable to export shopping lists", it)
-                if (it is ExternalStorageUnavailableException) {
-                    return@onErrorResumeNext Single.error(Exception(
-                            resMan.getString(R.string.external_storage_unavailable)))
-                }
-                return@onErrorResumeNext Single.error(
-                        Exception(resMan.getString(R.string.error_writing_lists_to_csv)))
-            }
-
-    private fun shoppingListItemsToCSV(listName: String, items: List<ShoppingListItem>) {
-
-        val file = files.newExternalPublicFile(listName, "csv")
+        val file = files.newExternalPublicFile("list", "csv")
         val osw = OutputStreamWriter(FileOutputStream(file))
         val csvW = CsvBeanWriter(osw, CsvPreference.STANDARD_PREFERENCE)
 
-        val headers = arrayOf("categoryName", "itemName", "inList", "inCart", "brandName", "quantity",
-                "measuringUnit", "unitPrice")
+        val headers = arrayOf("listName", "itemName", "categoryName", "brandName", "quantity",
+                "measuringUnit", "unitPrice", "inList", "inCart")
         csvW.use {
             it.writeHeader(*headers)
-            items
-                    .map {
-                        ShoppingListItemInsert("", it.itemName(), it.inList, it.inCart,
-                                it.categoryName(), it.brandName(), it.quantity,
-                                it.measuringUnitName(), it.unitPrice())
-                    }
-                    .forEach { item ->
-                        it.write(item, *headers)
-                    }
+            items.forEach { item -> it.write(item, *headers) }
         }
     }
 
 }
+
+data class ExporterShoppingListItem(
+        val listName: String,
+        val itemName: String,
+        val categoryName: String,
+        val brandName: String,
+        val quantity: Int,
+        val measuringUnit: String,
+        val unitPrice: Float,
+        val inList: Boolean,
+        val inCart: Boolean
+)
