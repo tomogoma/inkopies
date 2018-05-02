@@ -11,4 +11,9 @@
         android:id="@+id/modePreparation"
         android:title="@string/plan_caps"
         app:showAsAction="ifRoom|withText" />
+
+    <item
+        android:id="@+id/export"
+        android:title="@string/export_list_title"
+        app:showAsAction="never|withText" />
 </menu>

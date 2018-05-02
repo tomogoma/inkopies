@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -26,11 +27,12 @@ import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 class ShoppingListActivity : InkopiesActivity() {
 
     private lateinit var viewModel: ShoppingListViewModel
+    private lateinit var views: ActivityShoppingListBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val views: ActivityShoppingListBinding = DataBindingUtil.setContentView(this,
+        views = DataBindingUtil.setContentView(this,
                 R.layout.activity_shopping_list)
 
         val vmFactory = (application as App).appComponent.provideShoppingListVMFactory()
@@ -60,11 +62,24 @@ class ShoppingListActivity : InkopiesActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.checkout -> viewModel.onCheckout()
+            R.id.export -> onExport()
             R.id.modePreparation -> viewModel.onChangeMode(ShoppingMode.PREPARATION)
             R.id.modeShopping -> viewModel.onChangeMode(ShoppingMode.SHOPPING)
             else -> return super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun onExport() {
+        if (haveWriteExtFilePerms()) {
+            viewModel.onExport()
+            return
+        }
+        if (shouldShowWriteExtFileRationale()) {
+            Snackbar.make(views.root, R.string.allow_storage_access_to_export, Snackbar.LENGTH_LONG)
+                    .show()
+        }
+        requestWriteExtFilePerm()
     }
 
     private fun prepRecyclerView(vs: ContentShoppingListBinding): ShoppingListAdapter {

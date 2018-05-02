@@ -5,4 +5,9 @@
         android:id="@+id/modeShopping"
         android:title="@string/go_shopping_caps"
         app:showAsAction="ifRoom|withText" />
+
+    <item
+        android:id="@+id/export"
+        android:title="@string/export_list_title"
+        app:showAsAction="never|withText" />
 </menu>

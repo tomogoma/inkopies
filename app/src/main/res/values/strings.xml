@@ -94,6 +94,7 @@
     <string name="error_writing_lists_to_csv">Unable to write shopping lists to CSV</string>
     <string name="error_writing_list_items_to_csv">Unable to export shopping list items</string>
     <string name="export_lists_title">Export Lists</string>
+    <string name="export_list_title">Export List</string>
     <string name="allow_storage_access_to_export">Allow the app to access your device storage in order to export</string>
     <string name="category">Category</string>
 </resources>

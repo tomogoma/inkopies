@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
+import ke.co.definition.inkopies.model.backup.Exporter
 import ke.co.definition.inkopies.model.shopping.*
 import ke.co.definition.inkopies.presentation.common.ResIDSnackbarData
 import ke.co.definition.inkopies.presentation.common.SnackbarData
@@ -23,6 +24,7 @@ import javax.inject.Named
  */
 class ShoppingListViewModel @Inject constructor(
         private val manager: ShoppingManager,
+        private val exporter: Exporter,
         @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
@@ -134,6 +136,18 @@ class ShoppingListViewModel @Inject constructor(
         itemDelete.value = item
     }
 
+    fun onExport() {
+        exporter.exportShoppingList(this.shoppingList.get()!!.sl)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe(this::onExportSuccessful, this::showError)
+    }
+
+    private fun onExportSuccessful() {
+        snackbarData.value = ResIDSnackbarData(R.string.export_successful,
+                Snackbar.LENGTH_LONG)
+    }
+
     private fun onShoppingListUpdated(list: VMShoppingList) {
         start(list)
         onCreateOptionsMenu()
@@ -199,12 +213,13 @@ class ShoppingListViewModel @Inject constructor(
 
     class Factory @Inject constructor(
             private val manager: ShoppingManager,
+            private val exporter: Exporter,
             @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
             @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return ShoppingListViewModel(manager, subscribeOnScheduler, observeOnScheduler) as T
+            return ShoppingListViewModel(manager, exporter, subscribeOnScheduler, observeOnScheduler) as T
         }
     }
 
