@@ -52,6 +52,21 @@ class Authenticator @Inject constructor(
         loggedInStatusObservers.remove(atPos)
     }
 
+
+    override fun getUserID(id: Identifier): Single<String> {
+        return authCl.getUserID(id)
+                .onErrorResumeNext {
+                    if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
+                        return@onErrorResumeNext Single.just("")
+                    }
+                    if (it is HttpException && it.code() == STATUS_BAD_REQUEST) {
+                        return@onErrorResumeNext Single.error(Exception(resMan.getString(R.string.invalid_email)))
+                    }
+                    return@onErrorResumeNext Single.error(handleServerErrors(logger, resMan, it,
+                            "get user ID"))
+                }
+    }
+
     override fun updateIdentifier(identifier: String): Single<VerifLogin> {
         return Single.create<ValidationResult>({
             val vr = validator.validateIdentifier(identifier)
@@ -200,13 +215,9 @@ class Authenticator @Inject constructor(
     }
 
     override fun glideURL(url: String): Single<GlideUrl> {
-        return getJWT()
-                .flatMap {
-                    Single.just(GlideUrl(url, LazyHeaders.Builder()
-                            .addHeader("x-api-key", API_KEY)
-                            .addHeader("Authorization", bearerToken(it.value))
-                            .build()))
-                }
+        return Single.just(GlideUrl(url, LazyHeaders.Builder()
+                .addHeader("x-api-key", API_KEY)
+                .build()))
     }
 
     override fun getUser(): Single<AuthUser> =

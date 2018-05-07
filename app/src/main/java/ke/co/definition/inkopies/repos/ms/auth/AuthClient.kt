@@ -11,6 +11,7 @@ import rx.Single
  * On 01/03/18.
  */
 interface AuthClient {
+    fun getUserID(id: Identifier): Single<String>
     fun registerManual(id: Identifier, secret: String): Single<Pair<AuthUser, String>>
     fun sendVerifyOTP(token: String, id: Identifier): Single<OTPStatus>
     fun login(id: Identifier, secret: String): Single<Pair<AuthUser, String>>

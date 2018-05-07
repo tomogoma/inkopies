@@ -10,6 +10,7 @@ import rx.Single
  * On 28/02/18.
  */
 interface Authable {
+    fun getUserID(id: Identifier): Single<String>
     fun isLoggedIn(): Single<Boolean>
     fun registerManual(id: Identifier, password: String): Single<VerifLogin>
     fun loginManual(id: Identifier, password: String): Completable

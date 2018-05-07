@@ -24,6 +24,11 @@ class RetrofitAuthClient @Inject constructor(@Named(AuthModule.MS) private val r
 
     private val authAPI by lazy { retrofit.create(AuthAPI::class.java) }
 
+    override fun getUserID(id: Identifier): Single<String> {
+        return authAPI.getUserID(IDRequest(id.type(), id.value()))
+                .map { it.userID }
+    }
+
     override fun updateIdentifier(userID: String, token: String, id: Identifier): Single<AuthUser> =
             authAPI.updateIdentifier(userID, token, FullIdentifierRequest(id.type(), id.value()))
                     .map { it.toAuthUser() }
@@ -65,6 +70,12 @@ interface AuthAPI {
             @Query("token") token: String,
             @Body body: IdentifierOnlyRequest
     ): Single<MSOTPStatus>
+
+    @POST("users/id")
+    @Headers("x-api-key: $API_KEY")
+    fun getUserID(
+            @Body body: IDRequest
+    ): Single<IDResponse>
 
     @POST("{loginType}/login")
     @Headers("x-api-key: $API_KEY")
@@ -135,6 +146,15 @@ data class AuthRegRequest(
         private val secret: String,
         private val userType: String = "individual",
         private val deviceID: String = UUID.randomUUID().toString()
+)
+
+data class IDRequest(
+        private val loginType: String,
+        private val identifier: String
+)
+
+data class IDResponse(
+        internal val userID: String
 )
 
 data class IdentifierOnlyRequest(private val identifier: String)
