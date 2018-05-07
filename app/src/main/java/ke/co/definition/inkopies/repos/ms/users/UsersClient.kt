@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.repos.ms.users
 import com.google.gson.annotations.SerializedName
 import ke.co.definition.inkopies.model.user.GenUserProfile
 import ke.co.definition.inkopies.model.user.Gender
+import ke.co.definition.inkopies.model.user.PubUserProfile
 import rx.Single
 import java.util.*
 
@@ -11,6 +12,7 @@ import java.util.*
  * On 19/03/18.
  */
 interface UsersClient {
+    fun getPubUser(userID: String): Single<PubUserProfile>
     fun getUser(token: String, userID: String): Single<GenUserProfile>
     fun updateUser(token: String, userID: String, name: String, gender: Gender): Single<GenUserProfile>
     fun updateAvatar(token: String, userID: String, newURI: String): Single<GenUserProfile>
@@ -33,6 +35,20 @@ data class MSUserProfile(
     fun toGenUserProfile() = GenUserProfile(
             name ?: "",
             gender ?: Gender.NONE,
+            avatarURL ?: ""
+    )
+}
+
+data class MSPubUserProfile(
+        @SerializedName("ID")
+        val id: String,
+        val name: String?,
+        val avatarURL: String?
+) {
+
+    fun toPubUserProfile() = PubUserProfile(
+            id,
+            name ?: "",
             avatarURL ?: ""
     )
 }

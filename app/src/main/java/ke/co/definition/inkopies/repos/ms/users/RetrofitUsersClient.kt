@@ -2,6 +2,7 @@ package ke.co.definition.inkopies.repos.ms.users
 
 import com.google.gson.annotations.SerializedName
 import ke.co.definition.inkopies.model.user.Gender
+import ke.co.definition.inkopies.model.user.PubUserProfile
 import ke.co.definition.inkopies.repos.ms.API_KEY
 import ke.co.definition.inkopies.repos.ms.bearerToken
 import ke.co.definition.inkopies.utils.injection.UserModule
@@ -19,8 +20,13 @@ class RetrofitUsersClient @Inject constructor(@Named(UserModule.MS) private val 
 
     private val usersMSAPI by lazy { retrofit.create(UsersMSAPI::class.java) }
 
+    override fun getPubUser(userID: String): Single<PubUserProfile> {
+        return usersMSAPI.getPubUser(userID)
+                .map { it.toPubUserProfile() }
+    }
+
     override fun getUser(token: String, userID: String) =
-            usersMSAPI.getUser(bearerToken(token), userID)
+            usersMSAPI.getUser(userID, bearerToken(token))
                     .map { it.toGenUserProfile() }
 
     override fun updateUser(token: String, userID: String, name: String, gender: Gender) =
@@ -40,9 +46,16 @@ interface UsersMSAPI {
     @GET("users/{userID}")
     @Headers("x-api-key: $API_KEY")
     fun getUser(
-            @Header("Authorization") bearerToken: String,
-            @Path("userID") userID: String
+            @Path("userID") userID: String,
+            @Header("Authorization") bearerToken: String? = null
     ): Single<MSUserProfile>
+
+    @GET("users/{userID}")
+    @Headers("x-api-key: $API_KEY")
+    fun getPubUser(
+            @Path("userID") userID: String,
+            @Header("Authorization") bearerToken: String? = null
+    ): Single<MSPubUserProfile>
 
     @PUT("users/{userID}")
     @Headers("x-api-key: $API_KEY")

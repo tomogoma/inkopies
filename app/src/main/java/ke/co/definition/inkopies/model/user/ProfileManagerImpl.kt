@@ -6,6 +6,7 @@ import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.model.auth.JWT
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
 import ke.co.definition.inkopies.repos.ms.handleAuthErrors
+import ke.co.definition.inkopies.repos.ms.handleServerErrors
 import ke.co.definition.inkopies.repos.ms.image.ImageClient
 import ke.co.definition.inkopies.repos.ms.users.UsersClient
 import ke.co.definition.inkopies.utils.logging.Logger
@@ -31,6 +32,18 @@ class ProfileManagerImpl @Inject constructor(
 
     init {
         logger.setTag(ProfileManagerImpl::class.java.name)
+    }
+
+
+    override fun getPubUser(id: String): Single<PubUserProfile> {
+        return usersCl.getPubUser(id)
+                .onErrorResumeNext {
+                    if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
+                        return@onErrorResumeNext Single.just(PubUserProfile(id))
+                    }
+                    return@onErrorResumeNext Single.error(handleServerErrors(logger, resMan, it,
+                            "get pub user"))
+                }
     }
 
     override fun getUser(): Single<UserProfile> {

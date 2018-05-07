@@ -25,6 +25,12 @@ data class GenUserProfile(
         val avatarURL: String = ""
 )
 
+data class PubUserProfile(
+        val id: String = "",
+        val name: String = "",
+        val avatarURL: String = ""
+)
+
 enum class Gender {
     NONE, MALE, FEMALE, OTHER
 }
