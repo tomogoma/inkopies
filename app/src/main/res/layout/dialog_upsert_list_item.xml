@@ -221,7 +221,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/delete"
-                android:visibility="@{vm.deletable ? View.VISIBLE : View.GONE}"
+                android:visibility="@{vm.deletable ? View.VISIBLE : View.INVISIBLE}"
                 app:layout_constraintBaseline_toBaselineOf="@id/submit"
                 app:layout_constraintEnd_toStartOf="@id/submit"
                 app:layout_constraintStart_toStartOf="@id/startMarginGuideline" />
