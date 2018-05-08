@@ -98,7 +98,7 @@ class ProfileViewModel @Inject constructor(
                         Snackbar.LENGTH_LONG)
                 return true
             }
-            val newPPicURL = (result?.data ?: return false).toString()
+            val newPPicURL = (result?.data ?: return false).path
             uploadProfileImage(newPPicURL)
             return true
         }
