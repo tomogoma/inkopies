@@ -244,6 +244,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/authCard"
+                        android:visibility="gone"
                         card_view:cardBackgroundColor="@android:color/transparent">
 
                         <android.support.constraint.ConstraintLayout
