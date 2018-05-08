@@ -7,17 +7,20 @@ import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.app.FragmentStatePagerAdapter
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityLoginBinding
 import ke.co.definition.inkopies.model.auth.VerifLogin
 import ke.co.definition.inkopies.presentation.common.InkopiesActivity
-import ke.co.definition.inkopies.presentation.common.replaceFrag
-import ke.co.definition.inkopies.presentation.common.replaceFragBackStack
 import ke.co.definition.inkopies.presentation.shopping.lists.ShoppingListsActivity
 import ke.co.definition.inkopies.presentation.verification.VerifyActivity
+import java.util.concurrent.atomic.AtomicBoolean
 
-class LoginActivity : InkopiesActivity(), LoginFragCoordinator {
+
+class LoginActivity : InkopiesActivity() {
 
     private var snackBar: Snackbar? = null
     private lateinit var loginVM: LoginViewModel
@@ -53,46 +56,53 @@ class LoginActivity : InkopiesActivity(), LoginFragCoordinator {
     }
 
     override fun onBackPressed() {
-        snackBar?.dismiss()
-        super.onBackPressed()
+        if (binding.content.pager.currentItem == 0) {
+            super.onBackPressed()
+            return
+        }
+        binding.content.pager.currentItem -= 1
     }
 
-    override fun openRegisterOptsFrag() {
-        snackBar?.dismiss()
-        replaceFragBackStack(R.id.frame, RegisterOptionsFragment())
+    private val isLaidOutViews: AtomicBoolean = AtomicBoolean(false)
+
+    private fun layoutViews() {
+        if (!isLaidOutViews.compareAndSet(false, true)) {
+            return
+        }
+        observeViews()
+        setSupportActionBar(binding.toolbar)
+        supportActionBar!!.title = getString(R.string.sign_in_title)
+        binding.content.pager.adapter = ScreenSlidePagerAdapter(supportFragmentManager)
     }
 
-    override fun openManualLoginFrag() {
-        snackBar?.dismiss()
-        replaceFragBackStack(R.id.frame, ManualLoginFragment())
-    }
-
-    override fun openManualRegisterFrag() {
-        snackBar?.dismiss()
-        replaceFragBackStack(R.id.frame, ManualRegisterFragment())
+    private fun observeViews() {
+        binding.content.next.setOnClickListener {
+            when (binding.content.pager.currentItem) {
+                ScreenSlidePagerAdapter.IDENTIFIER_PAGE -> binding.vm!!.onIdentifierSubmitted()
+                else -> binding.vm!!.onPasswordSubmitted()
+            }
+        }
     }
 
     private fun observeViewModel() {
 
         loginVM.loggedInStatus.observe(this, Observer { isLoggedIn: Boolean? ->
-            if (isLoggedIn == true) openLoggedInActivity() else openLoginOptsFrag()
+            if (isLoggedIn == true) openLoggedInActivity() else layoutViews()
         })
         loginVM.registeredStatus.observe(this, Observer { vl: VerifLogin? ->
             if (vl != null) {
                 VerifyActivity.startForResult(this, vl, REQ_CODE_VERIFY_REGISTRATION)
-            } else {
-                openRegisterOptsFrag()
             }
         })
-        loginVM.snackbarData.observe(this, Observer { snackBar = it?.show(binding.frame) })
+        loginVM.snackbarData.observe(this, Observer { snackBar = it?.show(binding.rootLayout) })
+        loginVM.showPasswordPage.observe(this, Observer { showPasswordPage() })
 
         observedLiveData.addAll(listOf(loginVM.loggedInStatus, loginVM.registeredStatus,
-                loginVM.snackbarData))
+                loginVM.snackbarData, loginVM.showPasswordPage))
     }
 
-    private fun openLoginOptsFrag() {
-        snackBar?.dismiss()
-        replaceFrag(binding.frame.id, LoginOptionsFragment())
+    private fun showPasswordPage() {
+        binding.content.pager.currentItem = ScreenSlidePagerAdapter.PASSWORD_PAGE
     }
 
     private fun openLoggedInActivity() {
@@ -106,6 +116,26 @@ class LoginActivity : InkopiesActivity(), LoginFragCoordinator {
         fun start(activity: InkopiesActivity) {
             val intent = Intent(activity, LoginActivity::class.java)
             activity.startActivity(intent)
+        }
+    }
+
+    private class ScreenSlidePagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
+
+        override fun getItem(position: Int): Fragment {
+            return when (position) {
+                IDENTIFIER_PAGE -> LoginIdentifierFragment()
+                else -> LoginPasswordFragment()
+            }
+        }
+
+        override fun getCount(): Int {
+            return NUM_PAGES
+        }
+
+        companion object {
+            const val IDENTIFIER_PAGE = 0
+            const val PASSWORD_PAGE = 1
+            const val NUM_PAGES = 2
         }
     }
 

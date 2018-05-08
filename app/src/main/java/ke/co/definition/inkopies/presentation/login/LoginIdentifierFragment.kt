@@ -3,21 +3,21 @@ package ke.co.definition.inkopies.presentation.login
 import android.arch.lifecycle.ViewModelProviders
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
-import ke.co.definition.inkopies.databinding.FragmentManualLoginBinding
+import ke.co.definition.inkopies.databinding.FragmentLoginIdentifierBinding
+import ke.co.definition.inkopies.presentation.common.InkopiesFragment
 
-class ManualLoginFragment : Fragment() {
+class LoginIdentifierFragment : InkopiesFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val binding = DataBindingUtil.inflate<FragmentManualLoginBinding>(inflater,
-                R.layout.fragment_manual_login, container, false)
+        val binding = DataBindingUtil.inflate<FragmentLoginIdentifierBinding>(inflater,
+                R.layout.fragment_login_identifier, container, false)
 
         val lvmFactory = (activity!!.application as App).appComponent.loginVMFactory()
         val lvm = ViewModelProviders.of(activity!!, lvmFactory).get(LoginViewModel::class.java)
@@ -28,15 +28,13 @@ class ManualLoginFragment : Fragment() {
         return binding.root
     }
 
-    private fun observeView(b: FragmentManualLoginBinding) {
-        b.submit.setOnClickListener({ b.vm!!.logInManual(context ?: return@setOnClickListener) })
-        b.manualLoginInputs.password.setOnEditorActionListener { _, actionID, _ ->
+    private fun observeView(b: FragmentLoginIdentifierBinding) {
+        b.identifier.setOnEditorActionListener { _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
-                b.vm!!.logInManual(context ?: return@setOnEditorActionListener true)
+                b.vm!!.onIdentifierSubmitted()
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false
         }
     }
-
 }

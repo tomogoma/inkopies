@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Inkopies</string>
-    <string name="title_activity_login">Login</string>
+    <string name="title_activity_login">Sign In</string>
     <string name="login_title">Log In</string>
     <string name="facebook_title">Facebook</string>
     <string name="gmail_title">Gmail</string>
@@ -101,4 +101,12 @@
     <string name="import_successful">Import completed successfully</string>
     <string name="error_reading_csv">Unable to read CSV file</string>
     <string name="csv_missing_itemName">missing itemName in CSV file</string>
+    <string name="sign_in_title">Sign In</string>
+    <string name="sign_in_to_get_the_most_out_of_inkopies">Sign in to get the most out of Inkopies.</string>
+    <string name="or_social_media">Or using social media</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="next">Next</string>
+    <string name="checking_ss">Checking %s</string>
+    <string name="set_your_password">Set your password</string>
+    <string name="invalid_email">The email provided is not valid</string>
 </resources>

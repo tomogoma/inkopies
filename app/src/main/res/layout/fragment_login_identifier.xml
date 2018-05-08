@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="ke.co.definition.inkopies.presentation.login.LoginViewModel" />
+    </data>
+
+    <!--Wrapping FrameLayout as ViewPager does not support layout_margins-->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:orientation="vertical"
+            tools:ignore="UselessParent">
+
+            <TextView
+                android:id="@+id/introText"
+                style="@style/DescriptionText.WithIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableStart="@mipmap/ic_launcher_round"
+                android:text="@string/sign_in_to_get_the_most_out_of_inkopies" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_identifier"
+                style="@style/TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:error="@{vm.identifierError}">
+
+                <EditText
+                    android:id="@+id/identifier"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/email_or_phone"
+                    android:imeOptions="actionDone"
+                    android:inputType="textEmailAddress"
+                    android:maxLines="1"
+                    android:text="@={vm.identifier}" />
+
+            </android.support.design.widget.TextInputLayout>
+
+            <!--<TextView-->
+            <!--android:id="@+id/alternativesIntro"-->
+            <!--style="@style/DescriptionText"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="@string/or_social_media" />-->
+
+            <!--<Button-->
+            <!--android:id="@+id/fb_login"-->
+            <!--style="@style/Button.Inkopies"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="@string/facebook_title" />-->
+
+            <!--<Button-->
+            <!--android:id="@+id/gmail_login"-->
+            <!--style="@style/Button.Inkopies"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="@string/gmail_title" />-->
+
+            <!--<Button-->
+            <!--android:id="@+id/manual_login"-->
+            <!--style="@style/Button.Inkopies"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="@string/email_phone_title" />-->
+
+        </LinearLayout>
+    </FrameLayout>
+</layout>

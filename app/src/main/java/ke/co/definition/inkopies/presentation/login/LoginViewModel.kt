@@ -2,16 +2,19 @@ package ke.co.definition.inkopies.presentation.login
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
-import android.content.Context
 import android.databinding.Observable
+import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
+import com.bumptech.glide.load.model.GlideUrl
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
+import ke.co.definition.inkopies.model.auth.Identifier
 import ke.co.definition.inkopies.model.auth.Validatable
-import ke.co.definition.inkopies.model.auth.ValidationResult
 import ke.co.definition.inkopies.model.auth.VerifLogin
+import ke.co.definition.inkopies.model.user.ProfileManager
+import ke.co.definition.inkopies.model.user.PubUserProfile
 import ke.co.definition.inkopies.presentation.common.ProgressData
 import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
@@ -28,6 +31,7 @@ import javax.inject.Named
  */
 class LoginViewModel @Inject constructor(
         private val auth: Authable,
+        private val user: ProfileManager,
         private val validation: Validatable,
         private val resMan: ResourceManager,
         @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
@@ -37,12 +41,18 @@ class LoginViewModel @Inject constructor(
     val loggedInStatus: SingleLiveEvent<Boolean> = SingleLiveEvent()
     val registeredStatus: SingleLiveEvent<VerifLogin> = SingleLiveEvent()
     val snackbarData: SingleLiveEvent<SnackbarData> = SingleLiveEvent()
+    val showPasswordPage: SingleLiveEvent<Unit> = SingleLiveEvent()
+    val avatarURL: SingleLiveEvent<GlideUrl> = SingleLiveEvent()
 
     val progressData: ObservableField<ProgressData> = ObservableField()
     val identifier: ObservableField<String> = ObservableField()
     val identifierError: ObservableField<String> = ObservableField()
     val password: ObservableField<String> = ObservableField()
     val passwordError: ObservableField<String> = ObservableField()
+    val pubUserProfile: ObservableField<PubUserProfile> = ObservableField()
+    val isRegistered: ObservableBoolean = ObservableBoolean()
+
+    private var identifierRes: Identifier? = null
 
     init {
         identifier.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
@@ -59,6 +69,45 @@ class LoginViewModel @Inject constructor(
         })
     }
 
+    fun onIdentifierSubmitted() {
+
+        val id = identifier.get()
+        val res = validation.validateIdentifier(id)
+        if (!res.isValid) {
+            identifierError.set(resMan.getString(R.string.error_bad_email_or_phone))
+            return
+        }
+        identifierRes = res.getIdentifier()
+
+        auth.getUserID(identifierRes!!)
+                .doOnSubscribe {
+                    val fmt = resMan.getString(R.string.checking_ss)
+                    val fmtArg = identifierRes!!.type().toLowerCase()
+                    progressData.set(ProgressData(String.format(fmt, fmtArg)))
+                }
+                .doOnUnsubscribe { progressData.set(ProgressData()) }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe(this::onFetchUserID, this::handleError)
+    }
+
+    fun onPasswordSubmitted() {
+        val pass = password.get()
+        if (!validation.isValidPassword(pass)) {
+            passwordError.set(resMan.getString(R.string.error_password_too_short))
+            return
+        }
+        if (isRegistered.get()) {
+            logInManual(identifierRes!!, pass!!)
+        } else {
+            registerManual(identifierRes!!, pass!!)
+        }
+    }
+
+    fun forgotPassword() {
+        TODO()
+    }
+
     fun checkLoggedIn() {
         auth.isLoggedIn()
                 .subscribeOn(subscribeOnScheduler)
@@ -69,68 +118,67 @@ class LoginViewModel @Inject constructor(
                 )
     }
 
-    fun logInManual(c: Context) {
-
-        val pass = password.get()
-        val id = identifier.get()
-        val valRes = validateLoginDetails(id, pass)
-        if (!valRes.isValid) {
-            return
-        }
-
-        auth.loginManual(valRes.getIdentifier(), pass!!)
-                .doOnSubscribe({ progressData.set(ProgressData(c.getString(R.string.loggin_in))) })
+    private fun logInManual(ider: Identifier, pass: String) {
+        auth.loginManual(ider, pass)
+                .doOnSubscribe({ progressData.set(ProgressData(resMan.getString(R.string.loggin_in))) })
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({
-                    loggedInStatus.value = true
-                }, {
-                    snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
-                })
+                .subscribe({ loggedInStatus.value = true }, this::handleError)
     }
 
-    fun registerManual() {
-
-        val pass = password.get()
-        val id = identifier.get()
-        val valRes = validateLoginDetails(id, pass)
-        if (!valRes.isValid) {
-            return
-        }
-
-        auth.registerManual(valRes.getIdentifier(), pass!!)
+    private fun registerManual(ider: Identifier, pass: String) {
+        auth.registerManual(ider, pass)
                 .doOnSubscribe({ progressData.set(ProgressData(resMan.getString(R.string.registering))) })
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({
-                    registeredStatus.value = it
-                }, {
-                    snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_INDEFINITE)
-                })
+                .subscribe({ registeredStatus.value = it }, this::handleErrorIndefinite)
     }
 
-    private fun validateLoginDetails(id: String?, pass: String?): ValidationResult {
-
-        var result: ValidationResult? = null
-
-        if (!validation.isValidPassword(pass)) {
-            passwordError.set(resMan.getString(R.string.error_password_too_short))
-            result = ValidationResult.Invalid()
-        }
-
-        val idRes = validation.validateIdentifier(id)
-        return if (idRes.isValid) {
-            if (result == null) idRes else result
+    private fun onFetchUserID(userID: String) {
+        if (userID.isEmpty()) {
+            isRegistered.set(false)
+            pubUserProfile.set(null)
         } else {
-            identifierError.set(resMan.getString(R.string.error_bad_email_or_phone))
-            ValidationResult.Invalid()
+            isRegistered.set(true)
+            fetchPubUser(userID)
         }
+        avatarURL.value = null
+        showPasswordPage.call()
+    }
+
+    private fun fetchPubUser(userID: String) {
+        user.getPubUser(userID)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe(this::onFetchPubUser, this::handleError)
+    }
+
+    private fun onFetchPubUser(pp: PubUserProfile) {
+        pubUserProfile.set(pp)
+        loadAvatarURL()
+    }
+
+    private fun loadAvatarURL() {
+        val url = pubUserProfile.get()?.avatarURL ?: return
+        auth.glideURL(url)
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .subscribe({ avatarURL.value = it }, { /* no-op */ })
+    }
+
+    private fun handleError(ex: Throwable) {
+        snackbarData.value = TextSnackbarData(ex.message!!, Snackbar.LENGTH_LONG)
+    }
+
+    private fun handleErrorIndefinite(ex: Throwable) {
+        snackbarData.value = TextSnackbarData(ex.message!!, Snackbar.LENGTH_INDEFINITE)
     }
 
     class Factory @Inject constructor(
             private val auth: Authable,
+            private val user: ProfileManager,
             private val validation: Validatable,
             private val resMan: ResourceManager,
             @Named(Dagger2Module.SCHEDULER_IO) private val subscribeOnScheduler: Scheduler,
@@ -138,7 +186,7 @@ class LoginViewModel @Inject constructor(
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return LoginViewModel(auth, validation, resMan, subscribeOnScheduler,
+            return LoginViewModel(auth, user, validation, resMan, subscribeOnScheduler,
                     observeOnScheduler) as T
         }
 

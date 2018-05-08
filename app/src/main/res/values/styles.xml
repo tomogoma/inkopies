@@ -13,6 +13,36 @@
         <item name="windowActionModeOverlay">true</item>
     </style>
 
+    <style name="IdentifierText">
+        <item name="android:textSize">@dimen/text_size_normal</item>
+        <item name="android:layout_marginTop">@dimen/space_xsmall</item>
+        <item name="android:layout_marginBottom">@dimen/space_xsmall</item>
+    </style>
+
+    <style name="DescriptionText" parent="IdentifierText">
+        <item name="android:maxWidth">160dp</item>
+    </style>
+
+    <style name="DescriptionText.WithIcon">
+        <item name="android:drawablePadding">@dimen/space_small</item>
+        <item name="android:maxWidth">240dp</item>
+        <item name="android:gravity">bottom</item>
+    </style>
+
+    <style name="Link" parent="DescriptionText">
+        <item name="android:textColor">@color/colorLink</item>
+    </style>
+
+    <style name="TextInputLayout" parent="Widget.Design.TextInputLayout">
+        <item name="android:layout_marginTop">@dimen/space_xsmall</item>
+        <item name="android:layout_marginBottom">@dimen/space_xsmall</item>
+    </style>
+
+    <style name="Button.Inkopies">
+        <item name="android:layout_marginTop">@dimen/space_xsmall</item>
+        <item name="android:layout_marginBottom">@dimen/space_xsmall</item>
+    </style>
+
     <style name="Dialog" parent="Theme.AppCompat.Light.Dialog.MinWidth">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
