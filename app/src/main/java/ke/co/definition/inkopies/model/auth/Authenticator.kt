@@ -215,9 +215,18 @@ class Authenticator @Inject constructor(
     }
 
     override fun glideURL(url: String): Single<GlideUrl> {
-        return Single.just(GlideUrl(url, LazyHeaders.Builder()
-                .addHeader("x-api-key", API_KEY)
-                .build()))
+        return Single
+                .create<Unit> {
+                    if (url.isEmpty()) {
+                        it.onError(Exception("no avatar URL was provided"))
+                    }
+                    it.onSuccess(null)
+                }
+                .map {
+                    GlideUrl(url, LazyHeaders.Builder()
+                            .addHeader("x-api-key", API_KEY)
+                            .build())
+                }
     }
 
     override fun getUser(): Single<AuthUser> =
