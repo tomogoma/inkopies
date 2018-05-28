@@ -13,242 +13,242 @@
             type="ke.co.definition.inkopies.presentation.shopping.list.UpsertListItemViewModel" />
     </data>
 
-    <ScrollView
-        android:id="@+id/layoutRoot"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/contentRoot"
-            android:layout_width="wrap_content"
+        <ScrollView
+            android:id="@+id/layoutRoot"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/space_normal"
-                android:gravity="center"
-                android:text="@{vm.title}"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="@dimen/text_size_large"
-                app:layout_constraintBottom_toTopOf="@id/categoryNameLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed"
-                tools:text="New Item" />
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/categoryNameLayout"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_small"
-                android:layout_marginEnd="@dimen/space_normal"
-                android:layout_marginStart="@dimen/space_normal"
-                app:error="@{vm.categoryNameError}"
-                app:layout_constraintBottom_toTopOf="@id/brandNameLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/title">
-
-                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
-                    android:id="@+id/categoryName"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/category"
-                    android:imeOptions="actionNext"
-                    android:inputType="textCapWords"
-                    android:maxLines="1"
-                    android:text="@={vm.categoryName}" />
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/brandNameLayout"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_small"
-                android:layout_marginEnd="@dimen/space_normal"
-                android:layout_marginStart="@dimen/space_normal"
-                app:error="@{vm.brandNameError}"
-                app:layout_constraintBottom_toTopOf="@id/itemNameLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/categoryNameLayout">
-
-                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
-                    android:id="@+id/brandName"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/brand"
-                    android:imeOptions="actionNext"
-                    android:inputType="textCapWords"
-                    android:maxLines="1"
-                    android:text="@={vm.brandName}" />
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/itemNameLayout"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_small"
-                android:layout_marginEnd="@dimen/space_normal"
-                android:layout_marginStart="@dimen/space_normal"
-                app:error="@{vm.itemNameError}"
-                app:layout_constraintBottom_toTopOf="@id/quantityLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/brandNameLayout">
-
-                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
-                    android:id="@+id/itemName"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/name_required_label"
-                    android:imeOptions="actionNext"
-                    android:inputType="textCapWords"
-                    android:maxLines="1"
-                    android:text="@={vm.itemName}" />
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/quantityLayout"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_small"
-                android:layout_marginEnd="@dimen/space_normal"
-                android:layout_marginStart="@dimen/space_normal"
-                app:error="@{vm.quantityError}"
-                app:layout_constraintBottom_toTopOf="@id/measuringUnitLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/itemNameLayout">
-
-                <EditText
-                    android:id="@+id/quantity"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/quantity"
-                    android:imeOptions="actionNext"
-                    android:inputType="number"
-                    android:maxLines="1"
-                    android:text="@={vm.quantity}" />
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/measuringUnitLayout"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_small"
-                android:layout_marginEnd="@dimen/space_normal"
-                android:layout_marginStart="@dimen/space_normal"
-                app:error="@{vm.measuringUnitError}"
-                app:layout_constraintBottom_toTopOf="@id/unitPriceLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/quantityLayout">
-
-                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
-                    android:id="@+id/measuringUnit"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/measuring_unit_title"
-                    android:imeOptions="actionNext"
-                    android:inputType="textCapWords"
-                    android:maxLines="1"
-                    android:text="@={vm.measuringUnit}" />
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/unitPriceLayout"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_small"
-                android:layout_marginEnd="@dimen/space_normal"
-                android:layout_marginStart="@dimen/space_normal"
-                app:error="@{vm.unitPriceError}"
-                app:layout_constraintBottom_toTopOf="@id/checked"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/measuringUnitLayout">
-
-                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
-                    android:id="@+id/unitPrice"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/price"
-                    android:imeOptions="actionDone"
-                    android:inputType="numberDecimal"
-                    android:maxLines="1"
-                    android:text="@={vm.unitPrice}" />
-            </android.support.design.widget.TextInputLayout>
-
-            <CheckBox
-                android:id="@+id/checked"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_normal"
-                android:checked="@={vm.checked}"
-                android:text="@{vm.checkedText}"
-                app:layout_constraintBottom_toTopOf="@+id/addAnother"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/unitPriceLayout"
-                tools:text="In List" />
-
-            <CheckBox
-                android:id="@+id/addAnother"
-                android:layout_width="@dimen/input_width"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_normal"
-                android:checked="@={vm.addAnother}"
-                android:text="@string/add_another"
-                android:visibility="@{vm.deletable ? View.GONE : View.VISIBLE}"
-                app:layout_constraintBottom_toTopOf="@+id/submit"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/checked" />
-
-            <android.support.constraint.Guideline
-                android:id="@+id/startMarginGuideline"
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/contentRoot"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_begin="@dimen/space_normal" />
+                android:layout_height="wrap_content">
 
-            <Button
-                android:id="@+id/delete"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/delete"
-                android:visibility="@{vm.deletable ? View.VISIBLE : View.INVISIBLE}"
-                app:layout_constraintBaseline_toBaselineOf="@id/submit"
-                app:layout_constraintEnd_toStartOf="@id/submit"
-                app:layout_constraintStart_toStartOf="@id/startMarginGuideline" />
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/space_normal"
+                    android:gravity="center"
+                    android:text="@{vm.title}"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="@dimen/text_size_large"
+                    app:layout_constraintBottom_toTopOf="@id/categoryNameLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_chainStyle="packed"
+                    tools:text="New Item" />
 
-            <Button
-                android:id="@+id/submit"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_normal"
-                android:layout_marginEnd="@dimen/space_normal"
-                android:text="@string/submit"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/delete"
-                app:layout_constraintTop_toBottomOf="@id/addAnother" />
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/categoryNameLayout"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_small"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:layout_marginStart="@dimen/space_normal"
+                    app:error="@{vm.categoryNameError}"
+                    app:layout_constraintBottom_toTopOf="@id/brandNameLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/title">
 
-            <include
-                android:id="@+id/overlayProgress"
-                layout="@layout/progress_area"
-                app:elevation="4dp"
-                app:layout_constraintBottom_toBottomOf="@id/delete"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/brandNameLayout"
-                bind:data="@{vm.overlayProgress}"
-                tools:visibility="gone" />
-        </android.support.constraint.ConstraintLayout>
-    </ScrollView>
+                    <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                        android:id="@+id/categoryName"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/category"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:text="@={vm.categoryName}" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/brandNameLayout"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_small"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:layout_marginStart="@dimen/space_normal"
+                    app:error="@{vm.brandNameError}"
+                    app:layout_constraintBottom_toTopOf="@id/itemNameLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/categoryNameLayout">
+
+                    <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                        android:id="@+id/brandName"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/brand"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:text="@={vm.brandName}" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/itemNameLayout"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_small"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:layout_marginStart="@dimen/space_normal"
+                    app:error="@{vm.itemNameError}"
+                    app:layout_constraintBottom_toTopOf="@id/quantityLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/brandNameLayout">
+
+                    <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                        android:id="@+id/itemName"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/name_required_label"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:text="@={vm.itemName}" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/quantityLayout"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_small"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:layout_marginStart="@dimen/space_normal"
+                    app:error="@{vm.quantityError}"
+                    app:layout_constraintBottom_toTopOf="@id/measuringUnitLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/itemNameLayout">
+
+                    <EditText
+                        android:id="@+id/quantity"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/quantity"
+                        android:imeOptions="actionNext"
+                        android:inputType="number"
+                        android:maxLines="1"
+                        android:text="@={vm.quantity}" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/measuringUnitLayout"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_small"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:layout_marginStart="@dimen/space_normal"
+                    app:error="@{vm.measuringUnitError}"
+                    app:layout_constraintBottom_toTopOf="@id/unitPriceLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/quantityLayout">
+
+                    <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                        android:id="@+id/measuringUnit"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/measuring_unit_title"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:text="@={vm.measuringUnit}" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/unitPriceLayout"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_small"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:layout_marginStart="@dimen/space_normal"
+                    app:error="@{vm.unitPriceError}"
+                    app:layout_constraintBottom_toTopOf="@id/checked"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/measuringUnitLayout">
+
+                    <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                        android:id="@+id/unitPrice"
+                        android:layout_width="@dimen/input_width"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/price"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal"
+                        android:maxLines="1"
+                        android:text="@={vm.unitPrice}" />
+                </android.support.design.widget.TextInputLayout>
+
+                <CheckBox
+                    android:id="@+id/checked"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_normal"
+                    android:checked="@={vm.checked}"
+                    android:text="@{vm.checkedText}"
+                    app:layout_constraintBottom_toTopOf="@+id/addAnother"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/unitPriceLayout"
+                    tools:text="In List" />
+
+                <CheckBox
+                    android:id="@+id/addAnother"
+                    android:layout_width="@dimen/input_width"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_normal"
+                    android:checked="@={vm.addAnother}"
+                    android:text="@string/add_another"
+                    android:visibility="@{vm.deletable ? View.GONE : View.VISIBLE}"
+                    app:layout_constraintBottom_toTopOf="@+id/submit"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/checked" />
+
+                <android.support.constraint.Guideline
+                    android:id="@+id/startMarginGuideline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_begin="@dimen/space_normal" />
+
+                <Button
+                    android:id="@+id/delete"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/delete"
+                    android:visibility="@{vm.deletable ? View.VISIBLE : View.INVISIBLE}"
+                    app:layout_constraintBaseline_toBaselineOf="@id/submit"
+                    app:layout_constraintEnd_toStartOf="@id/submit"
+                    app:layout_constraintStart_toStartOf="@id/startMarginGuideline" />
+
+                <Button
+                    android:id="@+id/submit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_normal"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:text="@string/submit"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/delete"
+                    app:layout_constraintTop_toBottomOf="@id/addAnother" />
+            </android.support.constraint.ConstraintLayout>
+        </ScrollView>
+
+        <include
+            android:id="@+id/overlayProgress"
+            layout="@layout/progress_area"
+            bind:data="@{vm.overlayProgress}"
+            tools:visibility="visible" />
+    </FrameLayout>
 
 </layout>
