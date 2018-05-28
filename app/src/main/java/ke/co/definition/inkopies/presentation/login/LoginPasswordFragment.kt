@@ -14,6 +14,7 @@ import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.FragmentLoginPasswordBinding
 import ke.co.definition.inkopies.presentation.common.InkopiesFragment
 import ke.co.definition.inkopies.presentation.common.loadProfilePic
+import ke.co.definition.inkopies.presentation.common.newRequestListener
 
 class LoginPasswordFragment : InkopiesFragment() {
 
@@ -39,7 +40,10 @@ class LoginPasswordFragment : InkopiesFragment() {
             if (it == null) {
                 b.avatar.setImageResource(R.drawable.avatar)
             } else {
-                (activity as AppCompatActivity).loadProfilePic(it, b.avatar, null)
+                b.vm!!.progressProfImg.set(true)
+                (activity as AppCompatActivity)
+                        .loadProfilePic(it, b.avatar,
+                                newRequestListener { b.vm!!.progressProfImg.set(false) })
             }
         })
         observedLiveData.add(b.vm!!.avatarURL)

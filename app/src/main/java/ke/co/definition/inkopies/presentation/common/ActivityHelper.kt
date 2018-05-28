@@ -43,6 +43,5 @@ fun AppCompatActivity.loadPic(url: GlideUrl, v: ImageView, l: RequestListener<Dr
             .load(url)
             .listener(l)
             .centerCrop()
-            .error(R.drawable.avatar)
             .into(v)
 }

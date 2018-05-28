@@ -51,6 +51,7 @@ class LoginViewModel @Inject constructor(
     val passwordError: ObservableField<String> = ObservableField()
     val pubUserProfile: ObservableField<PubUserProfile> = ObservableField()
     val isRegistered: ObservableBoolean = ObservableBoolean()
+    val progressProfImg: ObservableBoolean = ObservableBoolean()
 
     private var identifierRes: Identifier? = null
 
