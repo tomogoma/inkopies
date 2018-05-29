@@ -5,6 +5,7 @@ import ke.co.definition.inkopies.presentation.common.InkopiesActivityViewModel
 import ke.co.definition.inkopies.presentation.login.LoginViewModel
 import ke.co.definition.inkopies.presentation.profile.GeneralProfileViewModel
 import ke.co.definition.inkopies.presentation.profile.ProfileViewModel
+import ke.co.definition.inkopies.presentation.shopping.checkout.CheckoutVM
 import ke.co.definition.inkopies.presentation.shopping.list.ShoppingListViewModel
 import ke.co.definition.inkopies.presentation.shopping.list.UpsertListItemViewModel
 import ke.co.definition.inkopies.presentation.shopping.lists.NewShoppingListViewModel
@@ -28,7 +29,9 @@ import javax.inject.Singleton
     LoggingModule::class,
     ShoppingModule::class,
     FirebaseModule::class,
-    ExportModule::class
+    ExportModule::class,
+    FormattingModule::class,
+    CheckoutModule::class
 ])
 interface AppComponent {
     fun loginVMFactory(): LoginViewModel.Factory
@@ -41,5 +44,6 @@ interface AppComponent {
     fun provideShoppingListVMFactory(): ShoppingListViewModel.Factory
     fun provideUpsertListItemVMFactory(): UpsertListItemViewModel.Factory
     fun provideInkopiesActivityVMFactory(): InkopiesActivityViewModel.Factory
+    fun provideCheckoutVMFactory(): CheckoutVM.Factory
     fun instantiateLogging(): Logger
 }

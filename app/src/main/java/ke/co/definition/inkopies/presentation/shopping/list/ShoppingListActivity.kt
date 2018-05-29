@@ -21,6 +21,7 @@ import ke.co.definition.inkopies.databinding.ContentShoppingListBinding
 import ke.co.definition.inkopies.databinding.ItemShoppingListBinding
 import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.presentation.common.InkopiesActivity
+import ke.co.definition.inkopies.presentation.shopping.checkout.CheckoutDialogFrag
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 
@@ -61,13 +62,17 @@ class ShoppingListActivity : InkopiesActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
-            R.id.checkout -> viewModel.onCheckout()
+            R.id.checkout -> onCheckout()
             R.id.export -> onExport()
             R.id.modePreparation -> viewModel.onChangeMode(ShoppingMode.PREPARATION)
             R.id.modeShopping -> viewModel.onChangeMode(ShoppingMode.SHOPPING)
             else -> return super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun onCheckout() {
+        CheckoutDialogFrag.start(supportFragmentManager, viewModel.shoppingList.get()!!.id)
     }
 
     private fun onExport() {

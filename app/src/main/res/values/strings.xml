@@ -109,4 +109,9 @@
     <string name="checking_ss">Checking %s</string>
     <string name="set_your_password">Set your password</string>
     <string name="invalid_email">The email provided is not valid</string>
+    <string name="title_activity_checkout">Checkout</string>
+    <string name="store">Store</string>
+    <string name="branch">Branch</string>
+    <string name="checkout_date_title">Checkout Date</string>
+    <string name="checking_out">Checking out...</string>
 </resources>

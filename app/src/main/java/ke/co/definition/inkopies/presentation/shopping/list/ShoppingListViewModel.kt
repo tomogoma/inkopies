@@ -2,6 +2,7 @@ package ke.co.definition.inkopies.presentation.shopping.list
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
+import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import ke.co.definition.inkopies.R
@@ -30,10 +31,10 @@ class ShoppingListViewModel @Inject constructor(
 ) : ViewModel() {
 
     val shoppingList = ObservableField<VMShoppingList>()
-    val showItems = ObservableField<Boolean>()
-    val showNoItemsTxt = ObservableField<Boolean>()
-    val showFullProgress = ObservableField<Boolean>()
-    val showNextPageLoadingProgress = ObservableField<Boolean>()
+    val showItems = ObservableBoolean()
+    val showNoItemsTxt = ObservableBoolean()
+    val showFullProgress = ObservableBoolean()
+    val showNextPageLoadingProgress = ObservableBoolean()
 
     val snackbarData = SingleLiveEvent<SnackbarData>()
     val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
@@ -71,11 +72,6 @@ class ShoppingListViewModel @Inject constructor(
             ShoppingMode.PREPARATION -> R.menu.planning_main_menu
             ShoppingMode.SHOPPING -> R.menu.shopping_main_menu
         }
-    }
-
-    fun onCheckout() {
-        // TODO("Perform checkout")
-        snackbarData.value = ResIDSnackbarData(R.string.feature_not_implemented, Snackbar.LENGTH_LONG)
     }
 
     fun onChangeMode(toMode: ShoppingMode) {

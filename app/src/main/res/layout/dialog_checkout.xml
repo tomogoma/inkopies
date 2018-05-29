@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="ke.co.definition.inkopies.presentation.shopping.checkout.CheckoutVM" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/contentRoot"
+            style="@style/Container">
+
+            <TextView
+                android:id="@+id/title"
+                style="@style/DialogTitle"
+                android:text="@string/title_activity_checkout"
+                app:layout_constraintBottom_toTopOf="@id/storeNameLayout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0"
+                app:layout_constraintVertical_chainStyle="packed" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/storeNameLayout"
+                style="@style/TextInputLayout"
+                app:error="@{vm.storeNameError}"
+                app:layout_constraintBottom_toTopOf="@id/branchNameLayout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/title">
+
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                    android:id="@+id/storeName"
+                    style="@style/NameInput"
+                    android:hint="@string/store"
+                    android:text="@={vm.storeName}" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/branchNameLayout"
+                style="@style/TextInputLayout"
+                app:error="@{vm.branchNameError}"
+                app:layout_constraintBottom_toTopOf="@id/checkoutDateLayout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/storeNameLayout">
+
+                <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
+                    android:id="@+id/branchName"
+                    style="@style/NameInput.LastEntry"
+                    android:hint="@string/branch"
+                    android:text="@={vm.branchName}" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/checkoutDateLayout"
+                style="@style/TextInputLayout"
+                app:error="@{vm.checkoutDateError}"
+                app:layout_constraintBottom_toTopOf="@id/submit"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/branchNameLayout">
+
+                <EditText
+                    android:id="@+id/checkoutDate"
+                    style="@style/NameInput.LastEntry"
+                    android:focusable="false"
+                    android:hint="@string/checkout_date_title"
+                    android:inputType="datetime"
+                    android:text="@{vm.checkoutDate}" />
+            </android.support.design.widget.TextInputLayout>
+
+            <View
+                android:id="@+id/checkoutDateOverlay"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="@id/checkoutDateLayout"
+                app:layout_constraintEnd_toEndOf="@id/checkoutDateLayout"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toStartOf="@id/checkoutDateLayout"
+                app:layout_constraintTop_toTopOf="@id/checkoutDateLayout"
+                app:layout_constraintVertical_weight="1" />
+
+            <Button
+                android:id="@+id/submit"
+                style="@style/Button.Submit"
+                android:text="@string/submit"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/checkoutDateLayout" />
+
+            <include
+                android:id="@+id/progressArea"
+                layout="@layout/progress_area"
+                bind:data="@{vm.progressData}"
+                tools:visibility="gone" />
+
+        </android.support.constraint.ConstraintLayout>
+    </FrameLayout>
+</layout>
