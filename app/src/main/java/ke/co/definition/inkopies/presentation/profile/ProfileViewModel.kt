@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.presentation.profile
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.content.Intent
+import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
@@ -45,9 +46,9 @@ class ProfileViewModel @Inject constructor(
     val userProfile = ObservableField<UserProfile>()
     val googleLinkText = ObservableField<String>()
     val fbLinkText = ObservableField<String>()
-    val progressTopBar = ObservableField<Boolean>()
-    val progressProfImg = ObservableField<Boolean>()
-    val enlargePPic = ObservableField<Boolean>(false)
+    val progressTopBar = ObservableBoolean()
+    val progressProfImg = ObservableBoolean()
+    val enlargePPic = ObservableBoolean(false)
 
     fun start() {
         profMngr.getUser()

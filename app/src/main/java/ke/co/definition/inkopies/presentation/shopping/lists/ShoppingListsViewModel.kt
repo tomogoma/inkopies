@@ -3,7 +3,7 @@ package ke.co.definition.inkopies.presentation.shopping.lists
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
-import android.databinding.ObservableField
+import android.databinding.ObservableBoolean
 import android.net.Uri
 import android.support.annotation.UiThread
 import android.support.design.widget.Snackbar
@@ -31,9 +31,9 @@ class ShoppingListsViewModel @Inject constructor(
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
 
-    val progressShoppingLists = ObservableField<Boolean>()
-    val showNoShoppingListsText = ObservableField<Boolean>()
-    val showShoppingLists = ObservableField<Boolean>()
+    val progressShoppingLists = ObservableBoolean()
+    val showNoShoppingListsText = ObservableBoolean()
+    val showShoppingLists = ObservableBoolean()
 
     val progressNextPage = SingleLiveEvent<Boolean>()
     val snackbarData = SingleLiveEvent<SnackbarData>()

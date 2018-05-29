@@ -1,6 +1,6 @@
 package ke.co.definition.inkopies.presentation.shopping.common
 
-import android.databinding.ObservableField
+import android.databinding.ObservableBoolean
 import ke.co.definition.inkopies.model.shopping.ShoppingList
 import ke.co.definition.inkopies.model.shopping.ShoppingListItem
 import ke.co.definition.inkopies.model.shopping.ShoppingListItemUpdate
@@ -40,7 +40,7 @@ class VMShoppingList(val sl: ShoppingList) {
 
 class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
 
-    var isUpdating = ObservableField<Boolean>(false)
+    var isUpdating = ObservableBoolean(false)
     val id: String = sli.id
     val inList: Boolean = sli.inList
     val inCart: Boolean = sli.inCart
