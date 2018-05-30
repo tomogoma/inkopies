@@ -57,10 +57,10 @@ class CheckoutVM @Inject constructor(
 
     internal fun onSubmit() {
         model.checkout(slID, branchName.value, storeName.value, date)
+                .observeOn(observeOnScheduler)
                 .doOnSubscribe(this::showCheckoutProgress)
                 .doOnUnsubscribe(this::hideProgress)
                 .subscribeOn(subscribeOnScheduler)
-                .observeOn(observeOnScheduler)
                 .subscribe(this::onCheckoutComplete, this::onError)
     }
 

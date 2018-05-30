@@ -56,7 +56,8 @@ class CheckoutDialogFrag : SLMDialogFragment() {
 
     private fun observeViewModel(v: DialogCheckoutBinding) {
         v.vm!!.snackbarData.observe(this, Observer { it?.show(v.root) })
-        observedLiveData.add(v.vm!!.snackbarData)
+        v.vm!!.onCompleteEvent.observe(this, Observer { dismiss() })
+        observedLiveData.addAll(listOf(v.vm!!.snackbarData, v.vm!!.onCompleteEvent))
     }
 
     private fun observeViews(v: DialogCheckoutBinding) {

@@ -100,12 +100,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/checkoutDateLayout" />
 
-            <include
-                android:id="@+id/progressArea"
-                layout="@layout/progress_area"
-                bind:data="@{vm.progressData}"
-                tools:visibility="gone" />
-
         </android.support.constraint.ConstraintLayout>
+
+        <include
+            android:id="@+id/progressArea"
+            layout="@layout/progress_area"
+            bind:data="@{vm.progressData}"
+            tools:visibility="visible" />
     </FrameLayout>
 </layout>
