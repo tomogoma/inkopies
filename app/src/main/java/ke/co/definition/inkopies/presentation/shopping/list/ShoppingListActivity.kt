@@ -29,6 +29,7 @@ class ShoppingListActivity : InkopiesActivity() {
 
     private lateinit var viewModel: ShoppingListViewModel
     private lateinit var views: ActivityShoppingListBinding
+    private var menu: Menu? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,11 +53,13 @@ class ShoppingListActivity : InkopiesActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        this.menu = menu
         viewModel.onCreateOptionsMenu()
         viewModel.menuRes.observe(this, Observer {
             menu?.clear()
             menuInflater.inflate(it!!, menu)
         })
+        observedLiveData.add(viewModel.menuRes)
         return true
     }
 
@@ -126,13 +129,26 @@ class ShoppingListActivity : InkopiesActivity() {
 
     private fun observeViewModel(vm: ShoppingListViewModel, vs: ActivityShoppingListBinding, va: ShoppingListAdapter) {
         vm.snackbarData.observe(this, Observer { it?.show(vs.root) })
-        vm.nextPage.observe(this, Observer { va.addItems(it ?: return@Observer) })
+        vm.nextPage.observe(this, Observer {
+            va.addItems(it ?: return@Observer)
+            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
+        })
         vm.itemUpdate.observe(this, Observer {
             va.updateItem(it ?: return@Observer)
+            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
         })
-        vm.newItem.observe(this, Observer { va.add(it ?: return@Observer) })
-        vm.itemDelete.observe(this, Observer { va.removeItem(it ?: return@Observer) })
-        vm.clearList.observe(this, Observer { if (it == true) va.clear() })
+        vm.newItem.observe(this, Observer {
+            va.add(it ?: return@Observer)
+            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
+        })
+        vm.itemDelete.observe(this, Observer {
+            va.removeItem(it ?: return@Observer)
+            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
+        })
+        vm.clearList.observe(this, Observer {
+            if (it == true) va.clear()
+            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
+        })
 
         observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.nextPage, vm.itemUpdate,
                 vm.newItem, vm.itemDelete, vm.clearList))
@@ -272,6 +288,10 @@ class ShoppingListActivity : InkopiesActivity() {
                 items.add(newPos, item)
                 notifyItemInserted(newPos)
             }
+        }
+
+        fun hasCartedItem(): Boolean {
+            return items.indexOfFirst { it.inCart } != -1
         }
 
         private fun calculateNewPos(item: VMShoppingListItem): Int {
