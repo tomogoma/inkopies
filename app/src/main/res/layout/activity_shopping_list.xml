@@ -28,7 +28,8 @@
                 android:layout_height="wrap_content"
                 app:expandedTitleGravity="top"
                 app:expandedTitleMargin="@dimen/space_normal"
-                app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+                app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+                app:titleEnabled="false">
 
                 <android.support.v7.widget.Toolbar
                     android:id="@+id/toolbar"

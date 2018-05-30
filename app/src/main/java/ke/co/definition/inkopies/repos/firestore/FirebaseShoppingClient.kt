@@ -3,6 +3,8 @@ package ke.co.definition.inkopies.repos.firestore
 import com.google.firebase.firestore.*
 import ke.co.definition.inkopies.model.auth.JWTHelper
 import ke.co.definition.inkopies.model.shopping.*
+import ke.co.definition.inkopies.model.stores.Store
+import ke.co.definition.inkopies.model.stores.StoreBranch
 import ke.co.definition.inkopies.repos.ms.STATUS_CONFLICT
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
 import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
@@ -15,6 +17,7 @@ import rx.Completable
 import rx.Observable
 import rx.Single
 import java.lang.Exception
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -27,6 +30,8 @@ class FirebaseShoppingClient @Inject constructor(
         private val db: FirebaseFirestore
 ) : ShoppingClient {
 
+    private val collStores = db.collection(COLLECTION_STORES)
+    private val collStoreBranches = db.collection(COLLECTION_STORE_BRANCHES)
     private val collCategories = db.collection(COLLECTION_CATEGORIES)
     private val collItems = db.collection(COLLECTION_ITEMS)
     private val collMeasUnits = db.collection(COLLECTION_MEASURING_UNITS)
@@ -88,12 +93,19 @@ class FirebaseShoppingClient @Inject constructor(
         var measUnit: MeasuringUnit? = null
         var price: BrandPrice? = null
         var cat: Category? = null
+        var branch: StoreBranch? = null
 
         return insertMeasUnitIfNotExists(req.measuringUnit ?: "")
                 .map { measUnit = it.second.toMeasuringUnit(it.first) }
 
                 .flatMap { insertCategoryIfNotExist(req.categoryName ?: "") }
                 .map { cat = it.second.toCategory(it.first) }
+
+                .flatMap { insertStoreIfNotExist("") }
+                .map { it.second.toStore(it.first) }
+
+                .flatMap { insertBranchIfNotExists("", it) }
+                .map { branch = it }
 
                 .flatMap { insertItemIfNotExists(req.itemName) }
                 .map { it.second.toShoppingItem(it.first) }
@@ -102,7 +114,7 @@ class FirebaseShoppingClient @Inject constructor(
                     insertBrandIfNotExists(measUnit!!, it, req.brandName ?: "")
                 }
 
-                .flatMap { insertPriceIfNotExists(req.unitPrice ?: 0F, it) }
+                .flatMap { insertPriceIfNotExists(req.unitPrice ?: 0F, it, branch!!) }
                 .map { price = it }
 
                 .flatMap {
@@ -160,12 +172,14 @@ class FirebaseShoppingClient @Inject constructor(
         if (update.unitPrice != null) {
             observer = observer
                     .flatMap {
-                        insertPriceIfNotExists(update.unitPrice, brand!!)
+                        insertPriceIfNotExists(update.unitPrice, brand!!,
+                                curr!!.brandPrice.atStoreBranch)
                     }
                     .map { price = it }
         } else {
             observer = observer.map {
-                price = BrandPrice(curr!!.id, curr!!.unitPrice(), brand!!)
+                price = BrandPrice(curr!!.id, curr!!.unitPrice(), brand!!,
+                        curr!!.brandPrice.atStoreBranch)
             }
         }
 
@@ -184,9 +198,7 @@ class FirebaseShoppingClient @Inject constructor(
 
                                     val shoppingListRef = collShoppingLists(token)
                                             .document(update.shoppingListID)
-                                    val shoppingList = tx.get(shoppingListRef)
-                                            .toObject(FirestoreShoppingList::class.java)!!
-                                            .toShoppingList(update.shoppingListID)
+                                    val shoppingList = getShoppingList(tx, shoppingListRef)
                                             .accumulateUpdatePrices(curr!!, update)
                                     tx.set(shoppingListRef, FirestoreShoppingList(shoppingList))
 
@@ -231,10 +243,16 @@ class FirebaseShoppingClient @Inject constructor(
 
     override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int) =
             Single.create<List<ShoppingListItem>> {
-                val query = if (f.inList != null) {
-                    collShoppingListItems(token, f.shoppingListID)
-                            .whereEqualTo(FirestoreShoppingListItem.KEY_IN_LIST, f.inList)
-//                            .orderBy(FirestoreShoppingListItem.KEY_IN_CART, Query.Direction.DESCENDING)
+                val query = if (f.inList != null || f.inCart != null) {
+                    var q: Query = collShoppingListItems(token, f.shoppingListID)
+                    if (f.inList != null) {
+                        q = q.whereEqualTo(FirestoreShoppingListItem.KEY_IN_LIST, f.inList)
+                    }
+                    if (f.inCart != null) {
+                        q = q.whereEqualTo(FirestoreShoppingListItem.KEY_IN_CART, f.inCart)
+                    }
+                    q
+//                      .orderBy(FirestoreShoppingListItem.KEY_IN_CART, Query.Direction.DESCENDING)
                 } else {
                     collShoppingListItems(token, f.shoppingListID)
 //                            .orderBy(FirestoreShoppingListItem.KEY_IN_LIST, Query.Direction.DESCENDING)
@@ -268,6 +286,95 @@ class FirebaseShoppingClient @Inject constructor(
                         }
             }
 
+
+    override fun checkout(token: String, slid: String, branchName: String?, storeName: String?, date: Date): Completable {
+        var checkoutItems: List<ShoppingListItem>? = null
+        var branch: StoreBranch? = null
+        var shoppingList: ShoppingList? = null
+        val sliFilter = ShoppingListItemsFilter(shoppingListID = slid, inList = true,
+                inCart = true)
+        return insertStoreIfNotExist(storeName ?: "")
+                .map { it.second.toStore(it.first) }
+
+                .flatMap { insertBranchIfNotExists(branchName ?: "", it) }
+                .map { branch = it }
+
+                .flatMap { getShoppingListItems(token, sliFilter, 0, 1000) }
+
+                .flatMap { cartItems ->
+
+                    // 1.
+                    // a. insert prices, attaching them to the store-branch
+                    // b. remove shopping list items from cart
+                    var obs: Observable<ShoppingListItem>? = null
+
+                    cartItems!!.forEach { cartItm ->
+                        val price = BrandPrice(cartItm.id, cartItm.unitPrice(),
+                                cartItm.brand(), branch!!)
+                        val currObs = insertPriceIfNotExists(price.price, price.brand, branch!!)
+                                .map {
+                                    ShoppingListItem(cartItm.id, cartItm.quantity, it,
+                                            cartItm.category, cartItm.inList, inCart = false)
+                                }
+                                .flatMap {
+                                    updateShoppingListItem(token, ShoppingListItemUpdate(slid,
+                                            it.id, inCart = false, categoryName = it.categoryName()))
+                                }
+                                .toObservable()
+
+                        obs = if (obs == null) {
+                            currObs
+                        } else {
+                            Observable.concat(obs, currObs)
+                        }
+                    }
+
+                    // 2. Collect and accumulate all new prices
+                    return@flatMap Single.create<List<ShoppingListItem>> {
+                        val rsltItems = mutableListOf<ShoppingListItem>()
+                        obs!!
+                                .doOnCompleted { it.onSuccess(rsltItems) }
+                                .subscribe({ sli -> rsltItems.add(sli) }, it::onError)
+                    }
+                }
+                .map { checkoutItems = it }
+
+                .flatMap {
+                    Single.create<ShoppingList> {
+                        collShoppingLists(token)
+                                .document(slid)
+                                .get()
+                                .addOnSuccessListener { ds ->
+                                    it.onSuccess(ds.toObject(FirestoreShoppingList::class.java)!!
+                                            .toShoppingList(ds.id))
+                                }
+                                .addOnFailureListener(it::onError)
+                    }
+                }
+                .map { shoppingList = it }
+
+                .toCompletable()
+                .andThen(Completable.create {
+
+                    val batch = db.batch()
+
+                    val histRef = collShoppingHistories(token).document()
+                    val hist = FirestoreShoppingHistory(date, shoppingList!!, branch!!)
+                    val histItmsRef = collShoppingHistoryItems(token, histRef.id)
+                    batch.set(histRef, hist)
+
+                    checkoutItems!!.forEach { chckOutItm ->
+                        val histItmRef = histItmsRef.document()
+                        val histItm = FirestoreShoppingHistoryItem(chckOutItm)
+                        batch.set(histItmRef, histItm)
+                    }
+
+                    batch.commit()
+                            .addOnSuccessListener { _ -> it.onCompleted() }
+                            .addOnFailureListener { ex -> it.onError(ex) }
+                })
+    }
+
     override fun searchCategory(token: String, q: String): Single<List<Category>> {
         return Single.create<List<Category>> {
             collCategories.get()
@@ -291,6 +398,12 @@ class FirebaseShoppingClient @Inject constructor(
 
     override fun searchShoppingListItem(token: String, req: ShoppingListItemSearch): Single<List<ShoppingListItem>> {
         return Single.error(httpException(STATUS_NOT_FOUND, "not even implemented"))
+    }
+
+    private fun getShoppingList(tx: Transaction, ref: DocumentReference): ShoppingList {
+        return tx.get(ref)
+                .toObject(FirestoreShoppingList::class.java)!!
+                .toShoppingList(ref.id)
     }
 
     private fun insertShoppingListItemIfNotExists(token: String, shoppingListID: String, cat: Category,
@@ -370,17 +483,17 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    private fun insertPriceIfNotExists(price: Float, brand: Brand) =
-            getPrice(price, brand.id)
+    private fun insertPriceIfNotExists(price: Float, brand: Brand, branch: StoreBranch) =
+            getPrice(price, brand.id, branch.id)
                     .onErrorResumeNext { e: Throwable ->
                         if (!isNotFound(e)) {
                             return@onErrorResumeNext Single.error(e)
                         }
-                        return@onErrorResumeNext insertPrice(price, brand)
+                        return@onErrorResumeNext insertPrice(price, brand, branch)
                     }
 
-    private fun insertPrice(price: Float, brand: Brand) = Single.create<BrandPrice> {
-        val doc = FirestorePrice(price, brand)
+    private fun insertPrice(price: Float, brand: Brand, branch: StoreBranch) = Single.create<BrandPrice> {
+        val doc = FirestorePrice(price, brand, branch)
         collPrices
                 .add(doc)
                 .addOnSuccessListener { dr: DocumentReference ->
@@ -389,10 +502,11 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    private fun getPrice(price: Float, brandID: String) = Single.create<BrandPrice> {
+    private fun getPrice(price: Float, brandID: String, branchID: String) = Single.create<BrandPrice> {
         collPrices
                 .whereEqualTo(FirestorePrice.KEY_PRICE, price)
                 .whereEqualTo(FirestorePrice.KEY_BRAND_ID, brandID)
+                .whereEqualTo(FirestorePrice.KEY_BRANCH_ID, branchID)
                 .get()
                 .addOnSuccessListener { qs: QuerySnapshot ->
                     if (qs.isEmpty) {
@@ -442,6 +556,45 @@ class FirebaseShoppingClient @Inject constructor(
                 }
                 .addOnFailureListener(it::onError)
     }
+
+    private fun insertBranchIfNotExists(name: String, store: Store) =
+            getBranch(name, store.id)
+                    .onErrorResumeNext { e: Throwable ->
+                        if (!isNotFound(e)) {
+                            return@onErrorResumeNext Single.error(e)
+                        }
+                        return@onErrorResumeNext insertBranch(name, store)
+                    }
+
+    private fun insertBranch(name: String, store: Store) = Single.create<StoreBranch> {
+        val doc = FirestoreBranch(name, store)
+        collStoreBranches
+                .add(doc)
+                .addOnSuccessListener { dr: DocumentReference ->
+                    it.onSuccess(doc.toBranch(dr.id))
+                }
+                .addOnFailureListener(it::onError)
+    }
+
+    private fun getBranch(name: String, storeID: String) = Single.create<StoreBranch> {
+        collStoreBranches
+                .whereEqualTo(FirestoreBranch.KEY_NAME, name)
+                .whereEqualTo(FirestoreBranch.KEY_STORE_ID, storeID)
+                .get()
+                .addOnSuccessListener { qs: QuerySnapshot ->
+                    if (qs.isEmpty) {
+                        it.onError(httpException(STATUS_NOT_FOUND, "none found"))
+                        return@addOnSuccessListener
+                    }
+                    val ss = qs.elementAt(0)
+                    val fsBranch = ss.toObject(FirestoreBranch::class.java)
+                    it.onSuccess(fsBranch.toBranch(ss.id))
+                }
+                .addOnFailureListener(it::onError)
+    }
+
+    private fun insertStoreIfNotExist(name: String) =
+            insertNamedIfNotExists(collStores, name)
 
     private fun insertCategoryIfNotExist(name: String) =
             insertNamedIfNotExists(collCategories, name)
@@ -504,16 +657,33 @@ class FirebaseShoppingClient @Inject constructor(
                 .collection(COLLECTION_SHOPPING_LIST_ITEMS)
     }
 
+    private fun collShoppingHistories(token: String): CollectionReference {
+        val jwt = jwtHelper.extractJWT(token)
+        return db.collection(COLLECTION_USERS)
+                .document(jwt.info.userID)
+                .collection(COLLECTION_SHOPPING_HISTORIES)
+    }
+
+    private fun collShoppingHistoryItems(token: String, shoppingHistId: String): CollectionReference {
+        return collShoppingHistories(token)
+                .document(shoppingHistId)
+                .collection(COLLECTION_SHOPPING_HISTORY_ITEMS)
+    }
+
     companion object {
 
         const val COLLECTION_USERS = "users"
         const val COLLECTION_SHOPPING_LISTS = "shopping_lists"
         const val COLLECTION_SHOPPING_LIST_ITEMS = "shopping_list_items"
+        const val COLLECTION_SHOPPING_HISTORIES = "shopping_histories"
+        const val COLLECTION_SHOPPING_HISTORY_ITEMS = "shopping_history_items"
         const val COLLECTION_PRICES = "prices"
         const val COLLECTION_BRANDS = "brands"
         const val COLLECTION_MEASURING_UNITS = "measuring_units"
         const val COLLECTION_ITEMS = "items"
         const val COLLECTION_CATEGORIES = "categories"
+        const val COLLECTION_STORES = "stores"
+        const val COLLECTION_STORE_BRANCHES = "store_branches"
     }
 
 }
@@ -564,24 +734,69 @@ data class FirestoreShoppingListItem(
     }
 }
 
+data class FirestoreShoppingHistory(
+        val checkoutDate: Date = Date(),
+        val shoppingListID: String = "",
+        val shoppingList: FirestoreShoppingList = FirestoreShoppingList(),
+        val branchID: String = "",
+        val branch: FirestoreBranch = FirestoreBranch()
+) {
+    constructor(checkoutDate: Date, sl: ShoppingList, br: StoreBranch) :
+            this(checkoutDate, sl.id, FirestoreShoppingList(sl), br.id, FirestoreBranch(br))
+}
+
+data class FirestoreShoppingHistoryItem(
+        val quantity: Int = 0,
+        val priceID: String = "",
+        val categoryID: String = "",
+        val price: FirestorePrice = FirestorePrice(),
+        val category: Named = Named()
+) {
+
+    constructor(item: ShoppingListItem) : this(item.quantity, item.brandPrice, item.category)
+
+    constructor(quantity: Int, price: BrandPrice, cat: Category) :
+            this(quantity, price.id, cat.id, FirestorePrice(price), Named(cat.name))
+}
+
 data class FirestorePrice(
         val price: Float = 0F,
         val brandID: String = "",
-        val brand: FirestoreBrand = FirestoreBrand()
+        val brand: FirestoreBrand = FirestoreBrand(),
+        val branchID: String = "",
+        val branch: FirestoreBranch = FirestoreBranch()
 ) {
 
-    constructor(price: BrandPrice) : this(price.price, price.brand)
+    constructor(price: BrandPrice) : this(price.price, price.brand, price.atStoreBranch)
 
-    constructor(price: Float, brand: Brand) :
-            this(price, brand.id, FirestoreBrand(brand))
+    constructor(price: Float, brand: Brand, branch: StoreBranch) :
+            this(price, brand.id, FirestoreBrand(brand), branch.id, FirestoreBranch(branch))
 
-    fun toPrice(id: String) = BrandPrice(id, price, brand.toBrand(brandID))
+    fun toPrice(id: String) = BrandPrice(id, price, brand.toBrand(brandID), branch.toBranch(branchID))
 
     companion object {
         const val KEY_PRICE = "price"
         const val KEY_BRAND_ID = "brandId"
+        const val KEY_BRANCH_ID = "branchId"
         const val KEY_BRAND = "brand"
         const val KEY_ITEM_NAME = "$KEY_BRAND$DOC_FIELD_SEPARATOR${FirestoreBrand.KEY_ITEM_NAME}"
+    }
+}
+
+data class FirestoreBranch(
+        val name: String = "",
+        val storeID: String = "",
+        val store: Named = Named()
+) {
+    constructor(branch: StoreBranch) : this(branch.name, branch.store)
+
+    constructor(name: String, store: Store) : this(name, store.id, Named(store.name))
+
+    fun toBranch(id: String) = StoreBranch(id, name, store.toStore(storeID))
+
+    companion object {
+        const val KEY_NAME = "name"
+        const val KEY_STORE_ID = "storeId"
     }
 }
 
@@ -615,6 +830,7 @@ data class Named(val name: String = "") {
     fun toCategory(id: String) = Category(id, name)
     fun toShoppingItem(id: String) = ShoppingItem(id, name)
     fun toMeasuringUnit(id: String) = MeasuringUnit(id, name)
+    fun toStore(id: String) = Store(id, name)
 
     companion object {
         const val KEY_NAME = "name"

@@ -4,6 +4,7 @@ import ke.co.definition.inkopies.model.shopping.*
 import rx.Completable
 import rx.Observable
 import rx.Single
+import java.util.*
 
 /**
  * Created by tomogoma
@@ -21,4 +22,5 @@ interface ShoppingClient {
     fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>>
     fun searchShoppingListItem(token: String, req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
     fun searchCategory(token: String, q: String): Single<List<Category>>
+    fun checkout(token: String, slid: String, branchName: String?, storeName: String?, date: Date): Completable
 }

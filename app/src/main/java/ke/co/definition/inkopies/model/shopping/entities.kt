@@ -36,7 +36,7 @@ data class BrandPrice(
         val id: String,
         val price: Float,
         val brand: Brand,
-        val atStoreBranch: StoreBranch? = null
+        val atStoreBranch: StoreBranch
 ) {
     fun measuringUnit() = brand.measuringUnit
     fun measuringUnitName() = brand.measuringUnitName()
@@ -91,7 +91,8 @@ data class ShoppingListItemUpdate(
 
 data class ShoppingListItemsFilter(
         val shoppingListID: String,
-        val inList: Boolean? = null
+        val inList: Boolean? = null,
+        val inCart: Boolean? = null
 )
 
 data class ShoppingListItemSearch(
