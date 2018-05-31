@@ -42,7 +42,7 @@ class FirebaseShoppingClient @Inject constructor(
         logger.setTag(FirebaseShoppingClient::class.java.name)
     }
 
-    override fun addShoppingList(token: String, name: String) = Single.create<ShoppingList> {
+    override fun addShoppingList(token: String, name: String): Single<ShoppingList> = Single.create<ShoppingList> {
         val doc = FirestoreShoppingList(name)
         collShoppingLists(token)
                 .add(doc)
@@ -52,7 +52,7 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun updateShoppingList(token: String, list: ShoppingList) = Single.create<ShoppingList> {
+    override fun updateShoppingList(token: String, list: ShoppingList): Single<ShoppingList> = Single.create<ShoppingList> {
         val doc = FirestoreShoppingList(list)
         collShoppingLists(token)
                 .document(list.id)
@@ -63,7 +63,7 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun getShoppingLists(token: String, offset: Long, count: Int) = Observable.create<List<ShoppingList>> {
+    override fun getShoppingLists(token: String, offset: Long, count: Int): Observable<List<ShoppingList>> = Observable.create<List<ShoppingList>> {
 
         collShoppingLists(token)
                 .orderBy(FirestoreShoppingList.KEY_NAME)
@@ -237,7 +237,7 @@ class FirebaseShoppingClient @Inject constructor(
                 }
     }
 
-    override fun deleteShoppingListItem(token: String, shoppingListID: String, id: String) = Completable.create {
+    override fun deleteShoppingListItem(token: String, shoppingListID: String, id: String): Completable = Completable.create {
         db
                 .runTransaction { tx ->
 
@@ -262,7 +262,7 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int) =
+    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>> =
             Single.create<List<ShoppingListItem>> {
                 val query = if (f.inList != null || f.inCart != null) {
                     var q: Query = collShoppingListItems(token, f.shoppingListID)
@@ -710,8 +710,10 @@ class FirebaseShoppingClient @Inject constructor(
 
 }
 
+@Suppress("unused")
 const val DOC_FIELD_SEPARATOR = "."
 
+@Suppress("MemberVisibilityCanBePrivate")
 data class FirestoreShoppingList(
         val name: String = "",
         val activeListPrice: Float = 0F,
@@ -730,6 +732,7 @@ data class FirestoreShoppingList(
     }
 }
 
+@Suppress("MemberVisibilityCanBePrivate")
 data class FirestoreShoppingListItem(
         val quantity: Int = 0,
         val inList: Boolean = false,
@@ -751,8 +754,6 @@ data class FirestoreShoppingListItem(
         const val KEY_PRICE_ID = "priceId"
         const val KEY_IN_CART = "inCart"
         const val KEY_IN_LIST = "inList"
-        const val KEY_PRICE = "price"
-        const val KEY_ITEM_NAME = "$KEY_PRICE$DOC_FIELD_SEPARATOR${FirestorePrice.KEY_ITEM_NAME}"
     }
 }
 
@@ -781,6 +782,7 @@ data class FirestoreShoppingHistoryItem(
             this(quantity, price.id, cat.id, FirestorePrice(price), Named(cat.name))
 }
 
+@Suppress("MemberVisibilityCanBePrivate")
 data class FirestorePrice(
         val price: Float = 0F,
         val brandID: String = "",
@@ -800,11 +802,10 @@ data class FirestorePrice(
         const val KEY_PRICE = "price"
         const val KEY_BRAND_ID = "brandId"
         const val KEY_BRANCH_ID = "branchId"
-        const val KEY_BRAND = "brand"
-        const val KEY_ITEM_NAME = "$KEY_BRAND$DOC_FIELD_SEPARATOR${FirestoreBrand.KEY_ITEM_NAME}"
     }
 }
 
+@Suppress("MemberVisibilityCanBePrivate")
 data class FirestoreBranch(
         val name: String = "",
         val storeID: String = "",
@@ -822,11 +823,12 @@ data class FirestoreBranch(
     }
 }
 
+@Suppress("MemberVisibilityCanBePrivate")
 data class FirestoreBrand(
         val name: String = "",
         val measuringUnitID: String = "",
         val measuringUnit: Named = Named(),
-        val shoppigItemID: String = "",
+        val shoppingItemID: String = "",
         val shoppingItem: Named = Named()
 ) {
 
@@ -836,14 +838,12 @@ data class FirestoreBrand(
             this(name, measUnit.id, Named(measUnit.name), item.id, Named(item.name))
 
     fun toBrand(id: String) = Brand(id, name, measuringUnit.toMeasuringUnit(measuringUnitID),
-            shoppingItem.toShoppingItem(shoppigItemID))
+            shoppingItem.toShoppingItem(shoppingItemID))
 
     companion object {
         const val KEY_NAME = "name"
         const val KEY_SHOPPING_ITEM_ID = "shoppigItemId"
         const val KEY_MEASURING_UNIT_ID = "measuringUnitId"
-        const val KEY_SHOPPING_ITEM = "shoppingItem"
-        const val KEY_ITEM_NAME = "$KEY_SHOPPING_ITEM$DOC_FIELD_SEPARATOR${Named.KEY_NAME}"
     }
 }
 
