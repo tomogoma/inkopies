@@ -214,7 +214,6 @@ class UpsertListItemViewModel @Inject constructor(
     }
 
     private fun clearFields() {
-        categoryName.set("")
         brandName.set("")
         itemName.set("")
         quantity.set("1")
