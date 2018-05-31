@@ -28,6 +28,8 @@ import java.util.*
  */
 class CheckoutDialogFrag : SLMDialogFragment() {
 
+    private var onCheckoutCompleteListener: () -> Unit = {}
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         val vmFactory = (activity!!.application as App).appComponent.provideCheckoutVMFactory()
@@ -56,7 +58,10 @@ class CheckoutDialogFrag : SLMDialogFragment() {
 
     private fun observeViewModel(v: DialogCheckoutBinding) {
         v.vm!!.snackbarData.observe(this, Observer { it?.show(v.root) })
-        v.vm!!.onCompleteEvent.observe(this, Observer { dismiss() })
+        v.vm!!.onCompleteEvent.observe(this, Observer {
+            dismiss()
+            onCheckoutCompleteListener()
+        })
         observedLiveData.addAll(listOf(v.vm!!.snackbarData, v.vm!!.onCompleteEvent))
     }
 
@@ -82,11 +87,12 @@ class CheckoutDialogFrag : SLMDialogFragment() {
     companion object {
         private const val EXTRA_SHOPPING_LIST_ID = "EXTRA_SHOPPING_LIST_ID"
 
-        fun start(fm: FragmentManager, slID: String) {
+        fun start(fm: FragmentManager, slID: String, completeListener: () -> Unit) {
             CheckoutDialogFrag().apply {
                 arguments = Bundle().apply {
                     putString(EXTRA_SHOPPING_LIST_ID, slID)
                 }
+                onCheckoutCompleteListener = completeListener
             }.show(fm, UpsertListItemDialogFrag::class.java.name)
         }
     }

@@ -132,6 +132,10 @@ class ShoppingListViewModel @Inject constructor(
         itemDelete.value = item
     }
 
+    fun onCheckoutComplete() {
+        onChangeMode(ShoppingMode.PREPARATION)
+    }
+
     fun onExport() {
         exporter.exportShoppingList(this.shoppingList.get()!!.sl)
                 .subscribeOn(subscribeOnScheduler)

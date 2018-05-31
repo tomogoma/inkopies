@@ -75,7 +75,8 @@ class ShoppingListActivity : InkopiesActivity() {
     }
 
     private fun onCheckout() {
-        CheckoutDialogFrag.start(supportFragmentManager, viewModel.shoppingList.get()!!.id)
+        CheckoutDialogFrag.start(supportFragmentManager, viewModel.shoppingList.get()!!.id,
+                { viewModel.onCheckoutComplete() })
     }
 
     private fun onExport() {
