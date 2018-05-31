@@ -147,6 +147,29 @@ class FirebaseShoppingClient @Inject constructor(
                     .map { cat = it.second.toCategory(it.first) }
         }
 
+        var store: Store? = null
+        if (update.storeName != null) {
+            observer = observer.flatMap { insertStoreIfNotExist(update.storeName) }
+                    .map { store = it.second.toStore(it.first) }
+        }
+
+        // An update for store branch has to be created whether provided or not
+        // as it also holds possible updates of store.
+        var storeBranch: StoreBranch? = null
+        if (update.storeBranchName != null) {
+            observer = observer
+                    .flatMap {
+                        insertBranchIfNotExists(update.storeBranchName,
+                                store ?: curr!!.store())
+                    }
+                    .map { storeBranch = it }
+        } else {
+            observer = observer.map {
+                storeBranch = StoreBranch(curr!!.storeBranchID(), curr!!.storeBranchName(),
+                        store ?: curr!!.store())
+            }
+        }
+
         // An update for brand has to be created whether provided or not
         // as it also holds possible updates of measuringUnit and shoppingItem.
         var brand: Brand? = null
@@ -159,27 +182,25 @@ class FirebaseShoppingClient @Inject constructor(
                     .map { brand = it }
         } else {
             observer = observer.map {
-                brand = Brand(curr!!.brand().id, curr!!.brandName(),
+                brand = Brand(curr!!.brandID(), curr!!.brandName(),
                         measUnit ?: curr!!.measuringUnit(),
                         item ?: curr!!.item())
             }
         }
 
         // An update for brandPrice has to be created whether provided or not
-        // as it holds possible updates of brand
+        // as it holds possible updates of brand and storeBranch
         // (which may have possible updates of other fields).
         var price: BrandPrice? = null
         if (update.unitPrice != null) {
             observer = observer
                     .flatMap {
-                        insertPriceIfNotExists(update.unitPrice, brand!!,
-                                curr!!.brandPrice.atStoreBranch)
+                        insertPriceIfNotExists(update.unitPrice, brand!!, storeBranch!!)
                     }
                     .map { price = it }
         } else {
             observer = observer.map {
-                price = BrandPrice(curr!!.id, curr!!.unitPrice(), brand!!,
-                        curr!!.brandPrice.atStoreBranch)
+                price = BrandPrice(curr!!.id, curr!!.unitPrice(), brand!!, storeBranch!!)
             }
         }
 
@@ -318,7 +339,8 @@ class FirebaseShoppingClient @Inject constructor(
                                 }
                                 .flatMap {
                                     updateShoppingListItem(token, ShoppingListItemUpdate(slid,
-                                            it.id, inCart = false, categoryName = it.categoryName()))
+                                            it.id, inCart = false, categoryName = it.categoryName(),
+                                            storeBranchName = branchName, storeName = storeName))
                                 }
                                 .toObservable()
 

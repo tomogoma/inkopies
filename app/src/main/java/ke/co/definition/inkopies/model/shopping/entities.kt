@@ -43,6 +43,11 @@ data class BrandPrice(
     fun item() = brand.shoppingItem
     fun itemName() = brand.itemName()
     fun brandName() = brand.name
+    fun storeBranchName() = atStoreBranch.name
+    fun storeName() = atStoreBranch.storeName()
+    fun store() = atStoreBranch.store
+    fun storeBranchID() = atStoreBranch.id
+    fun brandID() = brand.id
 }
 
 data class ShoppingListItem(
@@ -62,6 +67,11 @@ data class ShoppingListItem(
     fun unitPrice() = brandPrice.price
     fun totalPrice() = unitPrice() * quantity
     fun categoryName() = category.name
+    fun storeBranchName() = brandPrice.storeBranchName()
+    fun storeName() = brandPrice.storeName()
+    fun store() = brandPrice.store()
+    fun storeBranchID() = brandPrice.storeBranchID()
+    fun brandID() = brandPrice.brandID()
 }
 
 data class ShoppingListItemInsert(
@@ -86,7 +96,9 @@ data class ShoppingListItemUpdate(
         val brandName: String? = null,
         val quantity: Int? = null,
         val measuringUnit: String? = null,
-        val unitPrice: Float? = null
+        val unitPrice: Float? = null,
+        val storeBranchName: String? = null,
+        val storeName: String? = null
 )
 
 data class ShoppingListItemsFilter(

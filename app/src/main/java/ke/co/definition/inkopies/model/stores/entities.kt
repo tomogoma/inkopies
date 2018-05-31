@@ -13,4 +13,6 @@ data class StoreBranch(
         val id: String,
         val name: String,
         val store: Store
-)
+) {
+    fun storeName() = store.name
+}
