@@ -12,151 +12,170 @@
             type="ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem" />
     </data>
 
-    <android.support.constraint.ConstraintLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/space_normal"
-        android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:paddingStart="@dimen/activity_horizontal_margin">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/category"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/space_normal"
-            android:text="@{item.categoryName}"
-            android:textSize="@dimen/text_size_small"
-            app:layout_constraintBottom_toTopOf="@id/checked"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="General Category" />
-
-        <TextView
-            android:id="@+id/brand"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/space_xsmall"
-            android:maxLength="30"
-            android:maxLines="1"
-            android:text="@{item.brandName}"
-            app:layout_constraintBaseline_toBaselineOf="@id/name"
-            app:layout_constraintEnd_toStartOf="@id/name"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:text="Colgate" />
+            android:layout_marginBottom="@dimen/space_small"
+            android:layout_marginTop="@dimen/space_small"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:paddingStart="@dimen/activity_horizontal_margin">
 
-        <TextView
-            android:id="@+id/name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/space_normal"
-            android:maxLength="30"
-            android:maxLines="1"
-            android:text="@{item.itemName}"
-            app:layout_constraintBaseline_toBaselineOf="@id/checked"
-            app:layout_constraintEnd_toStartOf="@id/checked"
-            app:layout_constraintStart_toEndOf="@id/brand"
-            tools:text="Toothpaste" />
+            <TextView
+                android:id="@+id/category"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/space_normal"
+                android:text="@{item.categoryName}"
+                android:textSize="@dimen/text_size_small"
+                android:visibility="@{item.showCategory? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toTopOf="@id/checked"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="General Category" />
 
-        <CheckBox
-            android:id="@+id/checked"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_xxsmall"
-            android:layout_marginTop="@dimen/space_xxsmall"
-            android:checked="@{item.checked}"
-            app:layout_constraintBottom_toTopOf="@id/measuringUnit"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/category"
-            app:layout_constraintVertical_chainStyle="packed" />
+            <TextView
+                android:id="@+id/brand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/space_xsmall"
+                android:maxLength="30"
+                android:maxLines="1"
+                android:text="@{item.brandName}"
+                android:visibility="@{item.showBrandName? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@id/name"
+                app:layout_constraintEnd_toStartOf="@id/name"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="Colgate" />
 
-        <TextView
-            android:id="@+id/measuringUnit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_xxsmall"
-            android:layout_marginEnd="@dimen/space_normal"
-            android:maxLength="30"
-            android:maxLines="1"
-            android:text="@{item.measuringUnitName()}"
-            app:layout_constraintBottom_toTopOf="@+id/x"
-            app:layout_constraintEnd_toStartOf="@id/unitPrice"
-            app:layout_constraintHorizontal_chainStyle="spread_inside"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/checked"
-            tools:text="50ml tub" />
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/space_normal"
+                android:maxLength="30"
+                android:maxLines="1"
+                android:text="@{item.itemName}"
+                app:layout_constraintBaseline_toBaselineOf="@id/checked"
+                app:layout_constraintEnd_toStartOf="@id/checked"
+                app:layout_constraintStart_toEndOf="@id/brand"
+                tools:text="Toothpaste" />
 
-        <TextView
-            android:id="@+id/unitPrice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxLength="30"
-            android:maxLines="1"
-            android:text="@{item.fmtUnitPrice}"
-            app:layout_constraintBaseline_toBaselineOf="@id/measuringUnit"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/measuringUnit"
-            tools:text="250.00" />
+            <CheckBox
+                android:id="@+id/checked"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xxsmall"
+                android:layout_marginTop="@dimen/space_xxsmall"
+                android:checked="@{item.checked}"
+                app:layout_constraintBottom_toTopOf="@id/measuringUnit"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/category"
+                app:layout_constraintVertical_chainStyle="packed" />
 
-        <TextView
-            android:id="@+id/x"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/space_xxsmall"
-            android:text="@string/times"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/quantity"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/measuringUnit" />
+            <TextView
+                android:id="@+id/measuringUnit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_xxsmall"
+                android:layout_marginEnd="@dimen/space_normal"
+                android:maxLength="30"
+                android:maxLines="1"
+                android:text="@{item.measuringUnitName()}"
+                android:visibility="@{item.showMeasUnit? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toTopOf="@+id/x"
+                app:layout_constraintEnd_toStartOf="@id/unitPrice"
+                app:layout_constraintHorizontal_chainStyle="spread_inside"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/checked"
+                tools:text="50ml tub" />
 
-        <TextView
-            android:id="@+id/quantity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxLength="30"
-            android:maxLines="1"
-            android:paddingEnd="@dimen/space_normal"
-            android:text="@{item.fmtQuantity}"
-            app:layout_constraintBaseline_toBaselineOf="@id/x"
-            app:layout_constraintEnd_toStartOf="@id/totalPrice"
-            app:layout_constraintStart_toEndOf="@id/x"
-            tools:ignore="RtlSymmetry"
-            tools:text="3" />
+            <TextView
+                android:id="@+id/unitPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLength="30"
+                android:maxLines="1"
+                android:text="@{item.fmtUnitPrice}"
+                android:visibility="@{item.showUnitPrice? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@id/measuringUnit"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/measuringUnit"
+                tools:text="250.00" />
 
-        <TextView
-            android:id="@+id/totalPrice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxLength="30"
-            android:maxLines="1"
-            android:text="@{item.fmtTotalPrice}"
-            android:textStyle="bold"
-            app:layout_constraintBaseline_toBaselineOf="@id/quantity"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:text="750.00" />
+            <android.support.constraint.Group
+                android:id="@+id/unitPriceRowGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{item.showUnitPriceRow? View.VISIBLE : View.GONE}"
+                app:constraint_referenced_ids="measuringUnit,unitPrice" />
 
-        <FrameLayout
+            <TextView
+                android:id="@+id/x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/space_xxsmall"
+                android:text="@string/times"
+                android:visibility="@{item.showQuantity? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/quantity"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/measuringUnit" />
+
+            <TextView
+                android:id="@+id/quantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLength="30"
+                android:maxLines="1"
+                android:paddingEnd="@dimen/space_normal"
+                android:text="@{item.fmtQuantity}"
+                android:visibility="@{item.showQuantity? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@id/x"
+                app:layout_constraintEnd_toStartOf="@id/totalPrice"
+                app:layout_constraintStart_toEndOf="@id/x"
+                tools:ignore="RtlSymmetry"
+                tools:text="3" />
+
+            <TextView
+                android:id="@+id/totalPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLength="30"
+                android:maxLines="1"
+                android:text="@{item.fmtTotalPrice}"
+                android:textStyle="bold"
+                android:visibility="@{item.showUnitPrice? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@id/quantity"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="750.00" />
+
+            <android.support.constraint.Group
+                android:id="@+id/totalPriceRowGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{item.showTotalPriceRow? View.VISIBLE : View.GONE}"
+                app:constraint_referenced_ids="x,quantity,totalPrice"
+                tools:visibility="visible" />
+
+        </android.support.constraint.ConstraintLayout>
+
+        <android.support.v4.widget.ContentLoadingProgressBar
             android:id="@+id/progress"
+            style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true"
             android:visibility="@{item.updating ? View.VISIBLE : View.GONE}"
-            app:elevation="2dp"
-            app:layout_constraintBottom_toBottomOf="@id/x"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/checked">
-
-            <android.support.v4.widget.ContentLoadingProgressBar
-                style="@style/Widget.AppCompat.ProgressBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-        </FrameLayout>
-
-    </android.support.constraint.ConstraintLayout>
+            app:elevation="2dp" />
+    </FrameLayout>
 </layout>

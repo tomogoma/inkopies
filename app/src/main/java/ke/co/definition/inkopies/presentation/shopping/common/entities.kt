@@ -56,6 +56,13 @@ class VMShoppingListItem(val sli: ShoppingListItem, val mode: ShoppingMode) {
     fun unitPrice() = sli.unitPrice()
     fun totalPrice() = sli.totalPrice()
     fun categoryName() = sli.categoryName()
+    fun isShowBrandName() = sli.brandName().isNotBlank()
+    fun isShowUnitPrice() = sli.unitPrice() > 0
+    fun isShowMeasUnit() = sli.measuringUnitName().isNotBlank()
+    fun isShowUnitPriceRow() = isShowUnitPrice() || isShowMeasUnit()
+    fun isShowQuantity() = quantity > 1
+    fun isShowTotalPriceRow() = isShowQuantity() && isShowUnitPrice()
+    fun isShowCategory() = sli.categoryName().isNotBlank()
 }
 
 data class SearchShoppingListItemResult(

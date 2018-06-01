@@ -16,7 +16,6 @@
         android:id="@+id/layoutRoot"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context=".presentation.shopping.list.ShoppingListActivity"
         tools:showIn="@layout/activity_shopping_list">
@@ -40,6 +39,7 @@
             android:id="@+id/shoppingLists"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:clipToPadding="false"
             android:paddingBottom="@dimen/fab_allowance"
             android:visibility="@{vm.showItems ? View.VISIBLE: View.GONE}"
