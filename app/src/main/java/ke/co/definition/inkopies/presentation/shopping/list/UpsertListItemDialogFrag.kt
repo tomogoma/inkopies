@@ -33,8 +33,6 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class UpsertListItemDialogFrag : SLMDialogFragment() {
 
-    internal var onUpsertCallback: (VMShoppingListItem?) -> Unit = {}
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
                 R.layout.dialog_upsert_list_item, container, false)
@@ -56,11 +54,6 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         return dialog
-    }
-
-    fun dismiss(result: VMShoppingListItem?) {
-        onUpsertCallback(result)
-        dialog.dismiss()
     }
 
     private fun setUpAutoCompletables(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
@@ -89,7 +82,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                                   search: (text: String) -> Unit,
                                   resultEvent: SingleLiveEvent<List<SearchShoppingListItemResult>>) {
 
-        val adapter = AutoCompleteAdapter<SearchShoppingListItemResult>(this, search, resultEvent)
+        val adapter = AutoCompleteAdapter(this, search, resultEvent)
         textView.setAdapter(adapter)
         textView.setOnItemClickListener { _, _, pos, _ ->
             val rslt = adapter.getResultItem(pos)
@@ -122,15 +115,14 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
         vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
-        vm.finished.observe(this, Observer { dismiss(it) })
+        vm.finished.observe(this, Observer { dismiss() })
         vm.finishedAddNext.observe(this, Observer {
-            onFinishedAddNext(vs, it ?: return@Observer)
+            onFinishedAddNext(vs)
         })
         observedLiveData.addAll(mutableListOf(vm.snackBarData, vm.finished, vm.finishedAddNext))
     }
 
-    private fun onFinishedAddNext(vs: DialogUpsertListItemBinding, prev: VMShoppingListItem) {
-        onUpsertCallback(prev)
+    private fun onFinishedAddNext(vs: DialogUpsertListItemBinding) {
         focusOn(vs, ItemFocus.BRAND)
     }
 
@@ -178,10 +170,8 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         private const val EXTRA_LIST = "EXTRA_LIST"
 
         fun start(fm: FragmentManager, list: VMShoppingList, item: VMShoppingListItem?,
-                  focus: ItemFocus?, onUpsertCallback: (vl: VMShoppingListItem?) -> Unit = {}) {
+                  focus: ItemFocus?) {
             UpsertListItemDialogFrag().apply {
-
-                this.onUpsertCallback = onUpsertCallback
 
                 arguments = Bundle().apply {
                     if (item != null) {

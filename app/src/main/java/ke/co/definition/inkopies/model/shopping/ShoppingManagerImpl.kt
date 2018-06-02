@@ -110,9 +110,6 @@ class ShoppingManagerImpl @Inject constructor(
                 .toObservable()
                 .flatMap { client.getShoppingLists(it.value, offset, count) }
                 .onErrorReturn {
-                    if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
-                        return@onErrorReturn mutableListOf<ShoppingList>()
-                    }
                     throw handleAuthErrors(logger, auth, resMan, it, "fetch shopping lists")
                 }
     }
@@ -122,7 +119,7 @@ class ShoppingManagerImpl @Inject constructor(
                 .toObservable()
                 .flatMap { client.getShoppingList(it.value, id) }
                 .onErrorReturn {
-                    throw handleAuthErrors(logger, auth, resMan, it, "fetch shopping lists")
+                    throw handleAuthErrors(logger, auth, resMan, it, "fetch shopping list")
                 }
     }
 

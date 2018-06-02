@@ -41,15 +41,16 @@ class ShoppingListsViewModel @Inject constructor(
 
     fun start() {
         manager.getShoppingLists(0, LISTS_PER_PAGE)
-                .subscribeOn(subscribeOnScheduler)
-                .observeOn(observeOnScheduler)
-                .doOnSubscribe { showProgressShoppingLists() }
-                .doOnNext { hideProgressShoppingLists() }
                 .map {
                     val res = mutableListOf<VMShoppingList>()
                     it.forEach { res.add(VMShoppingList(it)) }
                     return@map res
                 }
+                .subscribeOn(subscribeOnScheduler)
+                .observeOn(observeOnScheduler)
+                .doOnSubscribe { showProgressShoppingLists() }
+                .doOnNext { hideProgressShoppingLists() }
+                .doOnError { hideProgressShoppingLists() }
                 .subscribe(this::onShoppingListsFetched, this::showError)
     }
 

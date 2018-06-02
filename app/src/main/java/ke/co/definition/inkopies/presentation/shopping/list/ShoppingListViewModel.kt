@@ -35,45 +35,40 @@ class ShoppingListViewModel @Inject constructor(
     val showItems = ObservableBoolean()
     val showNoItemsTxt = ObservableBoolean()
     val showFullProgress = ObservableBoolean()
-    val showNextPageLoadingProgress = ObservableBoolean()
 
     val snackbarData = SingleLiveEvent<SnackbarData>()
     val items = SingleLiveEvent<MutableList<VMShoppingListItem>>()
-    val newItem = SingleLiveEvent<VMShoppingListItem>()
-    val itemUpdate = SingleLiveEvent<VMShoppingListItem>()
-    val itemDelete = SingleLiveEvent<VMShoppingListItem>()
     val menuRes = SingleLiveEvent<Int>()
-    val clearList = SingleLiveEvent<Boolean>()
 
     private var hasItems = false
     private var itemsSubscription: Subscription? = null
 
-    fun start(list: VMShoppingList) {
-        this.shoppingList.set(list)
-        clearList.value = true
-        fetchItems(list)
-        observeList(list.id)
+    fun start(listID: String) {
+        fetchList(listID)
     }
 
     fun onCreateOptionsMenu() {
-        menuRes.value = when (shoppingList.get()!!.mode) {
+        menuRes.value = when (shoppingList.get()?.mode ?: return) {
             ShoppingMode.PREPARATION -> R.menu.planning_main_menu
             ShoppingMode.SHOPPING -> R.menu.shopping_main_menu
         }
     }
 
     fun onChangeMode(toMode: ShoppingMode) {
-        val list = shoppingList.get()!!
+        val list = shoppingList.get() ?: return
         manager.updateShoppingList(ShoppingList(list.id, list.name(), list.sl.activeListPrice,
                 list.sl.cartPrice, toMode))
-                .doOnSubscribe { forceShowFullProgress() }
+                .doOnSubscribe { showProgress() }
+                .map { VMShoppingList(it) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .map { VMShoppingList(it) }
                 .subscribe(this::onShoppingListUpdated, this::showError)
     }
 
     fun onItemSelectionChanged(item: VMShoppingListItem, toState: Boolean) {
+
+        val list = shoppingList.get() ?: return
+
         var inList = item.inList
         var inCart = item.inCart
         when (item.mode) {
@@ -90,7 +85,7 @@ class ShoppingListViewModel @Inject constructor(
                 }
             }
         }
-        val list = shoppingList.get()!!
+
         manager.updateShoppingListItem(ShoppingListItemUpdate(list.id,
                 item.id, categoryName = item.categoryName(), inList = inList, inCart = inCart))
                 .doOnSubscribe { item.isUpdating.set(true) }
@@ -98,43 +93,25 @@ class ShoppingListViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingListItem(it, item.mode) }
-                .subscribe({ onItemUpdated(item, it) }, { showError(it) })
-    }
-
-    fun onItemAdded(item: VMShoppingListItem) {
-        shoppingList.set(shoppingList.get()!!.accumulateInsertPrices(item))
-        newItem.value = item
-        showItems()
-    }
-
-    fun onItemUpdated(old: VMShoppingListItem, new: VMShoppingListItem) {
-        val list = shoppingList.get()!!
-        shoppingList.set(list.accumulateUpdatePrices(list.id, old, new))
-        itemUpdate.value = new
-    }
-
-    fun onItemDeleted(item: VMShoppingListItem) {
-        shoppingList.set(shoppingList.get()!!.accumulateDeletePrices(item))
-        itemDelete.value = item
-    }
-
-    fun onCheckoutComplete() {
-        onChangeMode(ShoppingMode.PREPARATION)
+                .subscribe({ /*no-op - #fetchItems() is observing changes*/ }, { showError(it) })
     }
 
     fun onExport() {
-        exporter.exportShoppingList(this.shoppingList.get()!!.sl)
+        exporter.exportShoppingList(this.shoppingList.get()?.sl ?: return)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe(this::onExportSuccessful, this::showError)
     }
 
-    private fun observeList(id: String) {
+    private fun fetchList(id: String) {
         manager.getShoppingList(id)
+                .doOnSubscribe { showProgress() }
+                .doOnNext { hideProgress() }
+                .doOnError { hideProgress() }
                 .subscribeOn(subscribeOnScheduler)
                 .map { VMShoppingList(it) }
                 .observeOn(observeOnScheduler)
-                .subscribe(this.shoppingList::set, this::showError)
+                .subscribe(this::onShoppingListUpdated, this::showError)
     }
 
     private fun fetchItems(list: VMShoppingList) {
@@ -153,7 +130,7 @@ class ShoppingListViewModel @Inject constructor(
                     return@map rslt
                 }
                 .observeOn(observeOnScheduler)
-                .subscribe({ onNextPageLoad(it) }, { showError(it) })
+                .subscribe({ onItemsFetched(it) }, { showError(it) })
     }
 
     private fun onExportSuccessful() {
@@ -161,18 +138,24 @@ class ShoppingListViewModel @Inject constructor(
                 Snackbar.LENGTH_LONG)
     }
 
-    private fun onShoppingListUpdated(list: VMShoppingList) {
-        start(list)
-        onCreateOptionsMenu()
+    private fun onShoppingListUpdated(new: VMShoppingList) {
+        synchronized(this) {
+            val old = shoppingList.get()
+            shoppingList.set(new)
+            if (old == null || old.mode != new.mode) {
+                fetchItems(new)
+            }
+            onCreateOptionsMenu()
+        }
     }
 
     private fun showError(it: Throwable) {
         snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_LONG)
     }
 
-    private fun onNextPageLoad(page: MutableList<VMShoppingListItem>) {
-        items.value = page
-        hasItems = page.isNotEmpty()
+    private fun onItemsFetched(items: MutableList<VMShoppingListItem>) {
+        this.items.postValue(items)
+        hasItems = items.isNotEmpty()
         showItemsIfHasItems()
     }
 
@@ -186,13 +169,11 @@ class ShoppingListViewModel @Inject constructor(
 
     private fun showItems() {
         showNoItemsTxt.set(false)
-        showNextPageLoadingProgress.set(false)
         showFullProgress.set(false)
         showItems.set(true)
     }
 
     private fun showNoItemsText() {
-        showNextPageLoadingProgress.set(false)
         showFullProgress.set(false)
         showItems.set(false)
         showNoItemsTxt.set(true)
@@ -201,20 +182,11 @@ class ShoppingListViewModel @Inject constructor(
     private fun showProgress() {
         showItems.set(false)
         showNoItemsTxt.set(false)
-        showNextPageLoadingProgress.set(false)
-        showFullProgress.set(true)
-    }
-
-    private fun forceShowFullProgress() {
-        showItems.set(false)
-        showNoItemsTxt.set(false)
-        showNextPageLoadingProgress.set(false)
         showFullProgress.set(true)
     }
 
     private fun hideProgress() {
         showFullProgress.set(false)
-        showNextPageLoadingProgress.set(false)
     }
 
     class Factory @Inject constructor(

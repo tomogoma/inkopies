@@ -8,7 +8,6 @@ import ke.co.definition.inkopies.model.stores.StoreBranch
 import ke.co.definition.inkopies.repos.ms.STATUS_CONFLICT
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
 import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
-import ke.co.definition.inkopies.utils.logging.Logger
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -25,7 +24,6 @@ import javax.inject.Inject
  */
 class FirebaseShoppingClient @Inject constructor(
         private val jwtHelper: JWTHelper,
-        private val logger: Logger,
         private val db: FirebaseFirestore
 ) : ShoppingClient {
 
@@ -36,10 +34,6 @@ class FirebaseShoppingClient @Inject constructor(
     private val collMeasUnits = db.collection(COLLECTION_MEASURING_UNITS)
     private val collBrands = db.collection(COLLECTION_BRANDS)
     private val collPrices = db.collection(COLLECTION_PRICES)
-
-    init {
-        logger.setTag(FirebaseShoppingClient::class.java.name)
-    }
 
     override fun addShoppingList(token: String, name: String): Single<ShoppingList> = Single.create<ShoppingList> {
         val doc = FirestoreShoppingList(name)
@@ -62,47 +56,49 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun getShoppingLists(token: String, offset: Long, count: Int): Observable<List<ShoppingList>> = Observable.create<List<ShoppingList>> {
+    override fun getShoppingLists(token: String, offset: Long, count: Int): Observable<List<ShoppingList>> {
+        var listenerReg: ListenerRegistration? = null
+        return Observable.create<List<ShoppingList>> {
 
-        collShoppingLists(token)
-                .orderBy(FirestoreShoppingList.KEY_NAME)
+            listenerReg = collShoppingLists(token)
+                    .orderBy(FirestoreShoppingList.KEY_NAME)
 //                .limit(count.toLong())
-                .addSnapshotListener { qs, e ->
-                    if (e != null) {
-                        logger.error("error listening for shopping list updates", e)
-                        return@addSnapshotListener
+                    .addSnapshotListener { qs, e ->
+                        if (e != null) {
+                            it.onError(Exception("Unable to fetch items: ${e.message} - ${e.cause}"))
+                            return@addSnapshotListener
+                        }
+                        if (qs!!.isEmpty) {
+                            it.onNext(listOf())
+                            return@addSnapshotListener
+                        }
+                        val res = qs.map {
+                            it.toObject(FirestoreShoppingList::class.java).toShoppingList(it.id)
+                        }
+                        it.onNext(res)
                     }
-                    if (qs == null) {
-                        logger.warn("got null query snapshot listening for shopping list updates")
-                        return@addSnapshotListener
-                    }
-                    if (qs.isEmpty) {
-                        logger.warn("got empty snapshot, clearing list")
-                        it.onNext(listOf())
-                        return@addSnapshotListener
-                    }
-                    val res = qs.map {
-                        it.toObject(FirestoreShoppingList::class.java).toShoppingList(it.id)
-                    }
-                    it.onNext(res)
-                }
+        }
+                .doOnTerminate { listenerReg?.remove() }
     }
 
     override fun getShoppingList(token: String, id: String): Observable<ShoppingList> {
-        return Observable.create {
-            collShoppingLists(token).document(id)
+        var listenerReg: ListenerRegistration? = null
+        return Observable.create<ShoppingList> {
+            listenerReg = collShoppingLists(token).document(id)
                     .addSnapshotListener { ds, e ->
                         if (e != null) {
-                            logger.error("error listening for shopping list updates", e)
+                            it.onError(Exception("Unable to fetch items: ${e.message} - ${e.cause}"))
                             return@addSnapshotListener
                         }
-                        if (ds == null) {
-                            logger.warn("got null query snapshot listening for shopping list updates")
+                        if (!ds!!.exists()) {
+                            it.onError(httpException(STATUS_NOT_FOUND, "Shopping list not found"))
                             return@addSnapshotListener
                         }
-                        it.onNext(ds.toObject(FirestoreShoppingList::class.java)!!.toShoppingList(id))
+                        val sl = ds.toObject(FirestoreShoppingList::class.java)!!
+                                .toShoppingList(id)
+                        it.onNext(sl)
                     }
-        }
+        }.doOnTerminate { listenerReg?.remove() }
     }
 
     override fun insertShoppingListItem(token: String, req: ShoppingListItemInsert): Single<ShoppingListItem> {
@@ -278,60 +274,58 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter): Observable<List<ShoppingListItem>> =
-            Observable.create<List<ShoppingListItem>> {
-                val query = if (f.inList != null || f.inCart != null) {
-                    var q: Query = collShoppingListItems(token, f.shoppingListID)
-                    if (f.inList != null) {
-                        q = q.whereEqualTo(FirestoreShoppingListItem.KEY_IN_LIST, f.inList)
-                    }
-                    if (f.inCart != null) {
-                        q = q.whereEqualTo(FirestoreShoppingListItem.KEY_IN_CART, f.inCart)
-                    }
-                    q
-//                      .orderBy(FirestoreShoppingListItem.KEY_IN_CART, Query.Direction.DESCENDING)
-                } else {
-                    collShoppingListItems(token, f.shoppingListID)
-//                            .orderBy(FirestoreShoppingListItem.KEY_IN_LIST, Query.Direction.DESCENDING)
+    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter): Observable<List<ShoppingListItem>> {
+        var listenerReg: ListenerRegistration? = null
+        return Observable.create<List<ShoppingListItem>> {
+            val query = if (f.inList != null || f.inCart != null) {
+                var q: Query = collShoppingListItems(token, f.shoppingListID)
+                if (f.inList != null) {
+                    q = q.whereEqualTo(FirestoreShoppingListItem.KEY_IN_LIST, f.inList)
                 }
+                if (f.inCart != null) {
+                    q = q.whereEqualTo(FirestoreShoppingListItem.KEY_IN_CART, f.inCart)
+                }
+                q
+//                      .orderBy(FirestoreShoppingListItem.KEY_IN_CART, Query.Direction.DESCENDING)
+            } else {
+                collShoppingListItems(token, f.shoppingListID)
+//                            .orderBy(FirestoreShoppingListItem.KEY_IN_LIST, Query.Direction.DESCENDING)
+            }
 
-                query
+            listenerReg = query
 //                        .orderBy(FirestoreShoppingListItem.KEY_ITEM_NAME)
 //                        .limit(count.toLong())
-                        .addSnapshotListener { qs, e ->
-                            if (e != null) {
-                                logger.error("error listening for shopping list updates", e)
-                                return@addSnapshotListener
-                            }
-                            if (qs == null) {
-                                logger.warn("got null query snapshot listening for shopping list updates")
-                                return@addSnapshotListener
-                            }
-                            if (qs.isEmpty) {
-                                logger.warn("got empty snapshot, clearing list")
-                                it.onNext(listOf())
-                                return@addSnapshotListener
-                            }
-                            val res = qs
-                                    .map {
-                                        it.toObject(FirestoreShoppingListItem::class.java)
-                                                .toShoppingListItem(it.id)
-                                    }
-                                    .sortedBy { it.itemName() }
-                                    .sortedBy { it.categoryName() }
-                                    .sortedByDescending {
-                                        if (f.inList != null) it.inCart
-                                        else it.inList
-                                    }
-                            it.onNext(res)
+                    .addSnapshotListener { qs, e ->
+                        if (e != null) {
+                            it.onError(Exception("Unable to fetch items: ${e.message} - ${e.cause}"))
+                            return@addSnapshotListener
                         }
-            }
+                        if (qs!!.isEmpty) {
+                            it.onNext(listOf())
+                            return@addSnapshotListener
+                        }
+                        val res = qs
+                                .map {
+                                    it.toObject(FirestoreShoppingListItem::class.java)
+                                            .toShoppingListItem(it.id)
+                                }
+                                .sortedBy { it.itemName() }
+                                .sortedBy { it.categoryName() }
+                                .sortedByDescending {
+                                    if (f.inList != null) it.inCart
+                                    else it.inList
+                                }
+                        it.onNext(res)
+                    }
+        }.doOnTerminate { listenerReg?.remove() }
+    }
 
 
     override fun checkout(token: String, slid: String, branchName: String?, storeName: String?, date: Date): Completable {
         var checkoutItems: List<ShoppingListItem>? = null
         var branch: StoreBranch? = null
         var shoppingList: ShoppingList? = null
+        val shoppingListRef = collShoppingLists(token).document(slid)
         val sliFilter = ShoppingListItemsFilter(shoppingListID = slid, inList = true,
                 inCart = true)
         return insertStoreIfNotExist(storeName ?: "")
@@ -386,8 +380,7 @@ class FirebaseShoppingClient @Inject constructor(
 
                 .flatMap {
                     Single.create<ShoppingList> {
-                        collShoppingLists(token)
-                                .document(slid)
+                        shoppingListRef
                                 .get()
                                 .addOnSuccessListener { ds ->
                                     it.onSuccess(ds.toObject(FirestoreShoppingList::class.java)!!
@@ -413,6 +406,11 @@ class FirebaseShoppingClient @Inject constructor(
                         val histItm = FirestoreShoppingHistoryItem(chckOutItm)
                         batch.set(histItmRef, histItm)
                     }
+
+                    val fsList = FirestoreShoppingList(shoppingList!!.name,
+                            shoppingList!!.activeListPrice, shoppingList!!.cartPrice,
+                            ShoppingMode.PREPARATION.name)
+                    batch.set(shoppingListRef, fsList)
 
                     batch.commit()
                             .addOnSuccessListener { _ -> it.onCompleted() }

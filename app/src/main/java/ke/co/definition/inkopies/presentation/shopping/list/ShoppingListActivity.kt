@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
+import android.databinding.Observable
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.DividerItemDecoration
@@ -14,7 +15,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
-import com.google.gson.Gson
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListBinding
@@ -23,13 +23,13 @@ import ke.co.definition.inkopies.databinding.ItemShoppingListBinding
 import ke.co.definition.inkopies.model.shopping.ShoppingMode
 import ke.co.definition.inkopies.presentation.common.InkopiesActivity
 import ke.co.definition.inkopies.presentation.shopping.checkout.CheckoutDialogFrag
-import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 
 class ShoppingListActivity : InkopiesActivity() {
 
     private lateinit var viewModel: ShoppingListViewModel
     private lateinit var views: ActivityShoppingListBinding
+    private lateinit var shoppingListObs: Observable.OnPropertyChangedCallback
     private var menu: Menu? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,22 +45,23 @@ class ShoppingListActivity : InkopiesActivity() {
 
         val viewAdapter = prepRecyclerView(views.content)
 
+        setSupportActionBar(views.toolbar)
+
         observeViewModel(viewModel, views, viewAdapter)
         start(viewModel)
         observeViews(views, viewModel, viewAdapter)
-
-        setSupportActionBar(views.toolbar)
-        supportActionBar!!.title = viewModel.shoppingList.get()!!.name()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         this.menu = menu
-        viewModel.onCreateOptionsMenu()
+
         viewModel.menuRes.observe(this, Observer {
             menu?.clear()
             menuInflater.inflate(it!!, menu)
         })
         observedLiveData.add(viewModel.menuRes)
+
+        viewModel.onCreateOptionsMenu()
         return true
     }
 
@@ -75,9 +76,14 @@ class ShoppingListActivity : InkopiesActivity() {
         return true
     }
 
+    override fun onDestroy() {
+        viewModel.shoppingList.removeOnPropertyChangedCallback(shoppingListObs)
+        super.onDestroy()
+    }
+
     private fun onCheckout() {
-        CheckoutDialogFrag.start(supportFragmentManager, viewModel.shoppingList.get()!!.id,
-                { viewModel.onCheckoutComplete() })
+        val listID = viewModel.shoppingList.get()?.id ?: return
+        CheckoutDialogFrag.start(supportFragmentManager, listID)
     }
 
     private fun onExport() {
@@ -109,19 +115,13 @@ class ShoppingListActivity : InkopiesActivity() {
 
     private fun observeViews(vs: ActivityShoppingListBinding, vm: ShoppingListViewModel, va: ShoppingListAdapter) {
         vs.fab.setOnClickListener {
-            UpsertListItemDialogFrag.start(supportFragmentManager, vm.shoppingList.get()!!, null, null,
-                    { vm.onItemAdded(it ?: return@start) })
+            val list = vm.shoppingList.get() ?: return@setOnClickListener
+            UpsertListItemDialogFrag.start(supportFragmentManager, list, null, null)
         }
         va.setOnItemSelectedListener(object : ActionListener {
             override fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus) {
-                UpsertListItemDialogFrag.start(supportFragmentManager, vm.shoppingList.get()!!, item, focus,
-                        {
-                            if (it != null) {
-                                vm.onItemUpdated(item, it)
-                            } else {
-                                vm.onItemDeleted(item)
-                            }
-                        })
+                val list = vm.shoppingList.get() ?: return
+                UpsertListItemDialogFrag.start(supportFragmentManager, list, item, focus)
             }
 
             override fun onCheckChanged(item: VMShoppingListItem, newState: Boolean) {
@@ -130,46 +130,36 @@ class ShoppingListActivity : InkopiesActivity() {
         })
     }
 
-    private fun observeViewModel(vm: ShoppingListViewModel, vs: ActivityShoppingListBinding, va: ShoppingListAdapter) {
+    private fun observeViewModel(vm: ShoppingListViewModel, vs: ActivityShoppingListBinding,
+                                 va: ShoppingListAdapter) {
+
         vm.snackbarData.observe(this, Observer { it?.show(vs.root) })
         vm.items.observe(this, Observer {
             va.setItems(it ?: return@Observer)
             menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
         })
-        vm.itemUpdate.observe(this, Observer {
-            va.updateItem(it ?: return@Observer)
-            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
-        })
-        vm.newItem.observe(this, Observer {
-            va.add(it ?: return@Observer)
-            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
-        })
-        vm.itemDelete.observe(this, Observer {
-            va.removeItem(it ?: return@Observer)
-            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
-        })
-        vm.clearList.observe(this, Observer {
-            if (it == true) va.clear()
-            menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
-        })
+        observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.items))
 
-        observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.items, vm.itemUpdate,
-                vm.newItem, vm.itemDelete, vm.clearList))
+        shoppingListObs = object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                supportActionBar!!.title = viewModel.shoppingList.get()!!.name()
+            }
+        }
+        vm.shoppingList.addOnPropertyChangedCallback(shoppingListObs)
     }
 
     private fun start(vm: ShoppingListViewModel) {
-        val slStr = intent.getStringExtra(EXTRA_SHOPPING_LIST)
-        val sl = Gson().fromJson(slStr, VMShoppingList::class.java)
-        vm.start(sl)
+        val slID = intent.getStringExtra(EXTRA_SHOPPING_LIST_ID)
+        vm.start(slID)
     }
 
     companion object {
 
-        private const val EXTRA_SHOPPING_LIST = "EXTRA_SHOPPING_LIST"
+        private const val EXTRA_SHOPPING_LIST_ID = "EXTRA_SHOPPING_LIST_ID"
 
-        fun start(activity: Activity, shoppingList: VMShoppingList) {
+        fun start(activity: Activity, shoppingListID: String) {
             val i = Intent(activity, ShoppingListActivity::class.java)
-            i.putExtra(EXTRA_SHOPPING_LIST, Gson().toJson(shoppingList))
+            i.putExtra(EXTRA_SHOPPING_LIST_ID, shoppingListID)
             activity.startActivity(i)
         }
     }

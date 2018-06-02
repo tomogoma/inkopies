@@ -111,7 +111,7 @@ class ShoppingListsActivity : InkopiesActivity() {
         vs.fab.setOnClickListener {
             NewShoppingListDialogFrag.start(supportFragmentManager, onDismissCallback = {})
         }
-        viewAdapter.setOnItemSelectedListener { ShoppingListActivity.start(this, it) }
+        viewAdapter.setOnItemSelectedListener { ShoppingListActivity.start(this, it.id) }
     }
 
     private fun observeViewModel(vs: ActivityShoppingListsBinding) {
