@@ -16,6 +16,7 @@ import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
+import rx.Subscription
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -37,34 +38,21 @@ class ShoppingListViewModel @Inject constructor(
     val showNextPageLoadingProgress = ObservableBoolean()
 
     val snackbarData = SingleLiveEvent<SnackbarData>()
-    val nextPage = SingleLiveEvent<MutableList<VMShoppingListItem>>()
+    val items = SingleLiveEvent<MutableList<VMShoppingListItem>>()
     val newItem = SingleLiveEvent<VMShoppingListItem>()
     val itemUpdate = SingleLiveEvent<VMShoppingListItem>()
     val itemDelete = SingleLiveEvent<VMShoppingListItem>()
     val menuRes = SingleLiveEvent<Int>()
     val clearList = SingleLiveEvent<Boolean>()
 
-    private var currOffset = 0L
+    private var hasItems = false
+    private var itemsSubscription: Subscription? = null
 
     fun start(list: VMShoppingList) {
         this.shoppingList.set(list)
-        currOffset = 0L
         clearList.value = true
-        val filter = when (list.mode) {
-            ShoppingMode.PREPARATION -> ShoppingListItemsFilter(list.id)
-            ShoppingMode.SHOPPING -> ShoppingListItemsFilter(list.id, inList = true)
-        }
-        manager.getShoppingListItems(filter, currOffset, PRICE_FETCH_COUNT)
-                .doOnSubscribe { showProgress() }
-                .doOnUnsubscribe { hideProgress() }
-                .subscribeOn(subscribeOnScheduler)
-                .observeOn(observeOnScheduler)
-                .map {
-                    val rslt = mutableListOf<VMShoppingListItem>()
-                    it.forEach { rslt.add(VMShoppingListItem(it, list.mode)) }
-                    return@map rslt
-                }
-                .subscribe({ onNextPageLoad(it) }, { showError(it) })
+        fetchItems(list)
+        observeList(list.id)
     }
 
     fun onCreateOptionsMenu() {
@@ -114,7 +102,6 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     fun onItemAdded(item: VMShoppingListItem) {
-        currOffset++
         shoppingList.set(shoppingList.get()!!.accumulateInsertPrices(item))
         newItem.value = item
         showItems()
@@ -127,7 +114,6 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     fun onItemDeleted(item: VMShoppingListItem) {
-        currOffset--
         shoppingList.set(shoppingList.get()!!.accumulateDeletePrices(item))
         itemDelete.value = item
     }
@@ -141,6 +127,33 @@ class ShoppingListViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe(this::onExportSuccessful, this::showError)
+    }
+
+    private fun observeList(id: String) {
+        manager.getShoppingList(id)
+                .subscribeOn(subscribeOnScheduler)
+                .map { VMShoppingList(it) }
+                .observeOn(observeOnScheduler)
+                .subscribe(this.shoppingList::set, this::showError)
+    }
+
+    private fun fetchItems(list: VMShoppingList) {
+        val filter = when (list.mode) {
+            ShoppingMode.PREPARATION -> ShoppingListItemsFilter(list.id)
+            ShoppingMode.SHOPPING -> ShoppingListItemsFilter(list.id, inList = true)
+        }
+        itemsSubscription?.unsubscribe()
+        itemsSubscription = manager.getShoppingListItems(filter)
+                .doOnSubscribe { showProgress() }
+                .doOnNext { hideProgress() }
+                .subscribeOn(subscribeOnScheduler)
+                .map {
+                    val rslt = mutableListOf<VMShoppingListItem>()
+                    it.forEach { rslt.add(VMShoppingListItem(it, list.mode)) }
+                    return@map rslt
+                }
+                .observeOn(observeOnScheduler)
+                .subscribe({ onNextPageLoad(it) }, { showError(it) })
     }
 
     private fun onExportSuccessful() {
@@ -158,20 +171,18 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     private fun onNextPageLoad(page: MutableList<VMShoppingListItem>) {
-        nextPage.value = page
-        currOffset += page.size
+        items.value = page
+        hasItems = page.isNotEmpty()
         showItemsIfHasItems()
     }
 
     private fun showItemsIfHasItems() {
-        if (hasItems()) {
+        if (hasItems) {
             showItems()
         } else {
             showNoItemsText()
         }
     }
-
-    private fun hasItems() = currOffset > 0L
 
     private fun showItems() {
         showNoItemsTxt.set(false)
@@ -190,13 +201,8 @@ class ShoppingListViewModel @Inject constructor(
     private fun showProgress() {
         showItems.set(false)
         showNoItemsTxt.set(false)
-        if (currOffset == 0L) {
-            showNextPageLoadingProgress.set(false)
-            showFullProgress.set(true)
-        } else {
-            showFullProgress.set(false)
-            showNextPageLoadingProgress.set(true)
-        }
+        showNextPageLoadingProgress.set(false)
+        showFullProgress.set(true)
     }
 
     private fun forceShowFullProgress() {
@@ -221,9 +227,5 @@ class ShoppingListViewModel @Inject constructor(
             @Suppress("UNCHECKED_CAST")
             return ShoppingListViewModel(manager, exporter, subscribeOnScheduler, observeOnScheduler) as T
         }
-    }
-
-    companion object {
-        const val PRICE_FETCH_COUNT = 5
     }
 }

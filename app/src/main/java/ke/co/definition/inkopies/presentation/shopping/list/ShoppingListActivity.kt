@@ -132,8 +132,8 @@ class ShoppingListActivity : InkopiesActivity() {
 
     private fun observeViewModel(vm: ShoppingListViewModel, vs: ActivityShoppingListBinding, va: ShoppingListAdapter) {
         vm.snackbarData.observe(this, Observer { it?.show(vs.root) })
-        vm.nextPage.observe(this, Observer {
-            va.addItems(it ?: return@Observer)
+        vm.items.observe(this, Observer {
+            va.setItems(it ?: return@Observer)
             menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
         })
         vm.itemUpdate.observe(this, Observer {
@@ -153,7 +153,7 @@ class ShoppingListActivity : InkopiesActivity() {
             menu?.findItem(R.id.checkout)?.isVisible = va.hasCartedItem()
         })
 
-        observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.nextPage, vm.itemUpdate,
+        observedLiveData.addAll(mutableListOf(vm.snackbarData, vm.items, vm.itemUpdate,
                 vm.newItem, vm.itemDelete, vm.clearList))
     }
 
@@ -245,6 +245,12 @@ class ShoppingListActivity : InkopiesActivity() {
                 items.clear()
                 notifyDataSetChanged()
             }
+        }
+
+        fun setItems(items: MutableList<VMShoppingListItem>) {
+            // consider all crud changes that may have occurred when doing intelligent update
+            clear()
+            addItems(items)
         }
 
         fun addItems(items: MutableList<VMShoppingListItem>) {

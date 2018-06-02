@@ -44,7 +44,7 @@ class ShoppingListsViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .doOnSubscribe { showProgressShoppingLists() }
-                .doOnUnsubscribe { hideProgressShoppingLists() }
+                .doOnNext { hideProgressShoppingLists() }
                 .map {
                     val res = mutableListOf<VMShoppingList>()
                     it.forEach { res.add(VMShoppingList(it)) }

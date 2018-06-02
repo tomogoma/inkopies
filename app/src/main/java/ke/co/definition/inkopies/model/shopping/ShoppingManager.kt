@@ -13,11 +13,12 @@ interface ShoppingManager {
     fun createShoppingList(name: String): Single<ShoppingList>
     fun updateShoppingList(list: ShoppingList): Single<ShoppingList>
     fun getShoppingLists(offset: Long, count: Int): Observable<List<ShoppingList>>
+    fun getShoppingList(id: String): Observable<ShoppingList>
 
     fun insertShoppingListItem(item: ShoppingListItemInsert): Single<ShoppingListItem>
     fun updateShoppingListItem(req: ShoppingListItemUpdate): Single<ShoppingListItem>
     fun deleteShoppingListItem(shoppingListID: String, id: String): Completable
-    fun getShoppingListItems(f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>>
+    fun getShoppingListItems(f: ShoppingListItemsFilter): Observable<List<ShoppingListItem>>
     fun searchShoppingListItem(req: ShoppingListItemSearch): Single<List<ShoppingListItem>>
     fun searchCategory(q: String): Single<List<Category>>
 }

@@ -92,15 +92,16 @@ class ShoppingManagerImpl @Inject constructor(
                 }
     }
 
-    override fun getShoppingListItems(f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>> {
+    override fun getShoppingListItems(f: ShoppingListItemsFilter): Observable<List<ShoppingListItem>> {
         return auth.getJWT()
-                .flatMap { client.getShoppingListItems(it.value, f, offset, count) }
+                .toObservable()
+                .flatMap { client.getShoppingListItems(it.value, f) }
                 .onErrorResumeNext {
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
-                        return@onErrorResumeNext Single.just(mutableListOf<ShoppingListItem>())
+                        return@onErrorResumeNext Observable.just(mutableListOf<ShoppingListItem>())
                     }
-                    return@onErrorResumeNext Single.error(handleAuthErrors(logger, auth, resMan, it,
-                            "get shopping list items"))
+                    return@onErrorResumeNext Observable.error(handleAuthErrors(logger, auth,
+                            resMan, it, "get shopping list items"))
                 }
     }
 
@@ -112,6 +113,15 @@ class ShoppingManagerImpl @Inject constructor(
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorReturn mutableListOf<ShoppingList>()
                     }
+                    throw handleAuthErrors(logger, auth, resMan, it, "fetch shopping lists")
+                }
+    }
+
+    override fun getShoppingList(id: String): Observable<ShoppingList> {
+        return auth.getJWT()
+                .toObservable()
+                .flatMap { client.getShoppingList(it.value, id) }
+                .onErrorReturn {
                     throw handleAuthErrors(logger, auth, resMan, it, "fetch shopping lists")
                 }
     }

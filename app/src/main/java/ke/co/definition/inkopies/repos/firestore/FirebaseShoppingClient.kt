@@ -16,7 +16,6 @@ import retrofit2.adapter.rxjava.HttpException
 import rx.Completable
 import rx.Observable
 import rx.Single
-import java.lang.Exception
 import java.util.*
 import javax.inject.Inject
 
@@ -87,6 +86,23 @@ class FirebaseShoppingClient @Inject constructor(
                     }
                     it.onNext(res)
                 }
+    }
+
+    override fun getShoppingList(token: String, id: String): Observable<ShoppingList> {
+        return Observable.create {
+            collShoppingLists(token).document(id)
+                    .addSnapshotListener { ds, e ->
+                        if (e != null) {
+                            logger.error("error listening for shopping list updates", e)
+                            return@addSnapshotListener
+                        }
+                        if (ds == null) {
+                            logger.warn("got null query snapshot listening for shopping list updates")
+                            return@addSnapshotListener
+                        }
+                        it.onNext(ds.toObject(FirestoreShoppingList::class.java)!!.toShoppingList(id))
+                    }
+        }
     }
 
     override fun insertShoppingListItem(token: String, req: ShoppingListItemInsert): Single<ShoppingListItem> {
@@ -262,8 +278,8 @@ class FirebaseShoppingClient @Inject constructor(
                 .addOnFailureListener(it::onError)
     }
 
-    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter, offset: Long, count: Int): Single<List<ShoppingListItem>> =
-            Single.create<List<ShoppingListItem>> {
+    override fun getShoppingListItems(token: String, f: ShoppingListItemsFilter): Observable<List<ShoppingListItem>> =
+            Observable.create<List<ShoppingListItem>> {
                 val query = if (f.inList != null || f.inCart != null) {
                     var q: Query = collShoppingListItems(token, f.shoppingListID)
                     if (f.inList != null) {
@@ -282,15 +298,23 @@ class FirebaseShoppingClient @Inject constructor(
                 query
 //                        .orderBy(FirestoreShoppingListItem.KEY_ITEM_NAME)
 //                        .limit(count.toLong())
-                        .get()
-                        .addOnSuccessListener { qs: QuerySnapshot ->
-                            if (qs.isEmpty) {
-                                it.onError(httpException(STATUS_NOT_FOUND, "none found"))
-                                return@addOnSuccessListener
+                        .addSnapshotListener { qs, e ->
+                            if (e != null) {
+                                logger.error("error listening for shopping list updates", e)
+                                return@addSnapshotListener
                             }
-                            val res = qs.documents
+                            if (qs == null) {
+                                logger.warn("got null query snapshot listening for shopping list updates")
+                                return@addSnapshotListener
+                            }
+                            if (qs.isEmpty) {
+                                logger.warn("got empty snapshot, clearing list")
+                                it.onNext(listOf())
+                                return@addSnapshotListener
+                            }
+                            val res = qs
                                     .map {
-                                        it.toObject(FirestoreShoppingListItem::class.java)!!
+                                        it.toObject(FirestoreShoppingListItem::class.java)
                                                 .toShoppingListItem(it.id)
                                     }
                                     .sortedBy { it.itemName() }
@@ -299,11 +323,7 @@ class FirebaseShoppingClient @Inject constructor(
                                         if (f.inList != null) it.inCart
                                         else it.inList
                                     }
-                            it.onSuccess(res)
-                        }
-                        .addOnFailureListener { e: Exception ->
-                            it.onError(httpException(STATUS_NOT_FOUND, e.message
-                                    ?: "reported by firebase"))
+                            it.onNext(res)
                         }
             }
 
@@ -320,7 +340,10 @@ class FirebaseShoppingClient @Inject constructor(
                 .flatMap { insertBranchIfNotExists(branchName ?: "", it) }
                 .map { branch = it }
 
-                .flatMap { getShoppingListItems(token, sliFilter, 0, 1000) }
+                .flatMap {
+                    getShoppingListItems(token, sliFilter)
+                            .toSingle()
+                }
 
                 .flatMap { cartItems ->
 
