@@ -122,7 +122,9 @@ class ShoppingListActivity : InkopiesActivity() {
         va.setOnItemSelectedListener(object : ActionListener {
             override fun onItemSelected(item: VMShoppingListItem, focus: ItemFocus) {
                 val list = vm.shoppingList.get() ?: return
-                UpsertListItemDialogFrag.start(supportFragmentManager, list, item, focus)
+                item.isUpdating.set(true)
+                UpsertListItemDialogFrag.start(supportFragmentManager, list, item, focus,
+                        { item.isUpdating.set(false) })
             }
 
             override fun onCheckChanged(item: VMShoppingListItem, newState: Boolean) {

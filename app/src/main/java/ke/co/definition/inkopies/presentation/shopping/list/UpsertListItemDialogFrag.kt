@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.presentation.shopping.list
 import android.app.Dialog
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.DialogInterface
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
@@ -33,6 +34,8 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class UpsertListItemDialogFrag : SLMDialogFragment() {
 
+    private var onDismissListener: () -> Unit = {}
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
                 R.layout.dialog_upsert_list_item, container, false)
@@ -54,6 +57,16 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         return dialog
+    }
+
+    override fun onCancel(dialog: DialogInterface?) {
+        onDismissListener()
+        super.onCancel(dialog)
+    }
+
+    override fun dismiss() {
+        onDismissListener()
+        super.dismiss()
     }
 
     private fun setUpAutoCompletables(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
@@ -116,9 +129,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     private fun observeViewModel(vm: UpsertListItemViewModel, vs: DialogUpsertListItemBinding) {
         vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
         vm.finished.observe(this, Observer { dismiss() })
-        vm.finishedAddNext.observe(this, Observer {
-            onFinishedAddNext(vs)
-        })
+        vm.finishedAddNext.observe(this, Observer { onFinishedAddNext(vs) })
         observedLiveData.addAll(mutableListOf(vm.snackBarData, vm.finished, vm.finishedAddNext))
     }
 
@@ -171,6 +182,11 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
         fun start(fm: FragmentManager, list: VMShoppingList, item: VMShoppingListItem?,
                   focus: ItemFocus?) {
+            start(fm, list, item, focus, {})
+        }
+
+        fun start(fm: FragmentManager, list: VMShoppingList, item: VMShoppingListItem?,
+                  focus: ItemFocus?, dismissCB: () -> Unit) {
             UpsertListItemDialogFrag().apply {
 
                 arguments = Bundle().apply {
@@ -180,6 +196,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                     putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.CATEGORY.name)
                     putString(EXTRA_LIST, Gson().toJson(list))
                 }
+                onDismissListener = dismissCB
 
                 show(fm, UpsertListItemDialogFrag::class.java.name)
             }

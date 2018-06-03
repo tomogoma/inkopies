@@ -51,8 +51,8 @@ class UpsertListItemViewModel @Inject constructor(
     val checkedText = ObservableField<String>()
 
     val snackBarData = SingleLiveEvent<SnackbarData>()
-    val finished = SingleLiveEvent<VMShoppingListItem>()
-    val finishedAddNext = SingleLiveEvent<VMShoppingListItem>()
+    val finished = SingleLiveEvent<Unit>()
+    val finishedAddNext = SingleLiveEvent<Unit>()
     val searchItemNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchBrandNameResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
     val searchMeasuringUnitResult = SingleLiveEvent<List<SearchShoppingListItemResult>>()
@@ -133,7 +133,7 @@ class UpsertListItemViewModel @Inject constructor(
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { it.map { it.name } }
-                .subscribe({ searchCategoryResult.value = it }, { onOpException(it) })
+                .subscribe({ searchCategoryResult.value = it }, this::onOpException)
     }
 
     fun onSearchMeasuringUnit(search: String) {
@@ -172,7 +172,8 @@ class UpsertListItemViewModel @Inject constructor(
                 .doOnUnsubscribe { overlayProgress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ finished.value = null }, { onOpException(it) })
+                .subscribe({ /*no-op*/ }, { /*no-op*/ })
+        finished.value = null
     }
 
     fun onSubmit() {
@@ -194,22 +195,18 @@ class UpsertListItemViewModel @Inject constructor(
                     quantity.get()?.toIntOrNull(), measuringUnit.get(),
                     unitPrice.get()?.toFloatOrNull()))
         }
-                .doOnSubscribe {
-                    overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
-                }
-                .doOnUnsubscribe { overlayProgress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .map { VMShoppingListItem(it, list.mode) }
-                .subscribe(this::onAdded, this::onOpException)
+                .subscribe({ /* no-op*/ }, { /* no-op*/ })
+        onAdded()
     }
 
-    private fun onAdded(item: VMShoppingListItem) {
+    private fun onAdded() {
+        clearFields()
         if (addAnother.get()) {
-            finishedAddNext.value = item
-            clearFields()
+            finishedAddNext.value = null
         } else {
-            finished.value = item
+            finished.value = null
         }
     }
 
@@ -245,7 +242,7 @@ class UpsertListItemViewModel @Inject constructor(
                     }
                     return@map rslt
                 }
-                .subscribe({ successFunc(it) }, { onOpException(it) })
+                .subscribe({ successFunc(it) }, this::onOpException)
     }
 
     private fun onOpException(e: Throwable) {
