@@ -205,8 +205,9 @@ class ExporterImpl @Inject constructor(
     }
 
     companion object {
-        val conveyanceHeaders = arrayOf("listName", "itemName", "categoryName", "brandName", "quantity",
-                "measuringUnit", "unitPrice", "inList", "inCart")
+        val conveyanceHeaders = arrayOf("listName", "itemName", "categoryName", "brandName",
+                "quantity", "storeBranchName", "storeName", "measuringUnit", "unitPrice",
+                "inList", "inCart")
 
         fun fileHeadersValid(resMan: ResourceManager, headers: Array<String>) {
             if (!headers.contains("itemName")) {
@@ -225,12 +226,15 @@ data class ExporterShoppingListItem(
         var quantity: Int = 0,
         var measuringUnit: String = "",
         var unitPrice: Float = 0F,
+        var storeBranchName: String = "",
+        var storeName: String = "",
         var inList: Boolean = false,
         var inCart: Boolean = false
 ) {
     constructor(listName: String, it: ShoppingListItem) :
             this(listName, it.itemName(), it.categoryName(), it.brandName(), it.quantity,
-                    it.measuringUnitName(), it.unitPrice(), it.inList, it.inCart)
+                    it.measuringUnitName(), it.unitPrice(), it.storeBranchName(), it.storeName(),
+                    it.inList, it.inCart)
 
 
     fun toShoppingListItemInsert(listID: String) =
