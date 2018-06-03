@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.model.shopping
 
+import android.support.v7.util.DiffUtil
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
@@ -92,7 +93,8 @@ class ShoppingManagerImpl @Inject constructor(
                 }
     }
 
-    override fun getShoppingListItems(f: ShoppingListItemsFilter): Observable<List<ShoppingListItem>> {
+    override fun getShoppingListItems(f: ShoppingListItemsFilter): Observable<Pair<DiffUtil.DiffResult, List<ShoppingListItem>>> {
+        var items = listOf<ShoppingListItem>()
         return auth.getJWT()
                 .toObservable()
                 .flatMap { client.getShoppingListItems(it.value, f) }
@@ -102,6 +104,24 @@ class ShoppingManagerImpl @Inject constructor(
                     }
                     return@onErrorResumeNext Observable.error(handleAuthErrors(logger, auth,
                             resMan, it, "get shopping list items"))
+                }
+                .map { newItems ->
+                    val diffs = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                            return items.size > oldItemPosition && newItems.size > newItemPosition
+                                    && items[oldItemPosition].id == newItems[newItemPosition].id
+                        }
+
+                        override fun getOldListSize(): Int = items.size
+
+                        override fun getNewListSize(): Int = newItems.size
+
+                        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                            return items[oldItemPosition] == newItems[newItemPosition]
+                        }
+                    }, false)
+                    items = newItems
+                    return@map Pair(diffs, items)
                 }
     }
 

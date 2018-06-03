@@ -42,7 +42,9 @@ class ExporterImpl @Inject constructor(
 
     override fun exportShoppingList(list: ShoppingList): Completable = Completable.create {
         shopping.getShoppingListItems(ShoppingListItemsFilter(list.id))
-                .map { it.map { ExporterShoppingListItem(list.name, it) } }
+                .first()
+                .toSingle()
+                .map { it.second.map { ExporterShoppingListItem(list.name, it) } }
                 .subscribe({ items ->
                     shoppingListItemsToCSV(list.name, items)
                     it.onCompleted()
@@ -72,7 +74,7 @@ class ExporterImpl @Inject constructor(
                         val currObsvbl = shopping.getShoppingListItems(filter)
                                 .first()
                                 .map {
-                                    it.map { ExporterShoppingListItem(list.name, it) }
+                                    it.second.map { ExporterShoppingListItem(list.name, it) }
                                 }
                                 .onErrorResumeNext {
                                     Observable.error(handleAuthErrors(logger, auth, resMan, it,

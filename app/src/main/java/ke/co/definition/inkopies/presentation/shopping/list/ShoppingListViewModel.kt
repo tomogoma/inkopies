@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProvider
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
 import android.support.design.widget.Snackbar
+import android.support.v7.util.DiffUtil
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.backup.Exporter
 import ke.co.definition.inkopies.model.shopping.*
@@ -37,10 +38,9 @@ class ShoppingListViewModel @Inject constructor(
     val showFullProgress = ObservableBoolean()
 
     val snackbarData = SingleLiveEvent<SnackbarData>()
-    val items = SingleLiveEvent<MutableList<VMShoppingListItem>>()
+    val items = SingleLiveEvent<Pair<DiffUtil.DiffResult?, MutableList<VMShoppingListItem>>>()
     val menuRes = SingleLiveEvent<Int>()
 
-    private var hasItems = false
     private var itemsSubscription: Subscription? = null
 
     fun start(listID: String) {
@@ -120,14 +120,15 @@ class ShoppingListViewModel @Inject constructor(
             ShoppingMode.SHOPPING -> ShoppingListItemsFilter(list.id, inList = true)
         }
         itemsSubscription?.unsubscribe()
+        this.items.value = Pair(null, mutableListOf())
         itemsSubscription = manager.getShoppingListItems(filter)
                 .doOnSubscribe { showProgress() }
                 .doOnNext { hideProgress() }
                 .subscribeOn(subscribeOnScheduler)
                 .map {
                     val rslt = mutableListOf<VMShoppingListItem>()
-                    it.forEach { rslt.add(VMShoppingListItem(it, list.mode)) }
-                    return@map rslt
+                    it.second.forEach { rslt.add(VMShoppingListItem(it, list.mode)) }
+                    return@map Pair(it.first, rslt)
                 }
                 .observeOn(observeOnScheduler)
                 .subscribe({ onItemsFetched(it) }, { showError(it) })
@@ -153,14 +154,13 @@ class ShoppingListViewModel @Inject constructor(
         snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_LONG)
     }
 
-    private fun onItemsFetched(items: MutableList<VMShoppingListItem>) {
-        this.items.postValue(items)
-        hasItems = items.isNotEmpty()
-        showItemsIfHasItems()
+    private fun onItemsFetched(changes: Pair<DiffUtil.DiffResult, MutableList<VMShoppingListItem>>) {
+        this.items.postValue(changes)
+        showRelevantView(changes.second)
     }
 
-    private fun showItemsIfHasItems() {
-        if (hasItems) {
+    private fun showRelevantView(items: List<VMShoppingListItem>) {
+        if (items.isNotEmpty()) {
             showItems()
         } else {
             showNoItemsText()

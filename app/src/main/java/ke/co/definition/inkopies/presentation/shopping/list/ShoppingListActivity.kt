@@ -8,6 +8,7 @@ import android.databinding.DataBindingUtil
 import android.databinding.Observable
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -230,127 +231,14 @@ class ShoppingListActivity : InkopiesActivity() {
             listener = l
         }
 
-        fun clear() {
-            synchronized(this) {
-                items.clear()
-                notifyDataSetChanged()
-            }
-        }
-
-        fun setItems(items: MutableList<VMShoppingListItem>) {
-            // consider all crud changes that may have occurred when doing intelligent update
-            clear()
-            addItems(items)
-        }
-
-        fun addItems(items: MutableList<VMShoppingListItem>) {
-            synchronized(this) {
-                val origiSize = this.items.size
-                this.items.addAll(items)
-                notifyItemRangeInserted(origiSize, items.size)
-            }
-        }
-
-        fun updateItem(newVal: VMShoppingListItem) {
-            synchronized(this) {
-                val pos = items.indexOfFirst { it.sli.id == newVal.sli.id }
-                if (pos >= 0) {
-                    this.items.removeAt(pos)
-                }
-                val newPos = calculateNewPos(newVal)
-                this.items.add(newPos, newVal)
-                when (pos) {
-                    newPos -> notifyItemChanged(newPos)
-                    -1 -> notifyItemInserted(newPos)
-                    else -> {
-                        notifyItemMoved(pos, newPos)
-                        notifyItemChanged(newPos)
-                    }
-                }
-            }
-        }
-
-        fun removeItem(item: VMShoppingListItem) {
-            synchronized(this) {
-                val pos = items.indexOfFirst { it.sli.id == item.sli.id }
-                if (pos < 0) {
-                    return@synchronized
-                }
-                this.items.removeAt(pos)
-                notifyItemRemoved(pos)
-            }
-        }
-
-        fun add(item: VMShoppingListItem) {
-            synchronized(this) {
-                val newPos = calculateNewPos(item)
-                items.add(newPos, item)
-                notifyItemInserted(newPos)
-            }
+        fun setItems(changes: Pair<DiffUtil.DiffResult?, MutableList<VMShoppingListItem>>) {
+            items.clear()
+            items = changes.second
+            changes.first?.dispatchUpdatesTo(this) ?: notifyDataSetChanged()
         }
 
         fun hasCartedItem(): Boolean {
             return items.indexOfFirst { it.inCart } != -1
-        }
-
-        private fun calculateNewPos(item: VMShoppingListItem): Int {
-            synchronized(this) {
-
-                if (items.size == 0) {
-                    return 0
-                }
-
-                // We know checked items come first, followed by unchecked items.
-                var firstUncheckedPos = items.indexOfFirst { !it.isChecked() }
-                if (firstUncheckedPos == -1) {
-                    firstUncheckedPos = items.size
-                }
-
-                return if (item.isChecked()) {
-                    calculateNewPos(item, 0, firstUncheckedPos)
-                } else {
-                    calculateNewPos(item, firstUncheckedPos, items.size)
-                }
-            }
-        }
-
-        /**
-         * calculateNewPos calculates the position of item in the items list limited to the
-         * range defined by offsetPos (inclusive) and lastPos (exclusive). Returns 0 if the list
-         * is empty or lastPos is 0.
-         */
-        private fun calculateNewPos(item: VMShoppingListItem, offsetPos: Int, lastPos: Int): Int {
-            synchronized(this) {
-
-                if (items.size == 0 || lastPos == 0) {
-                    return 0
-                }
-
-                var frstSameCatPos = 0
-                var lstSameCatPos = 0
-
-                val orderPos = items
-                        .subList(offsetPos, lastPos)
-                        .apply {
-
-                            frstSameCatPos = indexOfFirst { it.categoryName() == item.categoryName() }
-                            if (frstSameCatPos > -1) {
-                                lstSameCatPos = indexOfLast { it.categoryName() == item.categoryName() } + 1
-                                return@apply
-                            }
-
-                            frstSameCatPos = indexOfFirst { it.categoryName() > item.categoryName() }
-                            if (frstSameCatPos == -1) frstSameCatPos = size
-                            lstSameCatPos = frstSameCatPos
-                        }
-                        .subList(frstSameCatPos, lstSameCatPos)
-                        .indexOfFirst { it.itemName() >= item.itemName() }
-                return if (orderPos == -1) {
-                    offsetPos + lstSameCatPos
-                } else {
-                    offsetPos + frstSameCatPos + orderPos
-                }
-            }
         }
 
         data class ItemShoppingListHolder(internal val binding: ItemShoppingListBinding) :
