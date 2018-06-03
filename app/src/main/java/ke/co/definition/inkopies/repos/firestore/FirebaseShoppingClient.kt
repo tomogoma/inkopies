@@ -336,6 +336,7 @@ class FirebaseShoppingClient @Inject constructor(
 
                 .flatMap {
                     getShoppingListItems(token, sliFilter)
+                            .first()
                             .toSingle()
                 }
 
