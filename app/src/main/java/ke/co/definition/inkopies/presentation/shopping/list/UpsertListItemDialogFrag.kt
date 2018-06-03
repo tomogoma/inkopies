@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class UpsertListItemDialogFrag : SLMDialogFragment() {
 
-    private var onDismissListener: () -> Unit = {}
+    private var onCancelListener: () -> Unit = {}
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val views: DialogUpsertListItemBinding = DataBindingUtil.inflate(inflater,
@@ -60,13 +60,8 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
     }
 
     override fun onCancel(dialog: DialogInterface?) {
-        onDismissListener()
+        onCancelListener()
         super.onCancel(dialog)
-    }
-
-    override fun dismiss() {
-        onDismissListener()
-        super.dismiss()
     }
 
     private fun setUpAutoCompletables(vs: DialogUpsertListItemBinding, vm: UpsertListItemViewModel) {
@@ -186,7 +181,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
         }
 
         fun start(fm: FragmentManager, list: VMShoppingList, item: VMShoppingListItem?,
-                  focus: ItemFocus?, dismissCB: () -> Unit) {
+                  focus: ItemFocus?, cancelCB: () -> Unit) {
             UpsertListItemDialogFrag().apply {
 
                 arguments = Bundle().apply {
@@ -196,7 +191,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                     putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.CATEGORY.name)
                     putString(EXTRA_LIST, Gson().toJson(list))
                 }
-                onDismissListener = dismissCB
+                onCancelListener = cancelCB
 
                 show(fm, UpsertListItemDialogFrag::class.java.name)
             }
