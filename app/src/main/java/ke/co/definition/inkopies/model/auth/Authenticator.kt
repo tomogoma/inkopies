@@ -95,22 +95,29 @@ class Authenticator @Inject constructor(
         }
     }
 
-    override fun isLoggedIn(): Single<Boolean> = Single.create({
+    override fun isLoggedIn(): Single<LoggedInStatus> = Single.create({
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
             updateObservedLoggedInStatus(false)
-            it.onSuccess(false)
+            it.onSuccess(LoggedInStatus.notLoggedIn())
             return@create
         }
 
         val jwt = Gson().fromJson(jwtStr, JWT::class.java)
         if (jwt.isExpired()) {
-            logOut().subscribe({ it.onSuccess(false) }, it::onError)
+            logOut().subscribe({ it.onSuccess(LoggedInStatus.notLoggedIn()) }, it::onError)
             return@create
         }
 
-        it.onSuccess(true)
+        val vlStr = localStore.fetch(KEY_VERIF_LOGIN)
+        val vl = Gson().fromJson(vlStr, VerifLogin::class.java)
+        if (!vl.verified) {
+            it.onSuccess(LoggedInStatus.loggedInNotVerified(vl))
+            return@create
+        }
+
+        it.onSuccess(LoggedInStatus.loggedInAndVerified(vl))
     })
 
     override fun registerManual(id: Identifier, password: String): Single<VerifLogin> =
@@ -118,7 +125,7 @@ class Authenticator @Inject constructor(
                     .onErrorResumeNext {
                         Single.error(handleNewIdentifierErrors(it, id.value(), "registering"))
                     }
-                    .doOnSuccess { saveLoggedInDetails(it.first, it.second) }
+                    .doOnSuccess { saveLoggedInDetails(id, it.first, it.second) }
                     .map {
                         return@map when (id) {
                             is Identifier.Email -> it.first.email
@@ -126,7 +133,7 @@ class Authenticator @Inject constructor(
                         }
                     }
 
-    override fun loginManual(id: Identifier, password: String): Completable =
+    override fun loginManual(id: Identifier, password: String): Single<LoggedInStatus> =
             authCl.login(id, password)
                     .onErrorResumeNext {
                         if (it is HttpException && it.code() == STATUS_FORBIDDEN) {
@@ -136,8 +143,8 @@ class Authenticator @Inject constructor(
                         return@onErrorResumeNext Single.error(
                                 handleServerErrors(logger, resMan, it, "login manual"))
                     }
-                    .doOnSuccess { saveLoggedInDetails(it.first, it.second) }
-                    .toCompletable()
+                    .map { saveLoggedInDetails(id, it.first, it.second) }
+                    .flatMap { isLoggedIn() }
 
     override fun sendVerifyOTP(vl: VerifLogin): Single<OTPStatus> =
             validateVerifLogin(vl).flatMap { vr: ValidationResult ->
@@ -158,7 +165,7 @@ class Authenticator @Inject constructor(
                                         "check identifier verified"))
                             }
                             .doOnSuccess {
-                                upsertAuthUser(it)
+                                upsertVerifLogin(vl.verified())
                                 when (vr) {
                                     is ValidationResult.ValidOnEmail ->
                                         if (!it.email.verified) {
@@ -200,6 +207,7 @@ class Authenticator @Inject constructor(
                     return@onErrorResumeNext Single.error(
                             handleServerErrors(logger, resMan, it, "verify OTP"))
                 }
+                .map { upsertVerifLogin(vl.verified()) }
                 .toCompletable()
     }
 
@@ -231,9 +239,9 @@ class Authenticator @Inject constructor(
 
     override fun getUser(): Single<AuthUser> =
             isLoggedIn()
-                    .flatMap { isLoggedIn: Boolean ->
+                    .flatMap { status: LoggedInStatus ->
 
-                        if (!isLoggedIn) {
+                        if (!status.loggedIn) {
                             return@flatMap Single.error<AuthUser>(
                                     LoggedOutException(resMan.getString(R.string.please_log_in)))
                         }
@@ -300,11 +308,21 @@ class Authenticator @Inject constructor(
         return handleServerErrors(logger, resMan, err, ctx)
     }
 
-    private fun saveLoggedInDetails(usr: AuthUser, jwtStr: String) {
+    private fun saveLoggedInDetails(id: Identifier, usr: AuthUser, jwtStr: String) {
+        val vl = when (id.type()) {
+            ID_TYPE_EMAIL -> usr.email
+            ID_TYPE_PHONE -> usr.phone
+            else -> throw RuntimeException("unexpected identifier type: ${id.type()}")
+        }
         upsertAuthUser(usr)
+        upsertVerifLogin(vl)
         val jwt = jwtHelper.extractJWT(jwtStr)
         localStore.upsert(KEY_JWT, Gson().toJson(jwt))
         updateObservedLoggedInStatus(true)
+    }
+
+    private fun upsertVerifLogin(vl: VerifLogin) {
+        localStore.upsert(KEY_VERIF_LOGIN, Gson().toJson(vl))
     }
 
     private fun upsertAuthUser(usr: AuthUser) {
@@ -326,6 +344,7 @@ class Authenticator @Inject constructor(
 
     companion object {
         val KEY_AUTHED_USER = Authenticator::class.java.name + "KEY_AUTHED_USER"
+        val KEY_VERIF_LOGIN = Authenticator::class.java.name + "KEY_VERIF_LOGIN"
         val KEY_JWT = Authenticator::class.java.name + "KEY_JWT"
     }
 

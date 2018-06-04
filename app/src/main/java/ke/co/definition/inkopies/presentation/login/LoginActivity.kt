@@ -90,9 +90,7 @@ class LoginActivity : InkopiesActivity() {
             if (isLoggedIn == true) openLoggedInActivity() else layoutViews()
         })
         loginVM.registeredStatus.observe(this, Observer { vl: VerifLogin? ->
-            if (vl != null) {
-                VerifyActivity.startForResult(this, vl, REQ_CODE_VERIFY_REGISTRATION)
-            }
+            VerifyActivity.startForResult(this, vl!!, REQ_CODE_VERIFY_REGISTRATION)
         })
         loginVM.snackbarData.observe(this, Observer { snackBar = it?.show(binding.rootLayout) })
         loginVM.showPasswordPage.observe(this, Observer { showPasswordPage() })

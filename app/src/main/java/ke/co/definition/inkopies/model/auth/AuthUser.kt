@@ -19,7 +19,9 @@ data class VerifLogin(
         val value: String = "",
         val verified: Boolean = false,
         val otpStatus: OTPStatus? = null
-)
+) {
+    fun verified() = VerifLogin(id, userID, value, true)
+}
 
 data class OTPStatus(
         val obfuscatedAddress: String,
@@ -37,4 +39,18 @@ data class JWTInfo(
         @SerializedName("exp") private val expiresAt: Long
 ) {
     fun isExpired(): Boolean = Date(expiresAt * 1000).before(Date())
+}
+
+@Suppress("DataClassPrivateConstructor")
+data class LoggedInStatus private constructor(
+        val loggedIn: Boolean,
+        val verified: Boolean,
+        /**verifLogin is null only when loggedIn is false.**/
+        val verifLogin: VerifLogin? = null
+) {
+    companion object {
+        fun notLoggedIn() = LoggedInStatus(false, false)
+        fun loggedInNotVerified(vl: VerifLogin) = LoggedInStatus(true, false, vl)
+        fun loggedInAndVerified(vl: VerifLogin) = LoggedInStatus(true, true, vl)
+    }
 }

@@ -11,9 +11,9 @@ import rx.Single
  */
 interface Authable {
     fun getUserID(id: Identifier): Single<String>
-    fun isLoggedIn(): Single<Boolean>
+    fun isLoggedIn(): Single<LoggedInStatus>
     fun registerManual(id: Identifier, password: String): Single<VerifLogin>
-    fun loginManual(id: Identifier, password: String): Completable
+    fun loginManual(id: Identifier, password: String): Single<LoggedInStatus>
     fun sendVerifyOTP(vl: VerifLogin): Single<OTPStatus>
     fun checkIdentifierVerified(vl: VerifLogin): Completable
     fun verifyOTP(vl: VerifLogin, otp: String?): Completable

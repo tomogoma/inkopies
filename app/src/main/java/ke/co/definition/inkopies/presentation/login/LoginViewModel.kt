@@ -9,10 +9,7 @@ import android.support.design.widget.Snackbar
 import com.bumptech.glide.load.model.GlideUrl
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
-import ke.co.definition.inkopies.model.auth.Authable
-import ke.co.definition.inkopies.model.auth.Identifier
-import ke.co.definition.inkopies.model.auth.Validatable
-import ke.co.definition.inkopies.model.auth.VerifLogin
+import ke.co.definition.inkopies.model.auth.*
 import ke.co.definition.inkopies.model.user.ProfileManager
 import ke.co.definition.inkopies.model.user.PubUserProfile
 import ke.co.definition.inkopies.presentation.common.ProgressData
@@ -113,10 +110,21 @@ class LoginViewModel @Inject constructor(
         auth.isLoggedIn()
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe(
-                        { loggedInStatus.value = it },
+                .subscribe(this::onLoginStatus,
                         { throw RuntimeException("Error checking if user is logged in", it) }
                 )
+    }
+
+    private fun onLoginStatus(status: LoggedInStatus) {
+        if (!status.loggedIn) {
+            loggedInStatus.value = false
+            return
+        }
+        if (!status.verified) {
+            registeredStatus.value = status.verifLogin
+            return
+        }
+        loggedInStatus.value = true
     }
 
     private fun logInManual(ider: Identifier, pass: String) {
@@ -125,7 +133,7 @@ class LoginViewModel @Inject constructor(
                 .doOnUnsubscribe({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ loggedInStatus.value = true }, this::handleError)
+                .subscribe(this::onLoginStatus, this::handleError)
     }
 
     private fun registerManual(ider: Identifier, pass: String) {
