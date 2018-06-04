@@ -31,9 +31,13 @@ class VerifyActivity : InkopiesActivity() {
         viewModel = ViewModelProviders.of(this, vvmFactory)
                 .get(VerificationViewModel::class.java)
         views.vm = viewModel
-        observeViewModel()
         observeViews(views)
         if (savedInstanceState == null) start()
+    }
+
+    override fun onResume() {
+        observeViewModel()
+        super.onResume()
     }
 
     private fun onChangeIDDialogDismiss(vl: VerifLogin?) {
