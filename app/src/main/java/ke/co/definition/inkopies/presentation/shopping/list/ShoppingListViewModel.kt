@@ -42,6 +42,7 @@ class ShoppingListViewModel @Inject constructor(
     val menuRes = SingleLiveEvent<Int>()
 
     private var itemsSubscription: Subscription? = null
+    private var subscriptions = mutableListOf<Subscription>()
 
     fun start(listID: String) {
         fetchList(listID)
@@ -103,8 +104,16 @@ class ShoppingListViewModel @Inject constructor(
                 .subscribe(this::onExportSuccessful, this::showError)
     }
 
+    override fun onCleared() {
+        subscriptions.forEach {
+            if (it.isUnsubscribed) return@forEach
+            it.unsubscribe()
+        }
+        super.onCleared()
+    }
+
     private fun fetchList(id: String) {
-        manager.getShoppingList(id)
+        val sub = manager.getShoppingList(id)
                 .doOnSubscribe { showProgress() }
                 .doOnNext { hideProgress() }
                 .doOnError { hideProgress() }
@@ -112,15 +121,19 @@ class ShoppingListViewModel @Inject constructor(
                 .map { VMShoppingList(it) }
                 .observeOn(observeOnScheduler)
                 .subscribe(this::onShoppingListUpdated, this::showError)
+        subscriptions.add(sub)
     }
 
     private fun fetchItems(list: VMShoppingList) {
+
         val filter = when (list.mode) {
             ShoppingMode.PREPARATION -> ShoppingListItemsFilter(list.id)
             ShoppingMode.SHOPPING -> ShoppingListItemsFilter(list.id, inList = true)
         }
-        itemsSubscription?.unsubscribe()
         this.items.value = Pair(null, mutableListOf())
+
+        itemsSubscription?.unsubscribe()
+        subscriptions.remove(itemsSubscription)
         itemsSubscription = manager.getShoppingListItems(filter)
                 .doOnSubscribe { showProgress() }
                 .doOnNext { hideProgress() }
@@ -132,6 +145,7 @@ class ShoppingListViewModel @Inject constructor(
                 }
                 .observeOn(observeOnScheduler)
                 .subscribe({ onItemsFetched(it) }, { showError(it) })
+        subscriptions.add(itemsSubscription!!)
     }
 
     private fun onExportSuccessful() {

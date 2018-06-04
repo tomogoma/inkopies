@@ -17,6 +17,7 @@ import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
 import rx.Scheduler
+import rx.Subscription
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -39,8 +40,10 @@ class ShoppingListsViewModel @Inject constructor(
     val snackbarData = SingleLiveEvent<SnackbarData>()
     val shoppingLists = MutableLiveData<MutableList<VMShoppingList>>()
 
+    private val subscriptions = mutableListOf<Subscription>()
+
     fun start() {
-        manager.getShoppingLists(0, LISTS_PER_PAGE)
+        val sub = manager.getShoppingLists(0, LISTS_PER_PAGE)
                 .map {
                     val res = mutableListOf<VMShoppingList>()
                     it.forEach { res.add(VMShoppingList(it)) }
@@ -52,9 +55,11 @@ class ShoppingListsViewModel @Inject constructor(
                 .doOnNext { hideProgressShoppingLists() }
                 .doOnError { hideProgressShoppingLists() }
                 .subscribe(this::onShoppingListsFetched, this::showError)
+        subscriptions.add(sub)
     }
 
     fun onExport() {
+        // TODO move this action to a dedicated service.
         exporter.exportShoppingLists()
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
@@ -62,10 +67,19 @@ class ShoppingListsViewModel @Inject constructor(
     }
 
     fun onImport(uri: Uri) {
+        // TODO move this action to a dedicated service.
         exporter.importLists(uri)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe(this::onImportSuccessful, this::showError)
+    }
+
+    override fun onCleared() {
+        subscriptions.forEach {
+            if (it.isUnsubscribed) return@forEach
+            it.unsubscribe()
+        }
+        super.onCleared()
     }
 
     private fun onExportSuccessful() {
