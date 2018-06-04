@@ -31,13 +31,13 @@ class VerifyActivity : InkopiesActivity() {
         viewModel = ViewModelProviders.of(this, vvmFactory)
                 .get(VerificationViewModel::class.java)
         views.vm = viewModel
+        observeViewModel()
         observeViews(views)
         if (savedInstanceState == null) start()
     }
 
     private fun onChangeIDDialogDismiss(vl: VerifLogin?) {
         if (vl != null) viewModel.onVerifLoginUpdated(vl)
-        observeViewModel()
     }
 
     private fun observeViewModel() {
@@ -79,7 +79,7 @@ class VerifyActivity : InkopiesActivity() {
 
     private fun openChangeIdentifierDialog() {
         removeLiveDataObservers()
-        ChangeIDDialogFrag.start(supportFragmentManager, this@VerifyActivity::onChangeIDDialogDismiss)
+        ChangeIDDialogFrag.start(supportFragmentManager, this::onChangeIDDialogDismiss)
     }
 
     companion object {
