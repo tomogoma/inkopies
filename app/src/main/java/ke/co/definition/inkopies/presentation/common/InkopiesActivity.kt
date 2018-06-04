@@ -34,8 +34,6 @@ abstract class InkopiesActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        viewModel.onDestroy()
-        viewModel.loggedInStatus.removeObservers(this)
         removeLiveDataObservers()
         super.onDestroy()
     }
@@ -54,6 +52,7 @@ abstract class InkopiesActivity : AppCompatActivity() {
                     == PackageManager.PERMISSION_GRANTED)
 
     internal fun removeLiveDataObservers() {
+        viewModel.loggedInStatus.removeObservers(this)
         observedLiveData.forEach { it.removeObservers(this) }
     }
 

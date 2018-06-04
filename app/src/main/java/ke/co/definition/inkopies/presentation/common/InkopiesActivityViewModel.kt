@@ -40,8 +40,9 @@ class InkopiesActivityViewModel @Inject constructor(
                 .subscribe({ /*no-op*/ }, this::onError)
     }
 
-    fun onDestroy() {
+    override fun onCleared() {
         auth.unRegisterLoggedInStatusObserver(loggedInStatusObserverPos)
+        super.onCleared()
     }
 
     private fun onError(err: Throwable) {
