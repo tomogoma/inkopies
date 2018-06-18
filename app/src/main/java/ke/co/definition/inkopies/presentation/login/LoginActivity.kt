@@ -10,6 +10,7 @@ import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentStatePagerAdapter
+import android.support.v4.view.ViewPager
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityLoginBinding
@@ -82,6 +83,17 @@ class LoginActivity : InkopiesActivity() {
                 else -> binding.vm!!.onPasswordSubmitted()
             }
         }
+        binding.content.pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(state: Int) {}
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+
+            override fun onPageSelected(position: Int) {
+                if (position == ScreenSlidePagerAdapter.PASSWORD_PAGE) {
+                    binding.vm!!.onReadyPresentPassword()
+                }
+            }
+        })
     }
 
     private fun observeViewModel() {
@@ -94,13 +106,18 @@ class LoginActivity : InkopiesActivity() {
         })
         loginVM.snackbarData.observe(this, Observer { snackBar = it?.show(binding.rootLayout) })
         loginVM.showPasswordPage.observe(this, Observer { showPasswordPage() })
+        loginVM.showIdentifierPage.observe(this, Observer { showIdentifierPage() })
 
         observedLiveData.addAll(listOf(loginVM.loggedInStatus, loginVM.registeredStatus,
-                loginVM.snackbarData, loginVM.showPasswordPage))
+                loginVM.snackbarData, loginVM.showPasswordPage, loginVM.showIdentifierPage))
     }
 
     private fun showPasswordPage() {
         binding.content.pager.currentItem = ScreenSlidePagerAdapter.PASSWORD_PAGE
+    }
+
+    private fun showIdentifierPage() {
+        binding.content.pager.currentItem = ScreenSlidePagerAdapter.IDENTIFIER_PAGE
     }
 
     private fun openLoggedInActivity() {

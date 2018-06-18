@@ -35,22 +35,23 @@ class LoginViewModel @Inject constructor(
         @Named(Dagger2Module.SCHEDULER_MAIN_THREAD) private val observeOnScheduler: Scheduler
 ) : ViewModel() {
 
-    val loggedInStatus: SingleLiveEvent<Boolean> = SingleLiveEvent()
-    val registeredStatus: SingleLiveEvent<VerifLogin> = SingleLiveEvent()
-    val snackbarData: SingleLiveEvent<SnackbarData> = SingleLiveEvent()
-    val showPasswordPage: SingleLiveEvent<Unit> = SingleLiveEvent()
-    val avatarURL: SingleLiveEvent<GlideUrl> = SingleLiveEvent()
+    val loggedInStatus = SingleLiveEvent<Boolean>()
+    val registeredStatus = SingleLiveEvent<VerifLogin>()
+    val snackbarData = SingleLiveEvent<SnackbarData>()
+    val showPasswordPage = SingleLiveEvent<Unit>()
+    val showIdentifierPage = SingleLiveEvent<Unit>()
+    val avatarURL = SingleLiveEvent<GlideUrl>()
 
-    val progressData: ObservableField<ProgressData> = ObservableField()
-    val identifier: ObservableField<String> = ObservableField()
-    val identifierError: ObservableField<String> = ObservableField()
-    val password: ObservableField<String> = ObservableField()
-    val passwordError: ObservableField<String> = ObservableField()
-    val pubUserProfile: ObservableField<PubUserProfile> = ObservableField()
+    val progressData = ObservableField<ProgressData>()
+    val identifier = ObservableField<String>()
+    val identifierError = ObservableField<String>()
+    val password = ObservableField<String>()
+    val passwordError = ObservableField<String>()
+    val pubUserProfile = ObservableField<PubUserProfile>()
     val isRegistered: ObservableBoolean = ObservableBoolean()
     val progressProfImg: ObservableBoolean = ObservableBoolean()
 
-    private var identifierRes: Identifier? = null
+    private var identifierRslt: Identifier? = null
 
     init {
         identifier.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
@@ -69,18 +70,12 @@ class LoginViewModel @Inject constructor(
 
     fun onIdentifierSubmitted() {
 
-        val id = identifier.get()
-        val res = validation.validateIdentifier(id)
-        if (!res.isValid) {
-            identifierError.set(resMan.getString(R.string.error_bad_email_or_phone))
-            return
-        }
-        identifierRes = res.getIdentifier()
-
-        auth.getUserID(identifierRes!!)
+        val idRslt = validateIdentifier() ?: return
+        identifierRslt = idRslt
+        auth.getUserID(idRslt)
                 .doOnSubscribe {
                     val fmt = resMan.getString(R.string.checking_ss)
-                    val fmtArg = identifierRes!!.type().toLowerCase()
+                    val fmtArg = idRslt.type().toLowerCase()
                     progressData.set(ProgressData(String.format(fmt, fmtArg)))
                 }
                 .doOnUnsubscribe { progressData.set(ProgressData()) }
@@ -89,16 +84,37 @@ class LoginViewModel @Inject constructor(
                 .subscribe(this::onFetchUserID, this::handleError)
     }
 
+    fun onReadyPresentPassword() {
+        val idRslt = validateIdentifier()
+        if (idRslt == null) {
+            avatarURL.value = null
+            pubUserProfile.set(null)
+            identifierRslt = null
+            showIdentifierPage.call()
+            return
+        }
+        if (identifierRslt == null) {
+            showIdentifierPage.call()
+            onIdentifierSubmitted()
+            return
+        }
+    }
+
     fun onPasswordSubmitted() {
+        val idRslt = identifierRslt
+        if (idRslt == null) {
+            showIdentifierPage.call()
+            return
+        }
         val pass = password.get()
         if (!validation.isValidPassword(pass)) {
             passwordError.set(resMan.getString(R.string.error_password_too_short))
             return
         }
         if (isRegistered.get()) {
-            logInManual(identifierRes!!, pass!!)
+            logInManual(idRslt, pass!!)
         } else {
-            registerManual(identifierRes!!, pass!!)
+            registerManual(idRslt, pass!!)
         }
     }
 
@@ -113,6 +129,16 @@ class LoginViewModel @Inject constructor(
                 .subscribe(this::onLoginStatus,
                         { throw RuntimeException("Error checking if user is logged in", it) }
                 )
+    }
+
+    private fun validateIdentifier(): Identifier? {
+        val id = identifier.get()
+        val rslt = validation.validateIdentifier(id)
+        if (!rslt.isValid) {
+            identifierError.set(resMan.getString(R.string.error_bad_email_or_phone))
+            return null
+        }
+        return rslt.getIdentifier()
     }
 
     private fun onLoginStatus(status: LoggedInStatus) {
