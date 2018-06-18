@@ -89,8 +89,9 @@ class LoginActivity : InkopiesActivity() {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 
             override fun onPageSelected(position: Int) {
-                if (position == ScreenSlidePagerAdapter.PASSWORD_PAGE) {
-                    binding.vm!!.onReadyPresentPassword()
+                when (position) {
+                    ScreenSlidePagerAdapter.IDENTIFIER_PAGE -> binding.vm!!.onReadyPresentIdentifier()
+                    ScreenSlidePagerAdapter.PASSWORD_PAGE -> binding.vm!!.onReadyPresentPassword()
                 }
             }
         })

@@ -84,26 +84,32 @@ class LoginViewModel @Inject constructor(
                 .subscribe(this::onFetchUserID, this::handleError)
     }
 
+    fun onReadyPresentIdentifier() {
+        clearIdentifierRslt()
+    }
+
     fun onReadyPresentPassword() {
         val idRslt = validateIdentifier()
         if (idRslt == null) {
-            clearIdentifier()
+            clearIdentifierRslt()
+            showIdentifierPage.call()
             return
         }
         if (identifierRslt == null) {
-            showIdentifierPage.call()
             onIdentifierSubmitted()
             return
         }
     }
 
     fun changeIdentifier() {
+        clearIdentifierRslt()
         showIdentifierPage.call()
     }
 
     fun onPasswordSubmitted() {
         val idRslt = identifierRslt
         if (idRslt == null) {
+            clearIdentifierRslt()
             showIdentifierPage.call()
             return
         }
@@ -132,11 +138,10 @@ class LoginViewModel @Inject constructor(
                 )
     }
 
-    private fun clearIdentifier() {
+    private fun clearIdentifierRslt() {
         avatarURL.value = null
         pubUserProfile.set(null)
         identifierRslt = null
-        showIdentifierPage.call()
     }
 
     private fun validateIdentifier(): Identifier? {
