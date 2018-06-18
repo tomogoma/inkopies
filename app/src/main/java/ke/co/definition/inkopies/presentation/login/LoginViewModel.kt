@@ -87,10 +87,7 @@ class LoginViewModel @Inject constructor(
     fun onReadyPresentPassword() {
         val idRslt = validateIdentifier()
         if (idRslt == null) {
-            avatarURL.value = null
-            pubUserProfile.set(null)
-            identifierRslt = null
-            showIdentifierPage.call()
+            clearIdentifier()
             return
         }
         if (identifierRslt == null) {
@@ -98,6 +95,10 @@ class LoginViewModel @Inject constructor(
             onIdentifierSubmitted()
             return
         }
+    }
+
+    fun changeIdentifier() {
+        showIdentifierPage.call()
     }
 
     fun onPasswordSubmitted() {
@@ -129,6 +130,13 @@ class LoginViewModel @Inject constructor(
                 .subscribe(this::onLoginStatus,
                         { throw RuntimeException("Error checking if user is logged in", it) }
                 )
+    }
+
+    private fun clearIdentifier() {
+        avatarURL.value = null
+        pubUserProfile.set(null)
+        identifierRslt = null
+        showIdentifierPage.call()
     }
 
     private fun validateIdentifier(): Identifier? {

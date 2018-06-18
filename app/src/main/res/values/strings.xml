@@ -113,5 +113,6 @@
     <string name="store">Store</string>
     <string name="branch">Branch</string>
     <string name="checkout_date_title">Checkout Date</string>
-    <string name="checking_out">Checking out...</string>
+    <string name="checking_out">Checking out…</string>
+    <string name="login_to_a_different_account">Login to a different account</string>
 </resources>

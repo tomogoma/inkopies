@@ -67,7 +67,9 @@
         <item name="android:gravity">bottom</item>
     </style>
 
-    <style name="Link" parent="DescriptionText">
+    <style name="Link">
+        <item name="android:layout_marginTop">@dimen/space_normal</item>
+        <item name="android:layout_marginBottom">@dimen/space_small</item>
         <item name="android:textColor">@color/colorLink</item>
     </style>
 

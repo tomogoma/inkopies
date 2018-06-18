@@ -50,7 +50,7 @@ class LoginPasswordFragment : InkopiesFragment() {
     }
 
     private fun observeView(b: FragmentLoginPasswordBinding) {
-        b.forgotPassword.setOnClickListener({ b.vm!!.forgotPassword() })
+        b.forgotPassword.setOnClickListener { b.vm!!.forgotPassword() }
         b.password.setOnEditorActionListener { _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
                 b.vm!!.onPasswordSubmitted()
@@ -58,6 +58,7 @@ class LoginPasswordFragment : InkopiesFragment() {
             }
             return@setOnEditorActionListener false
         }
+        b.changeIdentifier.setOnClickListener { b.vm!!.changeIdentifier() }
     }
 
 }
