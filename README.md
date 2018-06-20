@@ -4,6 +4,8 @@ Source code for [Inkopies](https://play.google.com/store/apps/details?id=ke.co.d
 
 Play store URL: https://play.google.com/store/apps/details?id=ke.co.definition.inkopies
 
+Become a Beta tester: https://play.google.com/apps/testing/ke.co.definition.inkopies
+
 # Source Code Information
 
 The application uses the MVVM pattern employing the following main libraries:
