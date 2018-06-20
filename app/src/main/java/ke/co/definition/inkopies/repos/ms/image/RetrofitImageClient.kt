@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.repos.ms.image
 
+import android.net.Uri
 import com.google.gson.annotations.SerializedName
 import ke.co.definition.inkopies.repos.ms.API_KEY
 import ke.co.definition.inkopies.repos.ms.bearerToken
@@ -24,9 +25,10 @@ class RetrofitImageClient @Inject constructor(@Named(ImageModule.MS) private val
 
     private val imageMSAPI by lazy { retrofit.create(ImageMSAPI::class.java) }
 
-    override fun uploadProfilePic(token: String, folder: String, uri: String): Single<String> {
+    override fun uploadProfilePic(token: String, folder: String, uri: Uri): Single<String> {
 
-        val file = File(uri)
+
+        val file = File(uri.path)
         val reqFile = RequestBody.create(MediaType.parse("image/*"), file)
         val reqFilePart = MultipartBody.Part.createFormData("image", file.name, reqFile)
 

@@ -6,11 +6,14 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.databinding.DataBindingUtil
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.design.widget.Snackbar
 import android.support.v4.content.FileProvider
 import android.view.MenuItem
+import com.theartofdev.edmodo.cropper.CropImage
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityProfileBinding
@@ -96,7 +99,7 @@ class ProfileActivity : InkopiesActivity() {
                     newRequestListener { viewModel.progressProfImg.set(false) })
         })
         viewModel.snackbarData.observe(this, Observer { it?.show(views.rootLayout) })
-        viewModel.cropImage.observe(this, Observer { TODO("crop image") })
+        viewModel.cropImage.observe(this, Observer { startCropImageIntent(it!!) })
         viewModel.loadEnlargedPic.observe(this, Observer {
             loadPic(it ?: return@Observer, views.content.bigAvatar, null)
         })
@@ -106,6 +109,14 @@ class ProfileActivity : InkopiesActivity() {
 
         observedLiveData.addAll(listOf(viewModel.profileImgURL, viewModel.snackbarData,
                 viewModel.cropImage, viewModel.takePhotoEvent, viewModel.loadEnlargedPic))
+    }
+
+    private fun startCropImageIntent(imageUri: Uri) {
+        CropImage.activity(imageUri)
+                .setActivityTitle(getString(R.string.profile))
+                .setFixAspectRatio(true)
+                .setOutputCompressFormat(Bitmap.CompressFormat.PNG)
+                .start(this)
     }
 
     private fun showEditGenProfDialog() {

@@ -5,9 +5,11 @@ import android.arch.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
+import android.net.Uri
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import com.bumptech.glide.load.model.GlideUrl
+import com.theartofdev.edmodo.cropper.CropImage
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.FileHelper
 import ke.co.definition.inkopies.model.ResourceManager
@@ -39,7 +41,7 @@ class ProfileViewModel @Inject constructor(
 
     val profileImgURL = SingleLiveEvent<GlideUrl>()
     val snackbarData = SingleLiveEvent<SnackbarData>()
-    val cropImage = SingleLiveEvent<Boolean>()
+    val cropImage = SingleLiveEvent<Uri>()
     val loadEnlargedPic = SingleLiveEvent<GlideUrl>()
     val takePhotoEvent = SingleLiveEvent<Pair<Int, File>>()
 
@@ -78,29 +80,36 @@ class ProfileViewModel @Inject constructor(
 
     fun onActivityResult(reqCode: Int, resultCode: Int, result: Intent?): Boolean {
 
-        if (resultCode == AppCompatActivity.RESULT_CANCELED) {
+        if (!arrayOf(REQ_CODE_CAM_CAPTURE_IMAGE, REQ_CODE_GALLERY_IMAGE,
+                        CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE).contains(reqCode)) {
             return false
         }
 
+        if (resultCode == AppCompatActivity.RESULT_CANCELED) {
+            return true
+        }
+
+        if (resultCode != AppCompatActivity.RESULT_OK) {
+            snackbarData.value = ResIDSnackbarData(R.string.error_something_wicked,
+                    Snackbar.LENGTH_LONG)
+            return true
+        }
+
         if (reqCode == REQ_CODE_CAM_CAPTURE_IMAGE) {
-            if (resultCode != AppCompatActivity.RESULT_OK) {
-                snackbarData.value = ResIDSnackbarData(R.string.error_something_wicked,
-                        Snackbar.LENGTH_LONG)
-                return true
-            }
-            val newPPicURL = takePhotoEvent.value?.second!!.absolutePath ?: return false
-            uploadProfileImage(newPPicURL)
+            val camPhotoUri = Uri.fromFile(takePhotoEvent.value?.second!!) ?: return false
+            cropImage.postValue(camPhotoUri)
             return true
         }
 
         if (reqCode == REQ_CODE_GALLERY_IMAGE) {
-            if (resultCode != AppCompatActivity.RESULT_OK) {
-                snackbarData.value = ResIDSnackbarData(R.string.error_something_wicked,
-                        Snackbar.LENGTH_LONG)
-                return true
-            }
-            val newPPicURL = (result?.data ?: return false).path
-            uploadProfileImage(newPPicURL)
+            val newPPicURL = result?.data ?: return false
+            cropImage.postValue(newPPicURL)
+            return true
+        }
+
+        if (reqCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            val cropRslt = CropImage.getActivityResult(result)
+            uploadProfileImage(cropRslt.uri)
             return true
         }
 
@@ -120,14 +129,14 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onBackPressed(): Boolean {
-        if (enlargePPic.get() == true) {
+        if (enlargePPic.get()) {
             enlargePPic.set(false)
             return true
         }
         return false
     }
 
-    private fun uploadProfileImage(uri: String) {
+    private fun uploadProfileImage(uri: Uri) {
         profMngr.uploadProfilePic(uri)
                 .doOnSubscribe { progressProfImg.set(true) }
                 .doOnUnsubscribe { progressProfImg.set(false) }

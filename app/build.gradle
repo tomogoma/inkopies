@@ -14,8 +14,8 @@ android {
         applicationId "ke.co.definition.inkopies"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 3
-        versionName "0.2.1"
+        versionCode 4
+        versionName "0.3.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -106,5 +106,7 @@ dependencies {
 
     // http://super-csv.github.io/super-csv/downloading.html
     implementation "net.sf.supercsv:super-csv:2.4.0"
+
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.6.0'
 }
 apply plugin: 'com.google.gms.google-services'

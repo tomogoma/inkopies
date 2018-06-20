@@ -1,5 +1,6 @@
 package ke.co.definition.inkopies.model.user
 
+import android.net.Uri
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.AuthUser
 import ke.co.definition.inkopies.model.auth.Authable
@@ -76,17 +77,10 @@ class ProfileManagerImpl @Inject constructor(
                 .flatMap { Single.just(UserProfile(authUsr!!, it)) }
     }
 
-    override fun uploadProfilePic(uri: String): Single<UserProfile> {
+    override fun uploadProfilePic(uri: Uri): Single<UserProfile> {
         var authUsr: AuthUser? = null
         var jwt: JWT? = null
-        return Completable.create {
-            if (uri == "") {
-                it.onError(Exception("Profile picture was not found"))
-                return@create
-            }
-            it.onCompleted()
-        }.toSingle {}
-                .flatMap { auth.getUser() }
+        return auth.getUser()
                 .map { authUsr = it }
                 .flatMap { auth.getJWT() }
                 .flatMap { jwt = it;imageCl.uploadProfilePic(it.value, PROFILE_IMG_FOLDER, uri) }
