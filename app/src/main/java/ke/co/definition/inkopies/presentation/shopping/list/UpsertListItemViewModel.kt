@@ -2,6 +2,7 @@ package ke.co.definition.inkopies.presentation.shopping.list
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
+import android.databinding.Observable
 import android.databinding.ObservableBoolean
 import android.databinding.ObservableField
 import android.databinding.ObservableInt
@@ -48,7 +49,8 @@ class UpsertListItemViewModel @Inject constructor(
     val deletable = ObservableBoolean()
     val checked = ObservableBoolean()
     val addAnother = ObservableBoolean()
-    val checkedText = ObservableField<String>()
+    val itemNameHint = ObservableField<String>()
+    val editingDetails = ObservableBoolean()
 
     val snackBarData = SingleLiveEvent<SnackbarData>()
     val finished = SingleLiveEvent<Unit>()
@@ -69,16 +71,17 @@ class UpsertListItemViewModel @Inject constructor(
         quantity.clearErrorOnChange(brandNameError)
         measuringUnit.clearErrorOnChange(measuringUnitError)
         unitPrice.clearErrorOnChange(brandNameError)
+        checked.addOnPropertyChangedCallback(object : Observable.OnPropertyChangedCallback() {
+            override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+                calcItemNameHint()
+            }
+        })
     }
 
     fun start(list: VMShoppingList, item: VMShoppingListItem?) {
 
         this.list = list
-        checkedText.set(if (list.mode == ShoppingMode.PREPARATION) {
-            resMan.getString(R.string.add_to_list)
-        } else {
-            resMan.getString(R.string.add_to_cart)
-        })
+        calcItemNameHint()
         clearFields()
 
         if (item == null) {
@@ -102,6 +105,17 @@ class UpsertListItemViewModel @Inject constructor(
         measuringUnit.set(item.measuringUnitName())
         unitPrice.set(item.unitPrice().toString())
         checked.set(item.isChecked())
+    }
+
+    fun calcFinalFocusChange(focus: ItemFocus): ItemFocus {
+        if (focus == ItemFocus.ITEM || editingDetails.get()) {
+            return focus
+        }
+        if (hasDetails()) {
+            editingDetails.set(true)
+            return focus
+        }
+        return ItemFocus.ITEM
     }
 
     fun onSearchItemName(search: String) {
@@ -199,6 +213,35 @@ class UpsertListItemViewModel @Inject constructor(
                 .observeOn(observeOnScheduler)
                 .subscribe({ /* no-op*/ }, { /* no-op*/ })
         onAdded()
+    }
+
+    private fun calcItemNameHint() {
+        itemNameHint.set(
+                when {
+                    !checked.get() ->
+                        resMan.getString(R.string.name_required_label)
+                    list.mode == ShoppingMode.PREPARATION ->
+                        resMan.getString(R.string.name_required_and_in_list)
+                    else ->
+                        resMan.getString(R.string.name_required_and_in_cart)
+                }
+        )
+    }
+
+    private fun hasDetails(): Boolean {
+        if (!categoryName.get().isNullOrBlank()) {
+            return true
+        }
+        if (!brandName.get().isNullOrBlank()) {
+            return true
+        }
+        if (!measuringUnit.get().isNullOrBlank()) {
+            return true
+        }
+        if (!unitPrice.get().isNullOrBlank()) {
+            return true
+        }
+        return false
     }
 
     private fun onAdded() {

@@ -15,7 +15,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <ScrollView
             android:id="@+id/layoutRoot"
@@ -24,18 +24,21 @@
 
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/contentRoot"
-                android:layout_width="wrap_content"
+                style="@style/Container"
                 android:layout_height="wrap_content">
+
+                <android.support.constraint.Group
+                    android:id="@+id/detailsGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="@{vm.editingDetails ? View.VISIBLE : View.GONE}"
+                    app:constraint_referenced_ids="categoryNameLayout,brandNameLayout,quantityLayout,measuringUnitLayout,unitPriceLayout"
+                    tools:visibility="gone" />
 
                 <TextView
                     android:id="@+id/title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/space_normal"
-                    android:gravity="center"
+                    style="@style/DialogTitle"
                     android:text="@{vm.title}"
-                    android:textColor="@color/colorPrimaryDark"
-                    android:textSize="@dimen/text_size_large"
                     app:layout_constraintBottom_toTopOf="@id/categoryNameLayout"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -45,11 +48,7 @@
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/categoryNameLayout"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_small"
-                    android:layout_marginEnd="@dimen/space_normal"
-                    android:layout_marginStart="@dimen/space_normal"
+                    style="@style/TextInputLayout"
                     app:error="@{vm.categoryNameError}"
                     app:layout_constraintBottom_toTopOf="@id/brandNameLayout"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -58,22 +57,14 @@
 
                     <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                         android:id="@+id/categoryName"
-                        android:layout_width="@dimen/input_width"
-                        android:layout_height="wrap_content"
+                        style="@style/NameInput"
                         android:hint="@string/category"
-                        android:imeOptions="actionNext"
-                        android:inputType="textCapWords"
-                        android:maxLines="1"
                         android:text="@={vm.categoryName}" />
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/brandNameLayout"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_small"
-                    android:layout_marginEnd="@dimen/space_normal"
-                    android:layout_marginStart="@dimen/space_normal"
+                    style="@style/TextInputLayout"
                     app:error="@{vm.brandNameError}"
                     app:layout_constraintBottom_toTopOf="@id/itemNameLayout"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -82,46 +73,43 @@
 
                     <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                         android:id="@+id/brandName"
-                        android:layout_width="@dimen/input_width"
-                        android:layout_height="wrap_content"
+                        style="@style/NameInput"
                         android:hint="@string/brand"
-                        android:imeOptions="actionNext"
-                        android:inputType="textCapWords"
-                        android:maxLines="1"
                         android:text="@={vm.brandName}" />
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/itemNameLayout"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_small"
-                    android:layout_marginEnd="@dimen/space_normal"
-                    android:layout_marginStart="@dimen/space_normal"
+                    style="@style/TextInputLayout"
+                    android:layout_width="0dp"
                     app:error="@{vm.itemNameError}"
+                    android:hint="@{vm.itemNameHint}"
                     app:layout_constraintBottom_toTopOf="@id/quantityLayout"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/checked"
+                    app:layout_constraintHorizontal_weight="1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/brandNameLayout">
 
                     <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                         android:id="@+id/itemName"
-                        android:layout_width="@dimen/input_width"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/name_required_label"
-                        android:imeOptions="actionNext"
-                        android:inputType="textCapWords"
-                        android:maxLines="1"
+                        style="@style/NameInput"
                         android:text="@={vm.itemName}" />
                 </android.support.design.widget.TextInputLayout>
 
+                <CheckBox
+                    android:id="@+id/checked"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="@dimen/space_normal"
+                    android:checked="@={vm.checked}"
+                    app:layout_constraintBottom_toBottomOf="@id/itemNameLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/itemNameLayout"
+                    app:layout_constraintTop_toTopOf="@+id/itemNameLayout" />
+
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/quantityLayout"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_small"
-                    android:layout_marginEnd="@dimen/space_normal"
-                    android:layout_marginStart="@dimen/space_normal"
+                    style="@style/TextInputLayout"
                     app:error="@{vm.quantityError}"
                     app:layout_constraintBottom_toTopOf="@id/measuringUnitLayout"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -130,22 +118,15 @@
 
                     <EditText
                         android:id="@+id/quantity"
-                        android:layout_width="@dimen/input_width"
-                        android:layout_height="wrap_content"
+                        style="@style/NameInput"
                         android:hint="@string/quantity"
-                        android:imeOptions="actionNext"
                         android:inputType="number"
-                        android:maxLines="1"
                         android:text="@={vm.quantity}" />
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/measuringUnitLayout"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_small"
-                    android:layout_marginEnd="@dimen/space_normal"
-                    android:layout_marginStart="@dimen/space_normal"
+                    style="@style/TextInputLayout"
                     app:error="@{vm.measuringUnitError}"
                     app:layout_constraintBottom_toTopOf="@id/unitPriceLayout"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -154,22 +135,14 @@
 
                     <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                         android:id="@+id/measuringUnit"
-                        android:layout_width="@dimen/input_width"
-                        android:layout_height="wrap_content"
+                        style="@style/NameInput"
                         android:hint="@string/measuring_unit_title"
-                        android:imeOptions="actionNext"
-                        android:inputType="textCapWords"
-                        android:maxLines="1"
                         android:text="@={vm.measuringUnit}" />
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/unitPriceLayout"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_small"
-                    android:layout_marginEnd="@dimen/space_normal"
-                    android:layout_marginStart="@dimen/space_normal"
+                    style="@style/TextInputLayout"
                     app:error="@{vm.unitPriceError}"
                     app:layout_constraintBottom_toTopOf="@id/checked"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -178,77 +151,63 @@
 
                     <ke.co.definition.inkopies.presentation.views.DelayedAutoCompleteTextView
                         android:id="@+id/unitPrice"
-                        android:layout_width="@dimen/input_width"
-                        android:layout_height="wrap_content"
+                        style="@style/NameInput.LastEntry"
                         android:hint="@string/price"
-                        android:imeOptions="actionDone"
                         android:inputType="numberDecimal"
-                        android:maxLines="1"
                         android:text="@={vm.unitPrice}" />
                 </android.support.design.widget.TextInputLayout>
 
                 <CheckBox
-                    android:id="@+id/checked"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_normal"
-                    android:checked="@={vm.checked}"
-                    android:text="@{vm.checkedText}"
-                    app:layout_constraintBottom_toTopOf="@+id/addAnother"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/unitPriceLayout"
-                    tools:text="In List" />
-
-                <CheckBox
                     android:id="@+id/addAnother"
-                    android:layout_width="@dimen/input_width"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_normal"
+                    style="@style/TextInputLayout"
                     android:checked="@={vm.addAnother}"
                     android:text="@string/add_another"
                     android:visibility="@{vm.deletable ? View.GONE : View.VISIBLE}"
-                    app:layout_constraintBottom_toTopOf="@+id/submit"
+                    app:layout_constraintBottom_toTopOf="@+id/showDetails"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/checked" />
+                    app:layout_constraintTop_toBottomOf="@id/unitPriceLayout" />
 
-                <android.support.constraint.Guideline
-                    android:id="@+id/startMarginGuideline"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_begin="@dimen/space_normal" />
+                <Switch
+                    android:id="@+id/showDetails"
+                    style="@style/TextInputLayout"
+                    android:checked="@={vm.editingDetails}"
+                    android:text="@string/show_details"
+                    app:layout_constraintBottom_toTopOf="@id/submit"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/addAnother" />
 
                 <Button
                     android:id="@+id/delete"
+                    style="@style/Button.Submit"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     android:text="@string/delete"
                     android:visibility="@{vm.deletable ? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBaseline_toBaselineOf="@id/submit"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/submit"
-                    app:layout_constraintStart_toStartOf="@id/startMarginGuideline" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:visibility="visible" />
 
                 <Button
                     android:id="@+id/submit"
+                    style="@style/Button.Submit"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_normal"
-                    android:layout_marginEnd="@dimen/space_normal"
                     android:text="@string/submit"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/delete"
-                    app:layout_constraintTop_toBottomOf="@id/addAnother" />
+                    app:layout_constraintTop_toBottomOf="@id/showDetails" />
             </android.support.constraint.ConstraintLayout>
+
         </ScrollView>
 
         <include
             android:id="@+id/overlayProgress"
             layout="@layout/progress_area"
             bind:data="@{vm.overlayProgress}"
-            tools:visibility="visible" />
+            tools:visibility="gone" />
     </FrameLayout>
 
 </layout>

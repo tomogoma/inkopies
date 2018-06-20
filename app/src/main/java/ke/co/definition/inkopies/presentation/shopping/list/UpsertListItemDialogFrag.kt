@@ -156,7 +156,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     private fun focusOn(vs: DialogUpsertListItemBinding, focus: ItemFocus) {
 
-        when (focus) {
+        when (vs.vm!!.calcFinalFocusChange(focus)) {
             ItemFocus.CATEGORY -> vs.categoryName.showKeyboard(activity!!)
             ItemFocus.BRAND -> vs.brandName.showKeyboard(activity!!)
             ItemFocus.ITEM -> vs.itemName.showKeyboard(activity!!)
@@ -188,7 +188,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
                     if (item != null) {
                         putString(EXTRA_LIST_ITEM, Gson().toJson(item))
                     }
-                    putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.CATEGORY.name)
+                    putString(EXTRA_FOCUS, focus?.name ?: ItemFocus.ITEM.name)
                     putString(EXTRA_LIST, Gson().toJson(list))
                 }
                 onCancelListener = cancelCB

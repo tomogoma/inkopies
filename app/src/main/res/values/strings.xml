@@ -116,4 +116,7 @@
     <string name="checking_out">Checking out…</string>
     <string name="login_to_a_different_account">Login to a different account</string>
     <string name="edit_general_profile_title">Edit General Profile</string>
+    <string name="show_details">Show details</string>
+    <string name="name_required_and_in_list">Name* (in list)</string>
+    <string name="name_required_and_in_cart">Name* (in cart)</string>
 </resources>
