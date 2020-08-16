@@ -4,11 +4,11 @@ import android.app.Application
 import dagger.Module
 import dagger.Provides
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
+import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.*
 import ke.co.definition.inkopies.repos.local.LocalStorable
 import ke.co.definition.inkopies.repos.local.LocalStore
-import ke.co.definition.inkopies.repos.ms.AUTH_MS_ADDRESS
 import ke.co.definition.inkopies.repos.ms.auth.AuthClient
 import ke.co.definition.inkopies.repos.ms.auth.RetrofitAuthClient
 import ke.co.definition.inkopies.utils.logging.Logger
@@ -27,7 +27,7 @@ class AuthModule {
 
     @Provides
     @Named(MS)
-    fun provideRetrofit(): Retrofit = retrofitFactory(AUTH_MS_ADDRESS)
+    fun provideRetrofit(): Retrofit = retrofitFactory(BuildConfig.AUTH_MS_BASE_URL)
 
     @Provides
     @Inject

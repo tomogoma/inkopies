@@ -3,6 +3,7 @@ package ke.co.definition.inkopies.model.auth
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.google.gson.Gson
+import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.repos.local.LocalStorable
@@ -232,7 +233,7 @@ class Authenticator @Inject constructor(
                 }
                 .map {
                     GlideUrl(url, LazyHeaders.Builder()
-                            .addHeader("x-api-key", API_KEY)
+                            .addHeader("x-api-key", BuildConfig.IMAGE_MS_API_KEY)
                             .build())
                 }
     }

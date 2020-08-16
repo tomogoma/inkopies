@@ -1,11 +1,11 @@
 package ke.co.definition.inkopies.repos.ms.auth
 
 import com.google.gson.annotations.SerializedName
+import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.model.auth.AuthUser
 import ke.co.definition.inkopies.model.auth.Identifier
 import ke.co.definition.inkopies.model.auth.OTPStatus
 import ke.co.definition.inkopies.model.auth.VerifLogin
-import ke.co.definition.inkopies.repos.ms.API_KEY
 import ke.co.definition.inkopies.utils.injection.AuthModule
 import okhttp3.Credentials
 import retrofit2.Retrofit
@@ -57,14 +57,14 @@ class RetrofitAuthClient @Inject constructor(@Named(AuthModule.MS) private val r
 interface AuthAPI {
 
     @PUT("{loginType}/register?selfReg=device")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.AUTH_MS_API_KEY}")
     fun register(
             @Path("loginType") loginType: String,
             @Body body: AuthRegRequest
     ): Single<MSAuthUser>
 
     @POST("{loginType}/verify")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.AUTH_MS_API_KEY}")
     fun sendVerifyOTP(
             @Path("loginType") loginType: String,
             @Query("token") token: String,
@@ -72,27 +72,27 @@ interface AuthAPI {
     ): Single<MSOTPStatus>
 
     @POST("users/id")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.AUTH_MS_API_KEY}")
     fun getUserID(
             @Body body: IDRequest
     ): Single<IDResponse>
 
     @POST("{loginType}/login")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.AUTH_MS_API_KEY}")
     fun login(
             @Path("loginType") loginType: String,
             @Header("Authorization") basicAuth: String
     ): Single<MSAuthUser>
 
     @GET("users/{userID}")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.AUTH_MS_API_KEY}")
     fun fetchUserDetails(
             @Path("userID") userID: String,
             @Query("token") token: String
     ): Single<MSAuthUser>
 
     @GET("users/{userID}/{loginType}/verify/{OTP}")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.AUTH_MS_API_KEY}")
     fun verifyOTP(
             @Path("userID") userID: String,
             @Path("loginType") loginType: String,
@@ -100,7 +100,7 @@ interface AuthAPI {
     ): Completable
 
     @POST("users/{userID}")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.AUTH_MS_API_KEY}")
     fun updateIdentifier(
             @Path("userID") userID: String,
             @Query("token") token: String,

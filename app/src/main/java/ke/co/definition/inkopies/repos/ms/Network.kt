@@ -12,14 +12,6 @@ import java.io.IOException
  * On 01/03/18.
  */
 
-const val MFALME_ADDRESS = "https://definition.co.ke/gw/"
-
-const val AUTH_MS_ADDRESS = MFALME_ADDRESS + "v0/authms/"
-const val IMAGE_MS_ADDRESS = MFALME_ADDRESS + "v0/imagems/"
-const val USERS_MS_ADDRESS = MFALME_ADDRESS + "v0/usersms/"
-
-const val API_KEY = "vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g"
-
 const val STATUS_BAD_REQUEST = 400
 const val STATUS_UNAUTHORIZED = 401
 const val STATUS_FORBIDDEN = 403

@@ -22,8 +22,20 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "AUTH_MS_BASE_URL", "\"http://def-authms.herokuapp.com/v0/authms/\"")
+            buildConfigField("String", "USERS_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/usersms/\"")
+            buildConfigField("String", "IMAGE_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/imagems/\"")
+            buildConfigField("String", "AUTH_MS_API_KEY", "\"qoacNSjyCoiDHqucgcAMFhBjoLLugRGghTFQVGLuwtEIeGBQCRTcWiZUDRrldmxAGQHLwPjgLNBgjgqjcShTAPpNfZsTPNwYFNZNcWbRwBkYjmAxUBrZeBoPBegRwBETjlivFkuUzDXYZdnSnKAbOmoZDeWqPHIrmXIDDjhgNcqOLgJJGsvJAyzzdgdhtSdvfRSvVVnUUxdRXMTODeoREtTHLMNvMVXcroTORllndVhNkoojdkAaVzeuiAPlpuuC\"")
+            buildConfigField("String", "USERS_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
+            buildConfigField("String", "IMAGE_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
         }
         debug {
+            buildConfigField("String", "AUTH_MS_BASE_URL", "\"http://def-authms.herokuapp.com/v0/authms/\"")
+            buildConfigField("String", "USERS_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/usersms/\"")
+            buildConfigField("String", "IMAGE_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/imagems/\"")
+            buildConfigField("String", "AUTH_MS_API_KEY", "\"qoacNSjyCoiDHqucgcAMFhBjoLLugRGghTFQVGLuwtEIeGBQCRTcWiZUDRrldmxAGQHLwPjgLNBgjgqjcShTAPpNfZsTPNwYFNZNcWbRwBkYjmAxUBrZeBoPBegRwBETjlivFkuUzDXYZdnSnKAbOmoZDeWqPHIrmXIDDjhgNcqOLgJJGsvJAyzzdgdhtSdvfRSvVVnUUxdRXMTODeoREtTHLMNvMVXcroTORllndVhNkoojdkAaVzeuiAPlpuuC\"")
+            buildConfigField("String", "USERS_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
+            buildConfigField("String", "IMAGE_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
             ext.enableCrashlytics = false
         }
     }

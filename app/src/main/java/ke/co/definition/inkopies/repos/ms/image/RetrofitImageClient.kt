@@ -2,7 +2,7 @@ package ke.co.definition.inkopies.repos.ms.image
 
 import android.net.Uri
 import com.google.gson.annotations.SerializedName
-import ke.co.definition.inkopies.repos.ms.API_KEY
+import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.repos.ms.bearerToken
 import ke.co.definition.inkopies.utils.injection.ImageModule
 import okhttp3.MediaType
@@ -43,7 +43,7 @@ interface ImageMSAPI {
 
     @Multipart
     @PUT("upload")
-    @Headers("x-api-key: $API_KEY")
+    @Headers("x-api-key: ${BuildConfig.IMAGE_MS_API_KEY}")
     fun uploadImage(
             @Header("Authorization") bearerToken: String,
             @Part("folder") folder: RequestBody,
