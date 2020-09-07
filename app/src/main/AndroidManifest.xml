@@ -20,7 +20,7 @@
             android:value="1dff7dd1bb877b62fd90697e198af4b859fc0064" />
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="@string/file_provider_authorities"
             android:exported="false"
             android:grantUriPermissions="true">

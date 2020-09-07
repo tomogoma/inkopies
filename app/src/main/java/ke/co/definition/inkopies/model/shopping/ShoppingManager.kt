@@ -1,6 +1,6 @@
 package ke.co.definition.inkopies.model.shopping
 
-import android.support.v7.util.DiffUtil
+import androidx.recyclerview.widget.DiffUtil
 import rx.Completable
 import rx.Observable
 import rx.Single

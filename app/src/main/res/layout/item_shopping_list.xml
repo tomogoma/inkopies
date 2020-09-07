@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/space_small"
@@ -108,7 +108,7 @@
                 app:layout_constraintStart_toEndOf="@id/measuringUnit"
                 tools:text="250.00" />
 
-            <android.support.constraint.Group
+            <androidx.constraintlayout.widget.Group
                 android:id="@+id/unitPriceRowGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -157,7 +157,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:text="750.00" />
 
-            <android.support.constraint.Group
+            <androidx.constraintlayout.widget.Group
                 android:id="@+id/totalPriceRowGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -165,9 +165,9 @@
                 app:constraint_referenced_ids="x,quantity,totalPrice"
                 tools:visibility="visible" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <android.support.v4.widget.ContentLoadingProgressBar
+        <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/progress"
             style="@style/Widget.AppCompat.ProgressBar"
             android:layout_width="match_parent"

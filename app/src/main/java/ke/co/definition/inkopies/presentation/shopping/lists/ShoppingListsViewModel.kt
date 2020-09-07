@@ -1,12 +1,12 @@
 package ke.co.definition.inkopies.presentation.shopping.lists
 
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
-import android.databinding.ObservableBoolean
 import android.net.Uri
-import android.support.annotation.UiThread
-import android.support.design.widget.Snackbar
+import androidx.annotation.UiThread
+import androidx.databinding.ObservableBoolean
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.backup.Exporter
 import ke.co.definition.inkopies.model.shopping.ShoppingManager

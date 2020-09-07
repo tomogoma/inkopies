@@ -1,7 +1,7 @@
 package ke.co.definition.inkopies.presentation.common
 
-import android.support.design.widget.Snackbar
 import android.view.View
+import com.google.android.material.snackbar.Snackbar
 import ke.co.definition.inkopies.R
 
 /**
@@ -26,7 +26,7 @@ class ResIDSnackbarData(
         private val resID: Int,
         private val duration: Int
 ) : SnackbarData() {
-    override fun show(v: View) = show(Snackbar.make(v, resID, duration))
+    override fun show(v: View) = show(com.google.android.material.snackbar.Snackbar.make(v, resID, duration))
 }
 
 class TextSnackbarData(
@@ -36,5 +36,5 @@ class TextSnackbarData(
 
     constructor(error: Throwable, duration: Int) : this(error.message ?: "", duration)
 
-    override fun show(v: View) = show(Snackbar.make(v, text, duration))
+    override fun show(v: View) = show(com.google.android.material.snackbar.Snackbar.make(v, text, duration))
 }

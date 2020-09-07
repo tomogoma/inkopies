@@ -1,16 +1,16 @@
 package ke.co.definition.inkopies.presentation.verification
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.DialogInterface
-import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogChangeIdentifierBinding
@@ -40,7 +40,7 @@ class ChangeIDDialogFrag : SLMDialogFragment() {
         return views.root
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
+    override fun onDismiss(dialog: DialogInterface) {
         onDismissCallback(result)
         super.onDismiss(dialog)
     }
@@ -51,11 +51,11 @@ class ChangeIDDialogFrag : SLMDialogFragment() {
 
     private fun observeViewModel(vm: UpdateIdentifierViewModel, vs: DialogChangeIdentifierBinding) {
 
-        vm.finishedEvent.observe(this, Observer {
+        vm.finishedEvent.observe(viewLifecycleOwner, Observer {
             result = it
-            dialog.dismiss()
+            dialog!!.dismiss()
         })
-        vm.snackBarData.observe(this, Observer { it?.show(vs.layoutRoot) })
+        vm.snackBarData.observe(viewLifecycleOwner, Observer { it?.show(vs.layoutRoot) })
 
         @Suppress("UNCHECKED_CAST")
         observedLiveData.addAll(mutableListOf(
@@ -65,15 +65,15 @@ class ChangeIDDialogFrag : SLMDialogFragment() {
     }
 
     private fun observeViews(vs: DialogChangeIdentifierBinding, vm: UpdateIdentifierViewModel) {
-        vs.identifier.setOnEditorActionListener({ _, actionID, _ ->
+        vs.identifier.setOnEditorActionListener { _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {
                 vm.onSubmit()
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false
-        })
+        }
         vs.submit.setOnClickListener({ vm.onSubmit() })
-        vs.cancel.setOnClickListener({ dialog.dismiss() })
+        vs.cancel.setOnClickListener({ dialog!!.dismiss() })
     }
 
     private fun start(vm: UpdateIdentifierViewModel) {

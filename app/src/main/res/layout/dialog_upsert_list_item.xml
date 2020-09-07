@@ -22,12 +22,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/contentRoot"
                 style="@style/Container"
                 android:layout_height="wrap_content">
 
-                <android.support.constraint.Group
+                <androidx.constraintlayout.widget.Group
                     android:id="@+id/detailsGroup"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -46,7 +46,7 @@
                     app:layout_constraintVertical_chainStyle="packed"
                     tools:text="New Item" />
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/categoryNameLayout"
                     style="@style/TextInputLayout"
                     app:error="@{vm.categoryNameError}"
@@ -60,9 +60,9 @@
                         style="@style/NameInput"
                         android:hint="@string/category"
                         android:text="@={vm.categoryName}" />
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/brandNameLayout"
                     style="@style/TextInputLayout"
                     app:error="@{vm.brandNameError}"
@@ -76,9 +76,9 @@
                         style="@style/NameInput"
                         android:hint="@string/brand"
                         android:text="@={vm.brandName}" />
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/itemNameLayout"
                     style="@style/TextInputLayout"
                     android:layout_width="0dp"
@@ -94,7 +94,7 @@
                         android:id="@+id/itemName"
                         style="@style/NameInput"
                         android:text="@={vm.itemName}" />
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <CheckBox
                     android:id="@+id/checked"
@@ -107,7 +107,7 @@
                     app:layout_constraintStart_toEndOf="@id/itemNameLayout"
                     app:layout_constraintTop_toTopOf="@+id/itemNameLayout" />
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/quantityLayout"
                     style="@style/TextInputLayout"
                     app:error="@{vm.quantityError}"
@@ -122,9 +122,9 @@
                         android:hint="@string/quantity"
                         android:inputType="number"
                         android:text="@={vm.quantity}" />
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/measuringUnitLayout"
                     style="@style/TextInputLayout"
                     app:error="@{vm.measuringUnitError}"
@@ -138,9 +138,9 @@
                         style="@style/NameInput"
                         android:hint="@string/measuring_unit_title"
                         android:text="@={vm.measuringUnit}" />
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/unitPriceLayout"
                     style="@style/TextInputLayout"
                     app:error="@{vm.unitPriceError}"
@@ -155,7 +155,7 @@
                         android:hint="@string/price"
                         android:inputType="numberDecimal"
                         android:text="@={vm.unitPrice}" />
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <CheckBox
                     android:id="@+id/addAnother"
@@ -199,7 +199,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/delete"
                     app:layout_constraintTop_toBottomOf="@id/showDetails" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </ScrollView>
 

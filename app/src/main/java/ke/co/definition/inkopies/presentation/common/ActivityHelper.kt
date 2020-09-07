@@ -1,9 +1,9 @@
 package ke.co.definition.inkopies.presentation.common
 
 import android.graphics.drawable.Drawable
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestListener
 import ke.co.definition.inkopies.R

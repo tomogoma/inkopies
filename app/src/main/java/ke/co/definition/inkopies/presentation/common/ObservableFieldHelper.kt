@@ -1,7 +1,7 @@
 package ke.co.definition.inkopies.presentation.common
 
-import android.databinding.Observable
-import android.databinding.ObservableField
+import androidx.databinding.Observable
+import androidx.databinding.ObservableField
 
 /**
  * Created by tomogoma

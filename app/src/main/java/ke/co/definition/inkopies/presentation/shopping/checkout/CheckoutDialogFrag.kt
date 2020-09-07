@@ -2,17 +2,17 @@ package ke.co.definition.inkopies.presentation.shopping.checkout
 
 import android.app.DatePickerDialog
 import android.app.Dialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
-import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.DatePicker
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogCheckoutBinding
@@ -47,7 +47,7 @@ class CheckoutDialogFrag : SLMDialogFragment() {
     }
 
     private fun start(v: DialogCheckoutBinding) {
-        val slID = arguments!!.getString(EXTRA_SHOPPING_LIST_ID)
+        val slID = arguments!!.getString(EXTRA_SHOPPING_LIST_ID)!!
         v.vm!!.onStart(slID)
         v.storeName.selectAllOnFocus()
         v.branchName.selectAllOnFocus()

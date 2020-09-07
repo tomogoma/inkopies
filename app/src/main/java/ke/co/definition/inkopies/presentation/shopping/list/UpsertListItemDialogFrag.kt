@@ -1,12 +1,8 @@
 package ke.co.definition.inkopies.presentation.shopping.list
 
 import android.app.Dialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.DialogInterface
-import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +12,10 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Filter
 import android.widget.Filterable
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.google.gson.Gson
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
@@ -55,11 +55,11 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        dialog.window!!.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         return dialog
     }
 
-    override fun onCancel(dialog: DialogInterface?) {
+    override fun onCancel(dialog: DialogInterface) {
         onCancelListener()
         super.onCancel(dialog)
     }
@@ -147,7 +147,7 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
 
         vs.layoutRoot.onGlobalLayoutOnce {
 
-            val focusStr = arguments!!.getString(EXTRA_FOCUS)
+            val focusStr = arguments!!.getString(EXTRA_FOCUS)!!
             val focus = ItemFocus.valueOf(focusStr)
             focusOn(vs, focus)
         }
@@ -202,13 +202,13 @@ class UpsertListItemDialogFrag : SLMDialogFragment() {
             frag: UpsertListItemDialogFrag,
             private val search: (text: String) -> Unit,
             resultEvent: SingleLiveEvent<List<T>>
-    ) : ArrayAdapter<String>(frag.context, android.R.layout.simple_spinner_dropdown_item), Filterable {
+    ) : ArrayAdapter<String>(frag.context!!, android.R.layout.simple_spinner_dropdown_item), Filterable {
 
         private val resultItems = mutableListOf<Pair<T, Long>>()
         private var lastID = AtomicLong(0)
 
         init {
-            resultEvent.observe(frag, Observer {
+            resultEvent.observe(frag.viewLifecycleOwner, Observer {
                 synchronized(this@AutoCompleteAdapter) {
                     resultItems.clear()
                     it?.forEach { resultItems.add(Pair(it, lastID.addAndGet(1))) }

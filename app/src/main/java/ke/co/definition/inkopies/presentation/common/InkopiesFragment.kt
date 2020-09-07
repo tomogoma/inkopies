@@ -1,7 +1,7 @@
 package ke.co.definition.inkopies.presentation.common
 
-import android.arch.lifecycle.LiveData
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
 
 /**
  * Created by tomogoma

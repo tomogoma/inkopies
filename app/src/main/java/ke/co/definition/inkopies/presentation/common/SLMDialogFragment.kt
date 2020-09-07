@@ -1,13 +1,13 @@
 package ke.co.definition.inkopies.presentation.common
 
 import android.app.Dialog
-import android.arch.lifecycle.LiveData
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.LiveData
 
 /**
  * Created by tomogoma

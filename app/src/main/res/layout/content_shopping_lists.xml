@@ -21,7 +21,7 @@
         tools:context=".presentation.shopping.lists.ShoppingListsActivity"
         tools:showIn="@layout/activity_shopping_lists">
 
-        <android.support.v4.widget.ContentLoadingProgressBar
+        <androidx.core.widget.ContentLoadingProgressBar
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
@@ -36,7 +36,7 @@
             android:text="@string/empty_shopping_lists_text"
             android:visibility="@{vm.showNoShoppingListsText ? View.VISIBLE: View.GONE}" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/shoppingLists"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -45,7 +45,7 @@
             android:visibility="@{vm.showShoppingLists ? View.VISIBLE: View.GONE}"
             tools:listitem="@layout/item_shopping_lists" />
 
-        <android.support.v4.widget.ContentLoadingProgressBar
+        <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/progressShoppingLists"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -57,7 +57,7 @@
                 android:gravity="center"
                 android:text="@string/pls_enter_it_here" />
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/otpInputLayout"
                 android:layout_width="@dimen/input_width"
                 android:layout_height="wrap_content"
@@ -74,8 +74,8 @@
                     android:text="@={vm.otp}"
                     android:imeOptions="actionDone"
                     android:maxLines="1"
-                    android:inputType="number"/>
-            </android.support.design.widget.TextInputLayout>
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/submit"

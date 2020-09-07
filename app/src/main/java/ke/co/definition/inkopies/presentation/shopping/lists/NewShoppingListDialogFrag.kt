@@ -1,15 +1,15 @@
 package ke.co.definition.inkopies.presentation.shopping.lists
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
-import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.DialogNewShoppingListBinding
@@ -42,8 +42,8 @@ class NewShoppingListDialogFrag : SLMDialogFragment() {
     }
 
     private fun observeViewModel(vm: NewShoppingListViewModel, vs: DialogNewShoppingListBinding) {
-        vm.snackbarData.observe(this, Observer { it?.show(vs.layoutRoot) })
-        vm.finished.observe(this, Observer { shoppingList = it; dismiss() })
+        vm.snackbarData.observe(viewLifecycleOwner, Observer { it?.show(vs.layoutRoot) })
+        vm.finished.observe(viewLifecycleOwner, Observer { shoppingList = it; dismiss() })
 
         @Suppress("UNCHECKED_CAST")
         observedLiveData.addAll(mutableListOf(
@@ -53,7 +53,7 @@ class NewShoppingListDialogFrag : SLMDialogFragment() {
     }
 
     private fun observeViews(vs: DialogNewShoppingListBinding, vm: NewShoppingListViewModel) {
-        vs.cancel.setOnClickListener { dialog.dismiss() }
+        vs.cancel.setOnClickListener { dialog!!.dismiss() }
         vs.submit.setOnClickListener { vm.onCreateShoppingList() }
         vs.name.setOnEditorActionListener({ _, actionID, _ ->
             if (actionID == EditorInfo.IME_ACTION_DONE) {

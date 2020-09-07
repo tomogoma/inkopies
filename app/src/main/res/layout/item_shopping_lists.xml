@@ -12,7 +12,7 @@
             type="ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList" />
     </data>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutRoot"
         style="?attr/borderlessButtonStyle"
         android:layout_width="match_parent"
@@ -82,5 +82,5 @@
             app:layout_constraintStart_toEndOf="@id/cartPriceLabel"
             tools:text="2,500.00" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

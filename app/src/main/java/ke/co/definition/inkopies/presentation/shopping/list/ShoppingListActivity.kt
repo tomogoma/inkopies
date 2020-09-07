@@ -1,21 +1,21 @@
 package ke.co.definition.inkopies.presentation.shopping.list
 
 import android.app.Activity
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
-import android.databinding.DataBindingUtil
-import android.databinding.Observable
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.Observable
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.databinding.ActivityShoppingListBinding
@@ -66,7 +66,7 @@ class ShoppingListActivity : InkopiesActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item?.itemId) {
             R.id.checkout -> onCheckout()
             R.id.export -> onExport()
@@ -152,7 +152,7 @@ class ShoppingListActivity : InkopiesActivity() {
     }
 
     private fun start(vm: ShoppingListViewModel) {
-        val slID = intent.getStringExtra(EXTRA_SHOPPING_LIST_ID)
+        val slID = intent.getStringExtra(EXTRA_SHOPPING_LIST_ID)!!
         vm.start(slID)
     }
 

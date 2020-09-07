@@ -22,7 +22,7 @@ class LocalStore @Inject constructor(val app: Application) : LocalStorable {
 
     override fun fetch(key: String) =
             app.getSharedPreferences(KEY_SHARED_PREF_FILE, Context.MODE_PRIVATE)
-                    .getString(key, "")
+                    .getString(key, "")!!
 
     override fun delete(key: String) {
         val isSuccess = app.getSharedPreferences(KEY_SHARED_PREF_FILE, Context.MODE_PRIVATE)

@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/contentRoot"
             style="@style/Container">
 
@@ -30,7 +30,7 @@
                 app:layout_constraintVertical_bias="0"
                 app:layout_constraintVertical_chainStyle="packed" />
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/storeNameLayout"
                 style="@style/TextInputLayout"
                 app:error="@{vm.storeNameError}"
@@ -44,9 +44,9 @@
                     style="@style/NameInput"
                     android:hint="@string/store"
                     android:text="@={vm.storeName}" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/branchNameLayout"
                 style="@style/TextInputLayout"
                 app:error="@{vm.branchNameError}"
@@ -60,9 +60,9 @@
                     style="@style/NameInput.LastEntry"
                     android:hint="@string/branch"
                     android:text="@={vm.branchName}" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/checkoutDateLayout"
                 style="@style/TextInputLayout"
                 app:error="@{vm.checkoutDateError}"
@@ -78,7 +78,7 @@
                     android:hint="@string/checkout_date_title"
                     android:inputType="datetime"
                     android:text="@{vm.checkoutDate}" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <View
                 android:id="@+id/checkoutDateOverlay"
@@ -100,7 +100,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/checkoutDateLayout" />
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <include
             android:id="@+id/progressArea"

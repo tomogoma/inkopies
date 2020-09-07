@@ -33,7 +33,7 @@
                 android:drawableStart="@mipmap/ic_launcher_round"
                 android:text="@string/sign_in_to_get_the_most_out_of_inkopies" />
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_identifier"
                 style="@style/TextInputLayout"
                 android:layout_width="match_parent"
@@ -50,7 +50,7 @@
                     android:maxLines="1"
                     android:text="@={vm.identifier}" />
 
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!--<TextView-->
             <!--android:id="@+id/alternativesIntro"-->

@@ -1,15 +1,15 @@
 package ke.co.definition.inkopies.presentation.common
 
 import android.Manifest
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.presentation.login.LoginActivity
 import ke.co.definition.inkopies.presentation.profile.ProfileActivity

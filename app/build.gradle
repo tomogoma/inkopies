@@ -5,39 +5,43 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
-    dataBinding {
-        enabled = true
-    }
+    compileSdkVersion 30
+    buildToolsVersion '29.0.2'
+
     defaultConfig {
         applicationId "ke.co.definition.inkopies"
         minSdkVersion 21
-        targetSdkVersion 27
-        versionCode 4
-        versionName "0.3.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        targetSdkVersion 30
+        versionCode 5
+        versionName "1.0.0"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField("String", "AUTH_MS_BASE_URL", "\"http://def-authms.herokuapp.com/v0/authms/\"")
-            buildConfigField("String", "USERS_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/usersms/\"")
-            buildConfigField("String", "IMAGE_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/imagems/\"")
+            buildConfigField("String", "AUTH_MS_BASE_URL", "\"https://def-authms.herokuapp.com/v0/authms/\"")
+            buildConfigField("String", "USERS_MS_BASE_URL", "\"https://def-usersms.herokuapp.com/v0/usersms/\"")
+            buildConfigField("String", "IMAGE_MS_BASE_URL", "\"https://def-usersms.herokuapp.com/v0/usersms/\"")
             buildConfigField("String", "AUTH_MS_API_KEY", "\"qoacNSjyCoiDHqucgcAMFhBjoLLugRGghTFQVGLuwtEIeGBQCRTcWiZUDRrldmxAGQHLwPjgLNBgjgqjcShTAPpNfZsTPNwYFNZNcWbRwBkYjmAxUBrZeBoPBegRwBETjlivFkuUzDXYZdnSnKAbOmoZDeWqPHIrmXIDDjhgNcqOLgJJGsvJAyzzdgdhtSdvfRSvVVnUUxdRXMTODeoREtTHLMNvMVXcroTORllndVhNkoojdkAaVzeuiAPlpuuC\"")
-            buildConfigField("String", "USERS_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
+            buildConfigField("String", "USERS_MS_API_KEY", "\"ba30de3d-1fb2-4934-81c3-c64eafd6cac7cc89a1be-e75d-4539-b920-4f51e68d0edc\"")
             buildConfigField("String", "IMAGE_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
         }
+
         debug {
-            buildConfigField("String", "AUTH_MS_BASE_URL", "\"http://def-authms.herokuapp.com/v0/authms/\"")
-            buildConfigField("String", "USERS_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/usersms/\"")
-            buildConfigField("String", "IMAGE_MS_BASE_URL", "\"https://definition.co.ke/gw//v0/imagems/\"")
+            buildConfigField("String", "AUTH_MS_BASE_URL", "\"https://def-authms.herokuapp.com/v0/authms/\"")
+            buildConfigField("String", "USERS_MS_BASE_URL", "\"https://def-usersms.herokuapp.com/v0/usersms/\"")
+            buildConfigField("String", "IMAGE_MS_BASE_URL", "\"https://def-usersms.herokuapp.com/v0/usersms/\"")
             buildConfigField("String", "AUTH_MS_API_KEY", "\"qoacNSjyCoiDHqucgcAMFhBjoLLugRGghTFQVGLuwtEIeGBQCRTcWiZUDRrldmxAGQHLwPjgLNBgjgqjcShTAPpNfZsTPNwYFNZNcWbRwBkYjmAxUBrZeBoPBegRwBETjlivFkuUzDXYZdnSnKAbOmoZDeWqPHIrmXIDDjhgNcqOLgJJGsvJAyzzdgdhtSdvfRSvVVnUUxdRXMTODeoREtTHLMNvMVXcroTORllndVhNkoojdkAaVzeuiAPlpuuC\"")
-            buildConfigField("String", "USERS_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
+            buildConfigField("String", "USERS_MS_API_KEY", "\"ba30de3d-1fb2-4934-81c3-c64eafd6cac7cc89a1be-e75d-4539-b920-4f51e68d0edc\"")
             buildConfigField("String", "IMAGE_MS_API_KEY", "\"vEftJGc9tWWk6a2tSMym7SYfWXPNNDMvjyEgHN3KrBpYqDRTCWatAx2g\"")
             ext.enableCrashlytics = false
         }
+    }
+
+    buildFeatures {
+        dataBinding true
     }
 }
 
@@ -45,7 +49,7 @@ ext {
     supportLibraryVersion = '27.1.1'
     archComponentsVersion = '1.1.1'
     retrofitVersion = '2.1.0'
-    dagger2Version = '2.14.1'
+    dagger2Version = '2.15'
 }
 
 repositories {
@@ -63,28 +67,27 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     // tests
-    implementation 'com.google.firebase:firebase-firestore:15.0.0'
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation 'com.google.firebase:firebase-firestore:21.6.0'
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testImplementation 'junit:junit:4.12'
 
     // support lib
-    implementation "com.android.support:support-v4:$supportLibraryVersion"
-    implementation "com.android.support:appcompat-v7:$supportLibraryVersion"
-    implementation "com.android.support:recyclerview-v7:$supportLibraryVersion"
-    implementation "com.android.support:design:$supportLibraryVersion"
-    implementation "com.android.support:cardview-v7:$supportLibraryVersion"
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
 
     // basic kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    kapt "com.android.databinding:compiler:$gradle_version"
 
     // arch components
-    implementation "android.arch.lifecycle:extensions:$archComponentsVersion"
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     // ReactiveStreams support for LiveData
-    implementation "android.arch.lifecycle:reactivestreams:$archComponentsVersion"
+    implementation 'androidx.lifecycle:lifecycle-reactivestreams:2.2.0'
 
     // retrofit
     implementation "com.squareup.retrofit2:adapter-rxjava:$retrofitVersion"
@@ -106,13 +109,11 @@ dependencies {
     implementation 'io.michaelrocks:libphonenumber-android:8.9.0'
 
     // glide
-    implementation("com.github.bumptech.glide:glide:4.6.1") {
-        exclude group: "com.android.support"
-    }
-    kapt 'com.github.bumptech.glide:compiler:4.6.1'
+    implementation "com.github.bumptech.glide:glide:4.11.0"
+    kapt 'com.github.bumptech.glide:compiler:4.11.0'
 
     // crashlytics
-    implementation('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
+    implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
         transitive = true
     }
 

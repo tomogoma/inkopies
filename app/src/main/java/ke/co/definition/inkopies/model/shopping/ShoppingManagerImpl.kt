@@ -1,6 +1,6 @@
 package ke.co.definition.inkopies.model.shopping
 
-import android.support.v7.util.DiffUtil
+import androidx.recyclerview.widget.DiffUtil
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND

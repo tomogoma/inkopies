@@ -42,7 +42,7 @@ class FileHelperImpl @Inject constructor(val app: Application) : FileHelper {
     }
 
     override fun getInputStream(uri: Uri): InputStream {
-        return app.contentResolver.openInputStream(uri)
+        return app.contentResolver.openInputStream(uri)!!
     }
 
     private fun genTimestampedFileName(name: String, ext: String): String {

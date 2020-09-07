@@ -1,10 +1,10 @@
 package ke.co.definition.inkopies.presentation.profile
 
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
-import android.databinding.Observable
-import android.databinding.ObservableField
-import android.support.design.widget.Snackbar
+import androidx.databinding.Observable
+import androidx.databinding.ObservableField
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.snackbar.Snackbar
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.user.Gender

@@ -1,6 +1,6 @@
 package ke.co.definition.inkopies.presentation.shopping.common
 
-import android.databinding.ObservableBoolean
+import androidx.databinding.ObservableBoolean
 import ke.co.definition.inkopies.model.shopping.ShoppingList
 import ke.co.definition.inkopies.model.shopping.ShoppingListItem
 import ke.co.definition.inkopies.model.shopping.ShoppingListItemUpdate
