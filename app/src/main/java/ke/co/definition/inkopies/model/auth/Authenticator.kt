@@ -271,13 +271,6 @@ class Authenticator @Inject constructor(
         }
 
         val jwt = Gson().fromJson(jwtStr, JWT::class.java)
-        if (jwt.isExpired()) {
-            logOut().subscribe({
-                it.onError(LoggedOutException(resMan.getString(R.string.please_log_in)))
-            }, it::onError)
-            return@create
-        }
-
         it.onSuccess(jwt)
     })
 
