@@ -16,8 +16,8 @@
         android:theme="@style/AppTheme">
 
         <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="1dff7dd1bb877b62fd90697e198af4b859fc0064" />
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

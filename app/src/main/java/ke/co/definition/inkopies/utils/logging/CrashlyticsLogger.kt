@@ -1,10 +1,6 @@
 package ke.co.definition.inkopies.utils.logging
 
-import android.app.Application
-import android.util.Log
-import com.crashlytics.android.Crashlytics
-import com.crashlytics.android.core.CrashlyticsCore
-import io.fabric.sdk.android.Fabric
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.BuildConfig
 import javax.inject.Inject
@@ -14,15 +10,14 @@ import javax.inject.Inject
  * Created by tomogoma
  * On 07/04/18.
  */
-class CrashlyticsLogger @Inject constructor(app: Application) : Logger {
+class CrashlyticsLogger @Inject constructor() : Logger {
 
     private var tag = App::class.java.name
 
     init {
-        val crashlyticsKit = Crashlytics.Builder()
-                .core(CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
-                .build()
-        Fabric.with(app, crashlyticsKit)
+        val disableCollectionForDebugBuilds = !BuildConfig.DEBUG
+        FirebaseCrashlytics.getInstance()
+                .setCrashlyticsCollectionEnabled(disableCollectionForDebugBuilds)
     }
 
     override fun setTag(tag: String) {
@@ -30,13 +25,16 @@ class CrashlyticsLogger @Inject constructor(app: Application) : Logger {
     }
 
     override fun warn(msg: String) {
-        Crashlytics.log(Log.WARN, tag, msg)
+        FirebaseCrashlytics.getInstance().log("W/$tag: $msg")
     }
 
     override fun error(msg: String, e: Throwable?) {
         val noDetails = "<no details>"
-        Crashlytics.log(Log.ERROR, tag, "$msg: ${e?.message ?: noDetails}")
-        Crashlytics.logException(e)
+        val cltks = FirebaseCrashlytics.getInstance()
+        cltks.log("E/$tag: $msg: ${e?.message ?: noDetails}")
+        if (e != null) {
+            cltks.recordException(e)
+        }
     }
 
 }

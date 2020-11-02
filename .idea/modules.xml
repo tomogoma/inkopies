@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/StudioProjects-inkopies.iml" filepath="$PROJECT_DIR$/.idea/modules/StudioProjects-inkopies.iml" group="inkopies" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/inkopies.iml" filepath="$PROJECT_DIR$/inkopies.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/inkopies-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/inkopies-app.iml" group="inkopies/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/inkopies.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/inkopies.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/kusccoagriloans.inkopies.iml" filepath="$PROJECT_DIR$/.idea/modules/kusccoagriloans.inkopies.iml" />
     </modules>
   </component>
 </project>

@@ -7,5 +7,4 @@
 /release
 /captures
 .externalNativeBuild
-app/fabric.properties
 app/google-services.json
