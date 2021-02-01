@@ -1,15 +1,14 @@
 package ke.co.definition.inkopies.utils.injection
 
-import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
-import ke.co.definition.inkopies.model.auth.JWTHelper
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
 import ke.co.definition.inkopies.model.shopping.ShoppingManagerImpl
-import ke.co.definition.inkopies.repos.firestore.FirebaseShoppingClient
 import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
+import ke.co.definition.inkopies.repos.room.RoomShoppingClient
+import ke.co.definition.inkopies.repos.room.ShoppingListDB
 import ke.co.definition.inkopies.utils.logging.Logger
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,8 +22,8 @@ class ShoppingModule {
 
     @Provides
     @Inject
-    fun provideShoppingClient(jwtHelper: JWTHelper, firestore: FirebaseFirestore):
-            ShoppingClient = FirebaseShoppingClient(jwtHelper, firestore)
+    fun provideShoppingClient(db: ShoppingListDB):
+            ShoppingClient = RoomShoppingClient(db.ShoppingListDao())
 
     @Provides
     @Inject

@@ -31,7 +31,8 @@ import javax.inject.Singleton
     FirebaseModule::class,
     ExportModule::class,
     FormattingModule::class,
-    CheckoutModule::class
+    CheckoutModule::class,
+    RoomModule::class
 ])
 interface AppComponent {
     fun loginVMFactory(): LoginViewModel.Factory

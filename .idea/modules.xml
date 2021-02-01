@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/inkopies.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/inkopies.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/kusccoagriloans.inkopies.iml" filepath="$PROJECT_DIR$/.idea/modules/kusccoagriloans.inkopies.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/inkopies.iml" filepath="$PROJECT_DIR$/.idea/modules/inkopies.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/tomogoma.inkopies.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/tomogoma.inkopies.app.iml" />
     </modules>
   </component>
 </project>
