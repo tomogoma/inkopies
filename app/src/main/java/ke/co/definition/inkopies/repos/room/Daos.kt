@@ -8,10 +8,10 @@ import rx.Observable
 interface ShoppingListDao : CrudDao<ShoppingList> {
 
     @Query("SELECT * FROM shopping_lists LIMIT :count OFFSET :offset")
-    fun get(offset: Long, count: Int): Observable<List<ShoppingList>>
+    fun get(offset: Long, count: Int): List<ShoppingList>
 
     @Query("SELECT * FROM shopping_lists WHERE rowid = :id")
-    fun getById(id: Int): Observable<ShoppingList>
+    fun getById(id: Int): ShoppingList
 }
 
 @Dao

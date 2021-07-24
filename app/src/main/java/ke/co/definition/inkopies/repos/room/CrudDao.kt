@@ -8,14 +8,14 @@ import rx.Single
 interface CrudDao<T> {
 
     @Insert(onConflict = REPLACE)
-    fun insert(it: T): Single<Int>
+    fun insert(it: T): Long
 
     @Insert(onConflict = REPLACE)
-    fun insertAll(vararg its: T): Single<IntArray>
+    fun insertAll(vararg its: T): LongArray
 
     @Update
-    fun update(it: T): Single<Int>
+    fun update(it: T): Int
 
     @Update
-    fun updateAll(vararg its: T): Single<Int>
+    fun updateAll(vararg its: T): Int
 }
