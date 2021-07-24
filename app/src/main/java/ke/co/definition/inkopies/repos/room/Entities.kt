@@ -2,7 +2,6 @@ package ke.co.definition.inkopies.repos.room
 
 import androidx.room.*
 
-@Fts4
 @Entity(
         tableName = "shopping_lists",
         indices = [Index(value = ["name"], unique = true)]
@@ -13,7 +12,6 @@ data class ShoppingList(
         @ColumnInfo(name = "mode") val mode: String
 )
 
-@Fts4
 @Entity(
         tableName = "categories",
         indices = [Index(value = ["name"], unique = true)]
@@ -23,15 +21,14 @@ data class Category(
         @ColumnInfo(name = "name") val name: String
 )
 
-@Fts4
 @Entity(
         tableName = "shopping_list_item_names",
         foreignKeys = [
             ForeignKey(entity = Category::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("category_id"))
+                    parentColumns = ["rowid"],
+                    childColumns = ["category_id"])
         ],
-        indices = [Index(name = "category_id"),
+        indices = [Index(value = ["category_id"]),
             Index(value = ["name"], unique = true)]
 )
 data class ShoppingListItemName(
@@ -40,7 +37,6 @@ data class ShoppingListItemName(
         @ColumnInfo(name = "name") val name: String
 )
 
-@Fts4
 @Entity(
         tableName = "brands",
         indices = [Index(value = ["name"], unique = true)]
@@ -50,7 +46,6 @@ data class Brand(
         @ColumnInfo(name = "name") val name: String
 )
 
-@Fts4
 @Entity(
         tableName = "stores",
         indices = [Index(value = ["name"], unique = true)]
@@ -60,15 +55,14 @@ data class Store(
         @ColumnInfo(name = "name") val name: String
 )
 
-@Fts4
 @Entity(
         tableName = "store_branches",
         foreignKeys = [
             ForeignKey(entity = Store::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("store_id"))
+                    parentColumns = ["rowid"],
+                    childColumns = ["store_id"])
         ],
-        indices = [Index(name = "store_id"),
+        indices = [Index(value = ["store_id"]),
             Index(value = ["name"], unique = true)]
 )
 data class StoreBranch(
@@ -77,7 +71,6 @@ data class StoreBranch(
         @ColumnInfo(name = "name") val name: String
 )
 
-@Fts4
 @Entity(
         tableName = "measurements",
         indices = [Index(value = ["name"], unique = true)]
@@ -87,19 +80,18 @@ data class Measurement(
         @ColumnInfo(name = "name") val name: String
 )
 
-@Fts4
 @Entity(
         tableName = "brand_prices",
         foreignKeys = [
             ForeignKey(entity = ShoppingListItemName::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("item_name_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["item_name_id"]),
             ForeignKey(entity = Brand::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("brand_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["brand_id"]),
             ForeignKey(entity = Measurement::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("measurement_id"))
+                    parentColumns = ["rowid"],
+                    childColumns = ["measurement_id"])
         ],
         indices = [
             Index(value = ["item_name_id"]),
@@ -116,16 +108,15 @@ data class ItemBrandPrice(
         @ColumnInfo(name = "unit_price") val name: String
 )
 
-@Fts4
 @Entity(
         tableName = "checkouts",
         foreignKeys = [
             ForeignKey(entity = StoreBranch::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("store_branch_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["store_branch_id"]),
             ForeignKey(entity = ShoppingList::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("shopping_list_id"))
+                    parentColumns = ["rowid"],
+                    childColumns = ["shopping_list_id"])
         ],
         indices = [
             Index(value = ["store_branch_id"]),
@@ -140,22 +131,21 @@ data class Checkout(
         @ColumnInfo(name = "date_time") val dateTime: Long
 )
 
-@Fts4
 @Entity(
         tableName = "shopping_list_items",
         foreignKeys = [
             ForeignKey(entity = ShoppingList::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("shopping_list_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["shopping_list_id"]),
             ForeignKey(entity = ShoppingListItemName::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("shopping_list_item_name_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["shopping_list_item_name_id"]),
             ForeignKey(entity = Brand::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("brand_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["brand_id"]),
             ForeignKey(entity = Measurement::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("measurement_id"))
+                    parentColumns = ["rowid"],
+                    childColumns = ["measurement_id"])
         ],
         indices = [
             Index(value = ["shopping_list_id"]),
@@ -176,22 +166,21 @@ data class ShoppingListItem(
         @ColumnInfo(name = "quantity") val quantity: Int
 )
 
-@Fts4
 @Entity(
         tableName = "checkout_items",
         foreignKeys = [
             ForeignKey(entity = Checkout::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("checkout_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["checkout_id"]),
             ForeignKey(entity = ShoppingListItemName::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("shopping_list_item_name_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["shopping_list_item_name_id"]),
             ForeignKey(entity = Brand::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("brand_id")),
+                    parentColumns = ["rowid"],
+                    childColumns = ["brand_id"]),
             ForeignKey(entity = Measurement::class,
-                    parentColumns = arrayOf("rowid"),
-                    childColumns = arrayOf("measurement_id"))
+                    parentColumns = ["rowid"],
+                    childColumns = ["measurement_id"])
         ],
         indices = [
             Index(value = ["checkout_id"]),
