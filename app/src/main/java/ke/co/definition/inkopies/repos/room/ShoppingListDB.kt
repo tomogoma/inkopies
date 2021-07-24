@@ -6,7 +6,17 @@ import androidx.room.RoomDatabase
 @Database(
         version = 1,
         entities = [
-            ShoppingList::class
+            ShoppingList::class,
+            Category::class,
+            ShoppingListItemName::class,
+            Brand::class,
+            Store::class,
+            StoreBranch::class,
+            Measurement::class,
+            ItemBrandPrice::class,
+            Checkout::class,
+            CheckoutItem::class,
+            ShoppingListItem::class
         ]
 )
 abstract class ShoppingListDB : RoomDatabase() {
