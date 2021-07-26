@@ -1,10 +1,10 @@
 package ke.co.definition.inkopies.repos.ms.users
 
 import com.google.gson.annotations.SerializedName
+import io.reactivex.Single
 import ke.co.definition.inkopies.model.user.GenUserProfile
 import ke.co.definition.inkopies.model.user.Gender
 import ke.co.definition.inkopies.model.user.PubUserProfile
-import rx.Single
 import java.util.*
 
 /**

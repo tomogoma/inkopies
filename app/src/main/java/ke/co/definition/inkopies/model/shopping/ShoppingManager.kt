@@ -1,9 +1,9 @@
 package ke.co.definition.inkopies.model.shopping
 
 import androidx.recyclerview.widget.DiffUtil
-import rx.Completable
-import rx.Observable
-import rx.Single
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 
 /**
  * Created by tomogoma

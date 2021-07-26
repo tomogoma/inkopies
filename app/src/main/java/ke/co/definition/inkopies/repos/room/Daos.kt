@@ -2,54 +2,44 @@ package ke.co.definition.inkopies.repos.room
 
 import androidx.room.Dao
 import androidx.room.Query
-import rx.Observable
+import io.reactivex.Flowable
 
 @Dao
 interface ShoppingListDao : CrudDao<ShoppingList> {
 
     @Query("SELECT * FROM shopping_lists LIMIT :count OFFSET :offset")
-    fun get(offset: Long, count: Int): List<ShoppingList>
+    fun get(offset: Long, count: Int): Flowable<List<ShoppingList>>
 
     @Query("SELECT * FROM shopping_lists WHERE rowid = :id")
-    fun getById(id: Int): ShoppingList
+    fun getById(id: Int): Flowable<ShoppingList>
 }
 
 @Dao
-interface CategoryDao : CrudDao<Category> {
-}
+interface CategoryDao : CrudDao<Category>
 
 @Dao
-interface ShoppingListItemNameDao : CrudDao<ShoppingListItemName> {
-}
+interface ShoppingListItemNameDao : CrudDao<ShoppingListItemName>
 
 @Dao
-interface BrandDao : CrudDao<Brand> {
-}
+interface BrandDao : CrudDao<Brand>
 
 @Dao
-interface StoreDao : CrudDao<Store> {
-}
+interface StoreDao : CrudDao<Store>
 
 @Dao
-interface StoreBranchDao : CrudDao<StoreBranch> {
-}
+interface StoreBranchDao : CrudDao<StoreBranch>
 
 @Dao
-interface MeasurementDao : CrudDao<Measurement> {
-}
+interface MeasurementDao : CrudDao<Measurement>
 
 @Dao
-interface ItemBrandPriceDao : CrudDao<ItemBrandPrice> {
-}
+interface ItemBrandPriceDao : CrudDao<ItemBrandPrice>
 
 @Dao
-interface CheckoutDao : CrudDao<Checkout> {
-}
+interface CheckoutDao : CrudDao<Checkout>
 
 @Dao
-interface ShoppingListItemDao : CrudDao<ShoppingListItem> {
-}
+interface ShoppingListItemDao : CrudDao<ShoppingListItem>
 
 @Dao
-interface CheckoutItemDao : CrudDao<CheckoutItem> {
-}
+interface CheckoutItemDao : CrudDao<CheckoutItem>

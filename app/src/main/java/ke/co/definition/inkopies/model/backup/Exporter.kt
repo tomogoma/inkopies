@@ -1,6 +1,9 @@
 package ke.co.definition.inkopies.model.backup
 
 import android.net.Uri
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ExternalStorageUnavailableException
 import ke.co.definition.inkopies.model.FileHelper
@@ -13,9 +16,6 @@ import org.supercsv.cellprocessor.ift.CellProcessor
 import org.supercsv.io.CsvBeanReader
 import org.supercsv.io.CsvBeanWriter
 import org.supercsv.prefs.CsvPreference
-import rx.Completable
-import rx.Observable
-import rx.Single
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
@@ -42,12 +42,11 @@ class ExporterImpl @Inject constructor(
 
     override fun exportShoppingList(list: ShoppingList): Completable = Completable.create {
         shopping.getShoppingListItems(ShoppingListItemsFilter(list.id))
-                .first()
-                .toSingle()
-                .map { it.second.map { ExporterShoppingListItem(list.name, it) } }
+                .first(null)
+                .map { pair -> pair.second.map { ExporterShoppingListItem(list.name, it) } }
                 .subscribe({ items ->
                     shoppingListItemsToCSV(list.name, items)
-                    it.onCompleted()
+                    it.onComplete()
                 }, { ex -> it.onError(ex) })
     }
 
@@ -56,14 +55,11 @@ class ExporterImpl @Inject constructor(
         val items = mutableListOf<ExporterShoppingListItem>()
 
         shopping.getShoppingLists(0, 100)
-                .first()
-                .toSingle()
-                .onErrorResumeNext {
-                    Single.error(handleAuthErrors(logger, auth, resMan, it,
+                .onErrorResumeNext { ex: Throwable ->
+                    Observable.error(handleAuthErrors(logger, auth, resMan, ex,
                             "get first shopping lists"))
                 }
 
-                .toObservable()
                 .flatMap { lists ->
 
                     var rsltObsvbl: Observable<List<ExporterShoppingListItem>>? = null
@@ -72,11 +68,10 @@ class ExporterImpl @Inject constructor(
 
                         val filter = ShoppingListItemsFilter(list.id)
                         val currObsvbl = shopping.getShoppingListItems(filter)
-                                .first()
-                                .map {
-                                    it.second.map { ExporterShoppingListItem(list.name, it) }
+                                .map { pair ->
+                                    pair.second.map { ExporterShoppingListItem(list.name, it) }
                                 }
-                                .onErrorResumeNext {
+                                .onErrorResumeNext { it: Throwable ->
                                     Observable.error(handleAuthErrors(logger, auth, resMan, it,
                                             "get shopping list items for ${list.name} -> ${list.id}"))
                                 }
@@ -92,9 +87,9 @@ class ExporterImpl @Inject constructor(
                     return@flatMap rsltObsvbl
                 }
 
-                .doOnCompleted {
+                .doOnComplete {
                     shoppingListItemsToCSV("list", items)
-                    it.onCompleted()
+                    it.onComplete()
                 }
                 .subscribe({ items.addAll(it) }, { ex -> it.onError(ex) })
     }
@@ -109,23 +104,23 @@ class ExporterImpl @Inject constructor(
             return@create
         }
         if (items.isEmpty()) {
-            it.onCompleted()
+            it.onComplete()
             return@create
         }
 
         val listsMap = mutableMapOf<String, MutableList<ExporterShoppingListItem>>()
-        items.forEach {
-            if (!listsMap.containsKey(it.getListName())) {
-                listsMap[it.getListName()] = mutableListOf()
+        items.forEach { sli ->
+            if (!listsMap.containsKey(sli.getListName())) {
+                listsMap[sli.getListName()] = mutableListOf()
             }
-            listsMap[it.getListName()]!!.add(it)
+            listsMap[sli.getListName()]!!.add(sli)
         }
 
         var slObs: Observable<ShoppingListItem>? = null
         listsMap.forEach { me ->
             val currSLObs = shopping.createShoppingList(me.key)
-                    .onErrorResumeNext {
-                        Single.error(handleAuthErrors(logger, auth, resMan, it,
+                    .onErrorResumeNext { ex ->
+                        Single.error(handleAuthErrors(logger, auth, resMan, ex,
                                 "create shopping list"))
                     }
                     .toObservable()
@@ -135,8 +130,8 @@ class ExporterImpl @Inject constructor(
                         me.value.forEachIndexed { _, item ->
                             val currSLIObs = shopping
                                     .insertShoppingListItem(item.toShoppingListItemInsert(list.id))
-                                    .onErrorResumeNext {
-                                        Single.error(handleAuthErrors(logger, auth, resMan, it,
+                                    .onErrorResumeNext { ex ->
+                                        Single.error(handleAuthErrors(logger, auth, resMan, ex,
                                                 "insert shopping list item"))
                                     }
                                     .toObservable()
@@ -157,7 +152,7 @@ class ExporterImpl @Inject constructor(
         }
 
         slObs!!
-                .doOnCompleted { it.onCompleted() }
+                .doOnComplete { it.onComplete() }
                 .subscribe({ /*no-op*/ }, { ex -> it.onError(ex) })
     }
 

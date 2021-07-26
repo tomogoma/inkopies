@@ -1,7 +1,7 @@
 package ke.co.definition.inkopies.model.user
 
 import android.net.Uri
-import rx.Single
+import io.reactivex.Single
 
 /**
  * Created by tomogoma

@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
+import io.reactivex.disposables.CompositeDisposable
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.backup.Exporter
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
@@ -16,8 +18,6 @@ import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
-import rx.Subscription
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -40,13 +40,13 @@ class ShoppingListsViewModel @Inject constructor(
     val snackbarData = SingleLiveEvent<SnackbarData>()
     val shoppingLists = MutableLiveData<MutableList<VMShoppingList>>()
 
-    private val subscriptions = mutableListOf<Subscription>()
+    private val rxSubscriptions = CompositeDisposable()
 
     fun start() {
         val sub = manager.getShoppingLists(0, LISTS_PER_PAGE)
-                .map {
+                .map { list ->
                     val res = mutableListOf<VMShoppingList>()
-                    it.forEach { res.add(VMShoppingList(it)) }
+                    list.forEach { res.add(VMShoppingList(it)) }
                     return@map res
                 }
                 .subscribeOn(subscribeOnScheduler)
@@ -55,30 +55,27 @@ class ShoppingListsViewModel @Inject constructor(
                 .doOnNext { hideProgressShoppingLists() }
                 .doOnError { hideProgressShoppingLists() }
                 .subscribe(this::onShoppingListsFetched, this::showError)
-        subscriptions.add(sub)
+        rxSubscriptions.add(sub)
     }
 
     fun onExport() {
         // TODO move this action to a dedicated service.
-        exporter.exportShoppingLists()
+        rxSubscriptions.add(exporter.exportShoppingLists()
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe(this::onExportSuccessful, this::showError)
+                .subscribe(this::onExportSuccessful, this::showError))
     }
 
     fun onImport(uri: Uri) {
         // TODO move this action to a dedicated service.
-        exporter.importLists(uri)
+        rxSubscriptions.add(exporter.importLists(uri)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe(this::onImportSuccessful, this::showError)
+                .subscribe(this::onImportSuccessful, this::showError))
     }
 
     override fun onCleared() {
-        subscriptions.forEach {
-            if (it.isUnsubscribed) return@forEach
-            it.unsubscribe()
-        }
+        rxSubscriptions.dispose()
         super.onCleared()
     }
 

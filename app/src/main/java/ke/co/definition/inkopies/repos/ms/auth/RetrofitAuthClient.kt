@@ -1,6 +1,8 @@
 package ke.co.definition.inkopies.repos.ms.auth
 
 import com.google.gson.annotations.SerializedName
+import io.reactivex.Completable
+import io.reactivex.Single
 import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.model.auth.AuthUser
 import ke.co.definition.inkopies.model.auth.Identifier
@@ -10,8 +12,6 @@ import ke.co.definition.inkopies.utils.injection.AuthModule
 import okhttp3.Credentials
 import retrofit2.Retrofit
 import retrofit2.http.*
-import rx.Completable
-import rx.Single
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named

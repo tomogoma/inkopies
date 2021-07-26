@@ -1,8 +1,12 @@
 package ke.co.definition.inkopies.model.auth
 
+import android.annotation.SuppressLint
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.google.gson.Gson
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
@@ -11,14 +15,13 @@ import ke.co.definition.inkopies.repos.ms.*
 import ke.co.definition.inkopies.repos.ms.auth.AuthClient
 import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.adapter.rxjava.HttpException
-import rx.Completable
-import rx.Observable
-import rx.Single
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
+import kotlin.math.abs
+import kotlin.math.min
 
 /**
  * Created by tomogoma
@@ -69,14 +72,14 @@ class Authenticator @Inject constructor(
     }
 
     override fun updateIdentifier(identifier: String): Single<VerifLogin> {
-        return Single.create<ValidationResult>({
+        return Single.create<ValidationResult> {
             val vr = validator.validateIdentifier(identifier)
             if (!vr.isValid) {
                 it.onError(Exception(resMan.getString(R.string.error_bad_email_or_phone)))
                 return@create
             }
             it.onSuccess(vr)
-        }).flatMap { vr: ValidationResult ->
+        }.flatMap { vr: ValidationResult ->
             getJWT().flatMap { jwt: JWT ->
                 authCl.updateIdentifier(jwt.info.userID, jwt.value, vr.getIdentifier())
                         .onErrorResumeNext {
@@ -96,7 +99,8 @@ class Authenticator @Inject constructor(
         }
     }
 
-    override fun isLoggedIn(): Single<LoggedInStatus> = Single.create({
+    @SuppressLint("CheckResult")
+    override fun isLoggedIn(): Single<LoggedInStatus> = Single.create {
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
@@ -119,7 +123,7 @@ class Authenticator @Inject constructor(
         }
 
         it.onSuccess(LoggedInStatus.loggedInAndVerified(vl))
-    })
+    }
 
     override fun registerManual(id: Identifier, password: String): Single<VerifLogin> =
             authCl.registerManual(id, password)
@@ -149,15 +153,15 @@ class Authenticator @Inject constructor(
 
     override fun sendVerifyOTP(vl: VerifLogin): Single<OTPStatus> =
             validateVerifLogin(vl).flatMap { vr: ValidationResult ->
-                getJWT().flatMap {
-                    authCl.sendVerifyOTP(it.value, vr.getIdentifier()).onErrorResumeNext {
+                getJWT().flatMap { jwt ->
+                    authCl.sendVerifyOTP(jwt.value, vr.getIdentifier()).onErrorResumeNext {
                         Single.error(handleServerErrors(logger, resMan, it, "send verify OTP"))
                     }
                 }
             }
 
 
-    override fun checkIdentifierVerified(vl: VerifLogin): Completable =
+    override fun checkIdentifierVerified(vl: VerifLogin): Completable = Completable.fromSingle(
             validateVerifLogin(vl).flatMap { vr: ValidationResult ->
                 getJWT().flatMap { jwt: JWT ->
                     authCl.fetchUserDetails(jwt.value, jwt.info.userID)
@@ -177,50 +181,52 @@ class Authenticator @Inject constructor(
                                             throw Exception("${vl.value} not verified")
                                         }
                                     }
+                                    is ValidationResult.Invalid -> {
+                                        throw Exception("${vl.value} is invalid")
+                                    }
                                 }
                             } // doOnSuccess
 
                 } // getLoggedInUser()
 
-            }.toCompletable()
+            })
 
-    override fun verifyOTP(vl: VerifLogin, otp: String?): Completable {
-        return validateVerifLogin(vl)
-                .flatMap {
-                    if (otp == null || otp.isEmpty()) {
-                        throw Exception("Empty verification code provided")
+    override fun verifyOTP(vl: VerifLogin, otp: String?): Completable = Completable.fromSingle(
+            validateVerifLogin(vl)
+                    .flatMap {
+                        if (otp == null || otp.isEmpty()) {
+                            throw Exception("Empty verification code provided")
+                        }
+                        return@flatMap Single.just(it)
                     }
-                    return@flatMap Single.just(it)
-                }
-                .flatMap {
-                    authCl.verifyOTP(vl.userID, it.getIdentifier().type(), otp!!)
-                            .toSingle({})
-                }
-                .onErrorResumeNext {
-                    if (it is HttpException && it.code() == STATUS_UNAUTHORIZED) {
-                        return@onErrorResumeNext Single.error(Exception(
-                                resMan.getString(R.string.error_invalid_or_expired_verif_code)))
+                    .flatMap {
+                        authCl.verifyOTP(vl.userID, it.getIdentifier().type(), otp!!)
+                                .toSingle {}
                     }
-                    if (it is HttpException && it.code() == STATUS_FORBIDDEN) {
-                        return@onErrorResumeNext Single.error(Exception(
-                                resMan.getString(R.string.error_used_verif_code)))
+                    .onErrorResumeNext {
+                        if (it is HttpException && it.code() == STATUS_UNAUTHORIZED) {
+                            return@onErrorResumeNext Single.error(Exception(
+                                    resMan.getString(R.string.error_invalid_or_expired_verif_code)))
+                        }
+                        if (it is HttpException && it.code() == STATUS_FORBIDDEN) {
+                            return@onErrorResumeNext Single.error(Exception(
+                                    resMan.getString(R.string.error_used_verif_code)))
+                        }
+                        return@onErrorResumeNext Single.error(
+                                handleServerErrors(logger, resMan, it, "verify OTP"))
                     }
-                    return@onErrorResumeNext Single.error(
-                            handleServerErrors(logger, resMan, it, "verify OTP"))
-                }
-                .map { upsertVerifLogin(vl.verified()) }
-                .toCompletable()
-    }
+                    .map { upsertVerifLogin(vl.verified()) })
+
 
     override fun resendInterval(otps: OTPStatus?, intervalSecs: Long): Observable<Long> {
         val now = Date().time
         val aMinFromNow = now + 60 * 1000
-        val expTime = Math.min(otps?.expiresAt?.time ?: aMinFromNow, aMinFromNow)
+        val expTime = min(otps?.expiresAt?.time ?: aMinFromNow, aMinFromNow)
         val tteSecs = (expTime - now) / 1000
 
         return Observable.interval(intervalSecs, TimeUnit.SECONDS)
-                .take(tteSecs.toInt()) // no risk of integer overflow because cannot be greater than a minute
-                .map { Math.abs(it - tteSecs) } // invert to count from max downwards instead of from min upwards
+                .take(tteSecs)
+                .map { abs(it - tteSecs) } // invert to count from max downwards instead of from min upwards
     }
 
     override fun glideURL(url: String): Single<GlideUrl> {
@@ -229,7 +235,7 @@ class Authenticator @Inject constructor(
                     if (url.isEmpty()) {
                         it.onError(Exception("no avatar URL was provided"))
                     }
-                    it.onSuccess(null)
+                    it.onSuccess(Unit)
                 }
                 .map {
                     GlideUrl(url, LazyHeaders.Builder()
@@ -247,7 +253,7 @@ class Authenticator @Inject constructor(
                                     LoggedOutException(resMan.getString(R.string.please_log_in)))
                         }
 
-                        return@flatMap Single.create<AuthUser>({
+                        return@flatMap Single.create<AuthUser> {
 
                             val usrStr = localStore.fetch(KEY_AUTHED_USER)
                             if (usrStr.isEmpty()) {
@@ -258,10 +264,10 @@ class Authenticator @Inject constructor(
 
                             val usr = Gson().fromJson(usrStr, AuthUser::class.java)
                             it.onSuccess(usr)
-                        })
+                        }
                     }
 
-    override fun getJWT(): Single<JWT> = Single.create({
+    override fun getJWT(): Single<JWT> = Single.create {
 
         val jwtStr = localStore.fetch(KEY_JWT)
         if (jwtStr.isEmpty()) {
@@ -272,23 +278,23 @@ class Authenticator @Inject constructor(
 
         val jwt = Gson().fromJson(jwtStr, JWT::class.java)
         it.onSuccess(jwt)
-    })
+    }
 
-    override fun logOut(): Completable = Completable.create({
+    override fun logOut(): Completable = Completable.create {
         localStore.delete(KEY_JWT)
         localStore.delete(KEY_AUTHED_USER)
         updateObservedLoggedInStatus(false)
-        it.onCompleted()
-    })
+        it.onComplete()
+    }
 
     private fun validateVerifLogin(vl: VerifLogin): Single<ValidationResult> =
-            Single.create<ValidationResult>({
+            Single.create<ValidationResult> {
                 val vr = validator.validateIdentifier(vl.value)
                 if (!vr.isValid) {
                     it.onError(Exception(resMan.getString(R.string.error_bad_email_or_phone)))
                 }
                 it.onSuccess(vr)
-            })
+            }
 
     private fun handleNewIdentifierErrors(err: Throwable, frID: String, ctx: String): Throwable {
         if (err is HttpException) {

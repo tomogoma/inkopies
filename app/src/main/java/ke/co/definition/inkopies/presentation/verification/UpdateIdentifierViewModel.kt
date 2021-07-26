@@ -5,6 +5,7 @@ import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
@@ -14,7 +15,6 @@ import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -62,7 +62,7 @@ class UpdateIdentifierViewModel @Inject constructor(
                     progressOverlay.set(ProgressData(String.format(
                             resMngr.getString(R.string.updating_login_details_to_ss), id)))
                 }
-                .doOnUnsubscribe { progressOverlay.set(ProgressData()) }
+                .doOnTerminate { progressOverlay.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ finishedEvent.value = it }, {

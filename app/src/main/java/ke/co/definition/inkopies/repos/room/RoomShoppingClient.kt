@@ -1,13 +1,13 @@
 package ke.co.definition.inkopies.repos.room
 
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 import ke.co.definition.inkopies.model.shopping.*
 import ke.co.definition.inkopies.model.shopping.Category
 import ke.co.definition.inkopies.model.shopping.ShoppingList
 import ke.co.definition.inkopies.model.shopping.ShoppingListItem
 import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
-import rx.Completable
-import rx.Observable
-import rx.Single
 import java.util.*
 
 class RoomShoppingClient(private val shoppingListDao: ShoppingListDao) : ShoppingClient {
@@ -15,9 +15,7 @@ class RoomShoppingClient(private val shoppingListDao: ShoppingListDao) : Shoppin
     override fun addShoppingList(token: String, name: String): Single<ShoppingList> {
         val sl = ShoppingList(0, name, ShoppingMode.PREPARATION.name)
         return shoppingListDao.insert(sl)
-                .map {
-                    return@map toModelEntity(ShoppingList(it, sl.name, sl.mode))
-                }
+                .map { toModelEntity(ShoppingList(it.toInt(), sl.name, sl.mode)) }
     }
 
     private fun toModelEntity(sl: ke.co.definition.inkopies.repos.room.ShoppingList): ShoppingList {
@@ -31,16 +29,23 @@ class RoomShoppingClient(private val shoppingListDao: ShoppingListDao) : Shoppin
     override fun updateShoppingList(token: String, list: ShoppingList): Single<ShoppingList> {
         val sl = fromModelEntity(list)
         return shoppingListDao.update(sl)
-                .map { toModelEntity(sl) }
+                .map {
+                    if (it != 1) {
+                        throw Exception("update not successful")
+                    }
+                    toModelEntity(sl)
+                }
     }
 
     override fun getShoppingLists(token: String, offset: Long, count: Int): Observable<List<ShoppingList>> {
         return shoppingListDao.get(offset, count)
+                .toObservable()
                 .map { it.map { sl -> toModelEntity(sl) } }
     }
 
     override fun getShoppingList(token: String, id: String): Observable<ShoppingList> {
         return shoppingListDao.getById(id.toInt())
+                .toObservable()
                 .map { toModelEntity(it) }
     }
 

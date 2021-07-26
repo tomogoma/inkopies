@@ -6,6 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.backup.Exporter
 import ke.co.definition.inkopies.model.shopping.*
@@ -16,8 +19,6 @@ import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
-import rx.Subscription
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -41,8 +42,8 @@ class ShoppingListViewModel @Inject constructor(
     val items = SingleLiveEvent<Pair<DiffUtil.DiffResult?, MutableList<VMShoppingListItem>>>()
     val menuRes = SingleLiveEvent<Int>()
 
-    private var itemsSubscription: Subscription? = null
-    private var subscriptions = mutableListOf<Subscription>()
+    private var itemsSubscription: Disposable? = null
+    private var subscriptions = CompositeDisposable()
 
     fun start(listID: String) {
         fetchList(listID)
@@ -57,13 +58,13 @@ class ShoppingListViewModel @Inject constructor(
 
     fun onChangeMode(toMode: ShoppingMode) {
         val list = shoppingList.get() ?: return
-        manager.updateShoppingList(ShoppingList(list.id, list.name(), list.sl.activeListPrice,
+        subscriptions.add(manager.updateShoppingList(ShoppingList(list.id, list.name(), list.sl.activeListPrice,
                 list.sl.cartPrice, toMode))
                 .doOnSubscribe { showProgress() }
                 .map { VMShoppingList(it) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe(this::onShoppingListUpdated, this::showError)
+                .subscribe(this::onShoppingListUpdated, this::showError))
     }
 
     fun onItemSelectionChanged(item: VMShoppingListItem, toState: Boolean) {
@@ -87,28 +88,25 @@ class ShoppingListViewModel @Inject constructor(
             }
         }
 
-        manager.updateShoppingListItem(ShoppingListItemUpdate(list.id,
+        subscriptions.add(manager.updateShoppingListItem(ShoppingListItemUpdate(list.id,
                 item.id, categoryName = item.categoryName(), inList = inList, inCart = inCart))
                 .doOnSubscribe { item.isUpdating.set(true) }
-                .doOnUnsubscribe { item.isUpdating.set(false) }
+                .doAfterTerminate { item.isUpdating.set(false) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingListItem(it, item.mode) }
-                .subscribe({ /*no-op - #fetchItems() is observing changes*/ }, { showError(it) })
+                .subscribe({ /*no-op - #fetchItems() is observing changes*/ }, { showError(it) }))
     }
 
     fun onExport() {
-        exporter.exportShoppingList(this.shoppingList.get()?.sl ?: return)
+        subscriptions.add(exporter.exportShoppingList(this.shoppingList.get()?.sl ?: return)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe(this::onExportSuccessful, this::showError)
+                .subscribe(this::onExportSuccessful, this::showError))
     }
 
     override fun onCleared() {
-        subscriptions.forEach {
-            if (it.isUnsubscribed) return@forEach
-            it.unsubscribe()
-        }
+        subscriptions.clear()
         super.onCleared()
     }
 
@@ -132,16 +130,15 @@ class ShoppingListViewModel @Inject constructor(
         }
         this.items.value = Pair(null, mutableListOf())
 
-        itemsSubscription?.unsubscribe()
-        subscriptions.remove(itemsSubscription)
+        itemsSubscription?.dispose()
         itemsSubscription = manager.getShoppingListItems(filter)
                 .doOnSubscribe { showProgress() }
                 .doOnNext { hideProgress() }
                 .subscribeOn(subscribeOnScheduler)
-                .map {
+                .map { pair ->
                     val rslt = mutableListOf<VMShoppingListItem>()
-                    it.second.forEach { rslt.add(VMShoppingListItem(it, list.mode)) }
-                    return@map Pair(it.first, rslt)
+                    pair.second.forEach { rslt.add(VMShoppingListItem(it, list.mode)) }
+                    return@map Pair(pair.first, rslt)
                 }
                 .observeOn(observeOnScheduler)
                 .subscribe({ onItemsFetched(it) }, { showError(it) })

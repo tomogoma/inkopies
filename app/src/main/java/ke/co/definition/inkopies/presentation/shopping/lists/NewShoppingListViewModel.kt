@@ -5,6 +5,7 @@ import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.shopping.ShoppingManager
@@ -14,7 +15,6 @@ import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -56,7 +56,7 @@ class NewShoppingListViewModel @Inject constructor(
         }
         man.createShoppingList(nameStr)
                 .doOnSubscribe { progress.set(ProgressData(resMan.getString(R.string.creating_shopping_list))) }
-                .doOnUnsubscribe { progress.set(ProgressData()) }
+                .doOnTerminate { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map { VMShoppingList(it) }

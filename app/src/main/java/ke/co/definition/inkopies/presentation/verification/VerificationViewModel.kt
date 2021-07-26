@@ -4,6 +4,9 @@ import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
@@ -15,8 +18,6 @@ import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
-import rx.Subscription
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Named
@@ -43,7 +44,8 @@ class VerificationViewModel @Inject constructor(
     val otp: ObservableField<String> = ObservableField()
 
     private val hasBeenStarted = AtomicBoolean()
-    private var resetCDSub: Subscription? = null
+    private var resetCDSub: Disposable? = null
+    private val rxSubscriptions = CompositeDisposable()
 
     fun start(vl: VerifLogin) {
 
@@ -72,52 +74,52 @@ class VerificationViewModel @Inject constructor(
     fun onSubmit() {
 
         val vl = verifLogin.get()!!
-        auth.verifyOTP(vl, otp.get())
+        rxSubscriptions.add(auth.verifyOTP(vl, otp.get())
                 .doOnSubscribe {
                     progress.set(ProgressData(String.format(
                             resMngr.getString(R.string.verifying_ss), vl.value)))
                 }
-                .doOnUnsubscribe { progress.set(ProgressData()) }
+                .doFinally { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({
                     finishedEv.value = true
                 }, {
                     snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
-                })
+                }))
     }
 
     fun onRequestResendOTP() {
 
-        auth.sendVerifyOTP(verifLogin.get()!!)
+        rxSubscriptions.add(auth.sendVerifyOTP(verifLogin.get()!!)
                 .doOnSubscribe {
                     progress.set(ProgressData(resMngr.getString(
                             R.string.sending_verification_code)))
                 }
-                .doOnUnsubscribe { progress.set(ProgressData()) }
+                .doFinally { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ onOTPResent(it) }, {
                     snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
-                })
+                }))
     }
 
     fun onClaimVerified() {
 
-        auth.checkIdentifierVerified(verifLogin.get()!!)
+        rxSubscriptions.add(auth.checkIdentifierVerified(verifLogin.get()!!)
                 .doOnSubscribe {
                     progress.set(ProgressData(String.format(resMngr.getString(
                             R.string.checking_ss_verified),
                             verifLogin.get()!!.value)))
                 }
-                .doOnUnsubscribe { progress.set(ProgressData()) }
+                .doOnTerminate { progress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({
                     finishedEv.value = true
                 }, {
                     snackbarData.value = TextSnackbarData(it.message!!, Snackbar.LENGTH_LONG)
-                })
+                }))
     }
 
     private fun onOTPResent(it: OTPStatus) {
@@ -128,9 +130,9 @@ class VerificationViewModel @Inject constructor(
     }
 
     private fun countDownResetVisibility() {
-        resetCDSub?.unsubscribe()
+        resetCDSub?.dispose()
         resetCDSub = auth.resendInterval(verifLogin.get()!!.otpStatus, 1)
-                .doOnUnsubscribe({ resetCDTimer.set("") })
+                .doOnTerminate({ resetCDTimer.set("") })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .map {

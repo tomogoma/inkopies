@@ -7,6 +7,7 @@ import androidx.databinding.ObservableInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.shopping.*
@@ -16,7 +17,6 @@ import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingList
 import ke.co.definition.inkopies.presentation.shopping.common.VMShoppingListItem
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -183,7 +183,7 @@ class UpsertListItemViewModel @Inject constructor(
                 .doOnSubscribe {
                     overlayProgress.set(ProgressData(resMan.getString(R.string.saving_item)))
                 }
-                .doOnUnsubscribe { overlayProgress.set(ProgressData()) }
+                .doOnTerminate { overlayProgress.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ /*no-op*/ }, { /*no-op*/ })

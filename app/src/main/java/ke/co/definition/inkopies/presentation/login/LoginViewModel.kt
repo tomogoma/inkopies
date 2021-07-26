@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.load.model.GlideUrl
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.*
@@ -17,7 +18,6 @@ import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -78,7 +78,7 @@ class LoginViewModel @Inject constructor(
                     val fmtArg = idRslt.type().toLowerCase()
                     progressData.set(ProgressData(String.format(fmt, fmtArg)))
                 }
-                .doOnUnsubscribe { progressData.set(ProgressData()) }
+                .doOnTerminate { progressData.set(ProgressData()) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe(this::onFetchUserID, this::handleError)
@@ -169,7 +169,7 @@ class LoginViewModel @Inject constructor(
     private fun logInManual(ider: Identifier, pass: String) {
         auth.loginManual(ider, pass)
                 .doOnSubscribe({ progressData.set(ProgressData(resMan.getString(R.string.loggin_in))) })
-                .doOnUnsubscribe({ progressData.set(ProgressData()) })
+                .doOnTerminate({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe(this::onLoginStatus, this::handleError)
@@ -178,7 +178,7 @@ class LoginViewModel @Inject constructor(
     private fun registerManual(ider: Identifier, pass: String) {
         auth.registerManual(ider, pass)
                 .doOnSubscribe({ progressData.set(ProgressData(resMan.getString(R.string.registering))) })
-                .doOnUnsubscribe({ progressData.set(ProgressData()) })
+                .doOnTerminate({ progressData.set(ProgressData()) })
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ registeredStatus.value = it }, this::handleErrorIndefinite)

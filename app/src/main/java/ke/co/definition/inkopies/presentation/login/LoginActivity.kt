@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
 import ke.co.definition.inkopies.App
@@ -37,7 +37,7 @@ class LoginActivity : InkopiesActivity() {
         super.onCreate(savedInstanceState)
 
         val lvmFactory = (application as App).appComponent.loginVMFactory()
-        loginVM = ViewModelProviders.of(this, lvmFactory).get(LoginViewModel::class.java)
+        loginVM = ViewModelProvider(this, lvmFactory).get(LoginViewModel::class.java)
         observeViewModel()
     }
 

@@ -4,6 +4,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Scheduler
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.shopping.CheckoutManager
@@ -13,8 +16,6 @@ import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.presentation.format.DateFormatter
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
-import rx.Subscription
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
@@ -42,6 +43,7 @@ class CheckoutVM @Inject constructor(
     val snackbarData = SingleLiveEvent<SnackbarData>()
     val onCompleteEvent = SingleLiveEvent<Unit>()
 
+    private val rxDisposables = CompositeDisposable()
     private lateinit var slID: String
     internal lateinit var date: Date
 
@@ -56,15 +58,15 @@ class CheckoutVM @Inject constructor(
     }
 
     internal fun onSubmit() {
-        model.checkout(slID, branchName.value, storeName.value, date)
+        rxDisposables.add(model.checkout(slID, branchName.value, storeName.value, date)
                 .observeOn(observeOnScheduler)
                 .doOnSubscribe(this::showCheckoutProgress)
-                .doOnUnsubscribe(this::hideProgress)
+                .doOnTerminate(this::hideProgress)
                 .subscribeOn(subscribeOnScheduler)
-                .subscribe(this::onCheckoutComplete, this::onError)
+                .subscribe(this::onCheckoutComplete, this::onError))
     }
 
-    private fun showCheckoutProgress(@Suppress("UNUSED_PARAMETER") subscription: Subscription) {
+    private fun showCheckoutProgress(@Suppress("UNUSED_PARAMETER") subscription: Disposable) {
         progressData.postValue(ProgressData(resMan.getString(R.string.checking_out)))
     }
 
@@ -78,6 +80,11 @@ class CheckoutVM @Inject constructor(
 
     private fun onError(e: Throwable) {
         snackbarData.value = TextSnackbarData(e.message ?: return, Snackbar.LENGTH_LONG)
+    }
+
+    override fun onCleared() {
+        rxDisposables.clear()
+        super.onCleared()
     }
 
     class Factory @Inject constructor(

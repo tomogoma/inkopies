@@ -3,10 +3,11 @@ package ke.co.definition.inkopies.presentation.common
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import io.reactivex.Scheduler
+import io.reactivex.disposables.CompositeDisposable
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -23,6 +24,7 @@ class InkopiesActivityViewModel @Inject constructor(
     val toastData = SingleLiveEvent<Pair<String, Int>>()
     val loggedInStatus = SingleLiveEvent<Boolean>()
 
+    private val rxDisposables = CompositeDisposable()
     private var loggedInStatusObserverPos = -1L
 
     fun start() {
@@ -32,16 +34,17 @@ class InkopiesActivityViewModel @Inject constructor(
     }
 
     fun onLogout(onSubscribeFunc: () -> Unit, onUnsubscribeFunc: () -> Unit) {
-        auth.logOut()
+        rxDisposables.add(auth.logOut()
                 .doOnSubscribe { onSubscribeFunc() }
-                .doOnUnsubscribe { onUnsubscribeFunc() }
+                .doOnTerminate { onUnsubscribeFunc() }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ /*no-op*/ }, this::onError)
+                .subscribe({ /*no-op*/ }, this::onError))
     }
 
     override fun onCleared() {
         auth.unRegisterLoggedInStatusObserver(loggedInStatusObserverPos)
+        rxDisposables.clear()
         super.onCleared()
     }
 

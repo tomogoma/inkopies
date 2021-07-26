@@ -1,6 +1,7 @@
 package ke.co.definition.inkopies.repos.ms.users
 
 import com.google.gson.annotations.SerializedName
+import io.reactivex.Single
 import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.model.user.Gender
 import ke.co.definition.inkopies.model.user.PubUserProfile
@@ -8,7 +9,6 @@ import ke.co.definition.inkopies.repos.ms.bearerToken
 import ke.co.definition.inkopies.utils.injection.UserModule
 import retrofit2.Retrofit
 import retrofit2.http.*
-import rx.Single
 import javax.inject.Inject
 import javax.inject.Named
 

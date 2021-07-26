@@ -1,6 +1,9 @@
 package ke.co.definition.inkopies.model.shopping
 
 import androidx.recyclerview.widget.DiffUtil
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.Authable
 import ke.co.definition.inkopies.repos.ms.STATUS_NOT_FOUND
@@ -8,9 +11,6 @@ import ke.co.definition.inkopies.repos.ms.handleAuthErrors
 import ke.co.definition.inkopies.repos.ms.shopping.ShoppingClient
 import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.adapter.rxjava.HttpException
-import rx.Completable
-import rx.Observable
-import rx.Single
 import javax.inject.Inject
 
 /**
@@ -75,7 +75,7 @@ class ShoppingManagerImpl @Inject constructor(
                     auth.getJWT()
                             .subscribe({ jwt ->
                                 client.deleteShoppingListItem(jwt.value, shoppingListID, id)
-                                        .subscribe(it::onCompleted, it::onError)
+                                        .subscribe(it::onComplete, it::onError)
                             }, it::onError)
                 }
                 .onErrorResumeNext {
@@ -98,11 +98,11 @@ class ShoppingManagerImpl @Inject constructor(
         return auth.getJWT()
                 .toObservable()
                 .flatMap { client.getShoppingListItems(it.value, f) }
-                .onErrorResumeNext {
+                .onErrorResumeNext { it: Throwable ->
                     if (it is HttpException && it.code() == STATUS_NOT_FOUND) {
                         return@onErrorResumeNext Observable.just(mutableListOf<ShoppingListItem>())
                     }
-                    return@onErrorResumeNext Observable.error(handleAuthErrors(logger, auth,
+                    return@onErrorResumeNext Observable.error<List<ShoppingListItem>>(handleAuthErrors(logger, auth,
                             resMan, it, "get shopping list items"))
                 }
                 .map { newItems ->
@@ -162,7 +162,7 @@ class ShoppingManagerImpl @Inject constructor(
             it.onError(Exception("cannot be inCart but not inList"))
             return@create
         }
-        it.onCompleted()
+        it.onComplete()
     }
 
     private fun validateShoppingListItemUpdate(item: ShoppingListItemUpdate) = Completable.create {
@@ -184,6 +184,6 @@ class ShoppingManagerImpl @Inject constructor(
             it.onError(Exception("cannot be inCart but not inList"))
             return@create
         }
-        it.onCompleted()
+        it.onComplete()
     }
 }

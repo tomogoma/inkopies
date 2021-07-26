@@ -9,7 +9,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import ke.co.definition.inkopies.App
 import ke.co.definition.inkopies.presentation.login.LoginActivity
 import ke.co.definition.inkopies.presentation.profile.ProfileActivity
@@ -27,7 +27,7 @@ abstract class InkopiesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val vmFactory = (application as App).appComponent.provideInkopiesActivityVMFactory()
-        viewModel = ViewModelProviders.of(this, vmFactory)
+        viewModel = ViewModelProvider(this, vmFactory)
                 .get(InkopiesActivityViewModel::class.java)
         observeViewModel()
         viewModel.start()

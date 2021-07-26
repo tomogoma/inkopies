@@ -2,6 +2,7 @@ package ke.co.definition.inkopies.repos.ms.image
 
 import android.net.Uri
 import com.google.gson.annotations.SerializedName
+import io.reactivex.Single
 import ke.co.definition.inkopies.BuildConfig
 import ke.co.definition.inkopies.repos.ms.bearerToken
 import ke.co.definition.inkopies.utils.injection.ImageModule
@@ -10,7 +11,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.http.*
-import rx.Single
 import java.io.File
 import java.util.*
 import javax.inject.Inject

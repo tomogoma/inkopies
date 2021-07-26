@@ -49,12 +49,11 @@ ext {
     supportLibraryVersion = '27.1.1'
     archComponentsVersion = '1.1.1'
     retrofitVersion = '2.1.0'
-    dagger2Version = '2.15'
+    dagger2Version = '2.35.1'
+    room_version = "2.2.6"
 }
 
 dependencies {
-
-    def room_version = "2.2.6"
 
     // basics
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -86,10 +85,11 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation 'com.jakewharton.retrofit:retrofit2-rxjava2-adapter:1.0.0'
 
     // rxjava
-    implementation 'io.reactivex:rxandroid:1.2.0'
-    implementation 'io.reactivex:rxjava:1.1.8'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
 
     // dagger2
     implementation "com.google.dagger:dagger:$dagger2Version"
@@ -115,6 +115,7 @@ dependencies {
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.6.0'
 
     implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-rxjava2:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
     // optional - Kotlin Extensions and Coroutines support for Room

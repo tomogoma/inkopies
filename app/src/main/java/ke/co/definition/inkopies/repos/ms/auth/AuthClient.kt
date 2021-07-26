@@ -1,10 +1,10 @@
 package ke.co.definition.inkopies.repos.ms.auth
 
+import io.reactivex.Completable
+import io.reactivex.Single
 import ke.co.definition.inkopies.model.auth.AuthUser
 import ke.co.definition.inkopies.model.auth.Identifier
 import ke.co.definition.inkopies.model.auth.OTPStatus
-import rx.Completable
-import rx.Single
 
 /**
  * Created by tomogoma

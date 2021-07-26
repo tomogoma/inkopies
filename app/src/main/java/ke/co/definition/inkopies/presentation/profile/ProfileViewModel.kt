@@ -10,6 +10,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.load.model.GlideUrl
 import com.google.android.material.snackbar.Snackbar
 import com.theartofdev.edmodo.cropper.CropImage
+import io.reactivex.Scheduler
+import io.reactivex.disposables.CompositeDisposable
 import ke.co.definition.inkopies.R
 import ke.co.definition.inkopies.model.FileHelper
 import ke.co.definition.inkopies.model.ResourceManager
@@ -21,7 +23,6 @@ import ke.co.definition.inkopies.presentation.common.SnackbarData
 import ke.co.definition.inkopies.presentation.common.TextSnackbarData
 import ke.co.definition.inkopies.utils.injection.Dagger2Module
 import ke.co.definition.inkopies.utils.livedata.SingleLiveEvent
-import rx.Scheduler
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Named
@@ -52,15 +53,22 @@ class ProfileViewModel @Inject constructor(
     val progressProfImg = ObservableBoolean()
     val enlargePPic = ObservableBoolean(false)
 
+    private val rxDisposables = CompositeDisposable()
+
     fun start() {
-        profMngr.getUser()
+        rxDisposables.add(profMngr.getUser()
                 .doOnSubscribe { progressTopBar.set(true) }
-                .doOnUnsubscribe { progressTopBar.set(false) }
+                .doOnTerminate { progressTopBar.set(false) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ onUserProfileLoaded(it) }, {
                     snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_INDEFINITE)
-                })
+                }))
+    }
+
+    override fun onCleared() {
+        rxDisposables.clear()
+        super.onCleared()
     }
 
     fun setUserProfile(up: UserProfile) {
@@ -122,10 +130,10 @@ class ProfileViewModel @Inject constructor(
             return
         }
         enlargePPic.set(true)
-        authCl.glideURL(up.avatarURL)
+        rxDisposables.add(authCl.glideURL(up.avatarURL)
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ loadEnlargedPic.value = it }, { /*no-op*/ })
+                .subscribe({ loadEnlargedPic.value = it }, { /*no-op*/ }))
     }
 
     fun onBackPressed(): Boolean {
@@ -137,26 +145,26 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun uploadProfileImage(uri: Uri) {
-        profMngr.uploadProfilePic(uri)
+        rxDisposables.add(profMngr.uploadProfilePic(uri)
                 .doOnSubscribe { progressProfImg.set(true) }
-                .doOnUnsubscribe { progressProfImg.set(false) }
+                .doOnTerminate { progressProfImg.set(false) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
                 .subscribe({ onUserProfileLoaded(it) }, {
                     snackbarData.value = TextSnackbarData(it, Snackbar.LENGTH_INDEFINITE)
-                })
+                }))
     }
 
     private fun onUserProfileLoaded(up: UserProfile) {
         userProfile.set(up)
         googleLinkText.set(resMngr.getString(R.string.link_google))
         fbLinkText.set(resMngr.getString(R.string.link_facebook))
-        authCl.glideURL(up.avatarURL)
+        rxDisposables.add(authCl.glideURL(up.avatarURL)
                 .doOnSubscribe { progressProfImg.set(true) }
-                .doOnUnsubscribe { progressProfImg.set(false) }
+                .doOnTerminate { progressProfImg.set(false) }
                 .subscribeOn(subscribeOnScheduler)
                 .observeOn(observeOnScheduler)
-                .subscribe({ profileImgURL.value = it }, { /*no-op*/ })
+                .subscribe({ profileImgURL.value = it }, { /*no-op*/ }))
     }
 
     companion object {

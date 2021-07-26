@@ -1,7 +1,7 @@
 package ke.co.definition.inkopies.repos.ms.image
 
 import android.net.Uri
-import rx.Single
+import io.reactivex.Single
 
 /**
  * Created by tomogoma

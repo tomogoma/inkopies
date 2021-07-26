@@ -1,9 +1,9 @@
 package ke.co.definition.inkopies.repos.ms.shopping
 
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 import ke.co.definition.inkopies.model.shopping.*
-import rx.Completable
-import rx.Observable
-import rx.Single
 import java.util.*
 
 /**

@@ -1,6 +1,8 @@
 package ke.co.definition.inkopies.model.user
 
 import android.net.Uri
+import io.reactivex.Completable
+import io.reactivex.Single
 import ke.co.definition.inkopies.model.ResourceManager
 import ke.co.definition.inkopies.model.auth.AuthUser
 import ke.co.definition.inkopies.model.auth.Authable
@@ -12,8 +14,6 @@ import ke.co.definition.inkopies.repos.ms.image.ImageClient
 import ke.co.definition.inkopies.repos.ms.users.UsersClient
 import ke.co.definition.inkopies.utils.logging.Logger
 import retrofit2.adapter.rxjava.HttpException
-import rx.Completable
-import rx.Single
 import javax.inject.Inject
 
 /**
@@ -104,7 +104,7 @@ class ProfileManagerImpl @Inject constructor(
         if (gender == Gender.NONE) {
             it.onError(Exception("invalid gender provided"))
         }
-        it.onCompleted()
+        it.onComplete()
     }
 
 }

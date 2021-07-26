@@ -1,6 +1,9 @@
 package ke.co.definition.inkopies.repos.firestore
 
 import com.google.firebase.firestore.*
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 import ke.co.definition.inkopies.model.auth.JWTHelper
 import ke.co.definition.inkopies.model.shopping.*
 import ke.co.definition.inkopies.model.stores.Store
@@ -12,9 +15,6 @@ import okhttp3.MediaType
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.adapter.rxjava.HttpException
-import rx.Completable
-import rx.Observable
-import rx.Single
 import java.util.*
 import javax.inject.Inject
 
@@ -270,7 +270,7 @@ class FirebaseShoppingClient @Inject constructor(
 
                     return@runTransaction null
                 }
-                .addOnSuccessListener { _ -> it.onCompleted() }
+                .addOnSuccessListener { _ -> it.onComplete() }
                 .addOnFailureListener(it::onError)
     }
 
@@ -328,71 +328,70 @@ class FirebaseShoppingClient @Inject constructor(
         val shoppingListRef = collShoppingLists(token).document(slid)
         val sliFilter = ShoppingListItemsFilter(shoppingListID = slid, inList = true,
                 inCart = true)
-        return insertStoreIfNotExist(storeName ?: "")
-                .map { it.second.toStore(it.first) }
+        return Completable.fromSingle(
+                insertStoreIfNotExist(storeName ?: "")
+                        .map { it.second.toStore(it.first) }
 
-                .flatMap { insertBranchIfNotExists(branchName ?: "", it) }
-                .map { branch = it }
+                        .flatMap { insertBranchIfNotExists(branchName ?: "", it) }
+                        .map { branch = it }
 
-                .flatMap {
-                    getShoppingListItems(token, sliFilter)
-                            .first()
-                            .toSingle()
-                }
-
-                .flatMap { cartItems ->
-
-                    // 1.
-                    // a. insert prices, attaching them to the store-branch
-                    // b. remove shopping list items from cart
-                    var obs: Observable<ShoppingListItem>? = null
-
-                    cartItems!!.forEach { cartItm ->
-                        val price = BrandPrice(cartItm.id, cartItm.unitPrice(),
-                                cartItm.brand(), branch!!)
-                        val currObs = insertPriceIfNotExists(price.price, price.brand, branch!!)
-                                .map {
-                                    ShoppingListItem(cartItm.id, cartItm.quantity, it,
-                                            cartItm.category, cartItm.inList, inCart = false)
-                                }
-                                .flatMap {
-                                    updateShoppingListItem(token, ShoppingListItemUpdate(slid,
-                                            it.id, inCart = false, categoryName = it.categoryName(),
-                                            storeBranchName = branchName, storeName = storeName))
-                                }
-                                .toObservable()
-
-                        obs = if (obs == null) {
-                            currObs
-                        } else {
-                            Observable.concat(obs, currObs)
+                        .flatMap {
+                            getShoppingListItems(token, sliFilter)
+                                    .first(null)
                         }
-                    }
 
-                    // 2. Collect and accumulate all new prices
-                    return@flatMap Single.create<List<ShoppingListItem>> {
-                        val rsltItems = mutableListOf<ShoppingListItem>()
-                        obs!!
-                                .doOnCompleted { it.onSuccess(rsltItems) }
-                                .subscribe({ sli -> rsltItems.add(sli) }, it::onError)
-                    }
-                }
-                .map { checkoutItems = it }
+                        .flatMap { cartItems ->
 
-                .flatMap {
-                    Single.create<ShoppingList> {
-                        shoppingListRef
-                                .get()
-                                .addOnSuccessListener { ds ->
-                                    it.onSuccess(ds.toObject(FirestoreShoppingList::class.java)!!
-                                            .toShoppingList(ds.id))
+                            // 1.
+                            // a. insert prices, attaching them to the store-branch
+                            // b. remove shopping list items from cart
+                            var obs: Observable<ShoppingListItem>? = null
+
+                            cartItems.forEach { cartItm ->
+                                val price = BrandPrice(cartItm.id, cartItm.unitPrice(),
+                                        cartItm.brand(), branch!!)
+                                val currObs = insertPriceIfNotExists(price.price, price.brand, branch!!)
+                                        .map {
+                                            ShoppingListItem(cartItm.id, cartItm.quantity, it,
+                                                    cartItm.category, cartItm.inList, inCart = false)
+                                        }
+                                        .flatMap {
+                                            updateShoppingListItem(token, ShoppingListItemUpdate(slid,
+                                                    it.id, inCart = false, categoryName = it.categoryName(),
+                                                    storeBranchName = branchName, storeName = storeName))
+                                        }
+                                        .toObservable()
+
+                                obs = if (obs == null) {
+                                    currObs
+                                } else {
+                                    Observable.concat(obs, currObs)
                                 }
-                                .addOnFailureListener(it::onError)
-                    }
-                }
-                .map { shoppingList = it }
+                            }
 
-                .toCompletable()
+                            // 2. Collect and accumulate all new prices
+                            return@flatMap Single.create<List<ShoppingListItem>> {
+                                val rsltItems = mutableListOf<ShoppingListItem>()
+                                obs!!
+                                        .doOnComplete { it.onSuccess(rsltItems) }
+                                        .subscribe({ sli -> rsltItems.add(sli) }, it::onError)
+                            }
+                        }
+                        .map { checkoutItems = it }
+
+                        .flatMap {
+                            Single.create<ShoppingList> {
+                                shoppingListRef
+                                        .get()
+                                        .addOnSuccessListener { ds ->
+                                            it.onSuccess(ds.toObject(FirestoreShoppingList::class.java)!!
+                                                    .toShoppingList(ds.id))
+                                        }
+                                        .addOnFailureListener(it::onError)
+                            }
+                        }
+                        .map { shoppingList = it }
+        )
                 .andThen(Completable.create {
 
                     val batch = db.batch()
@@ -414,7 +413,7 @@ class FirebaseShoppingClient @Inject constructor(
                     batch.set(shoppingListRef, fsList)
 
                     batch.commit()
-                            .addOnSuccessListener { _ -> it.onCompleted() }
+                            .addOnSuccessListener { _ -> it.onComplete() }
                             .addOnFailureListener { ex -> it.onError(ex) }
                 })
     }
