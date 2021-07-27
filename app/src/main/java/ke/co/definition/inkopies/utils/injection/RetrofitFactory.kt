@@ -1,8 +1,8 @@
 package ke.co.definition.inkopies.utils.injection
 
 import com.google.gson.GsonBuilder
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 /**
@@ -15,7 +15,7 @@ fun retrofitFactory(baseURL: String): Retrofit {
             .create()
     return Retrofit.Builder()
             .baseUrl(baseURL)
-            .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 }
