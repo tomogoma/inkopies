@@ -4,14 +4,14 @@ import android.content.Context
 import android.os.Handler
 import android.os.Message
 import android.util.AttributeSet
-import android.widget.AutoCompleteTextView
+import androidx.appcompat.widget.AppCompatAutoCompleteTextView
 import java.lang.ref.WeakReference
 
 /**
  * Created by tomogoma
  * On 29/03/18.
  */
-class DelayedAutoCompleteTextView(context: Context?, attrs: AttributeSet?) : AutoCompleteTextView(context, attrs) {
+class DelayedAutoCompleteTextView(context: Context, attrs: AttributeSet?) : AppCompatAutoCompleteTextView(context, attrs) {
 
     private var delayMillis: Long = DEFAULT_AUTOCOMPLETE_DELAY_MILLIS
     private val handler = DelayHandler(WeakReference(this))
