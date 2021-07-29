@@ -23,17 +23,10 @@ data class Category(
 
 @Entity(
         tableName = "shopping_list_item_names",
-        foreignKeys = [
-            ForeignKey(entity = Category::class,
-                    parentColumns = ["rowid"],
-                    childColumns = ["category_id"])
-        ],
-        indices = [Index(value = ["category_id"]),
-            Index(value = ["name"], unique = true)]
+        indices = [Index(value = ["name"], unique = true)]
 )
 data class ShoppingListItemName(
         @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "category_id") val shoppingCategoryId: Int,
         @ColumnInfo(name = "name") val name: String
 )
 
@@ -48,7 +41,7 @@ data class Brand(
 
 @Entity(
         tableName = "stores",
-        indices = [Index(value = ["name"], unique = true)]
+        indices = [Index(value = ["name"])]
 )
 data class Store(
         @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
@@ -63,7 +56,7 @@ data class Store(
                     childColumns = ["store_id"])
         ],
         indices = [Index(value = ["store_id"]),
-            Index(value = ["name"], unique = true)]
+            Index(value = ["name"])]
 )
 data class StoreBranch(
         @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
@@ -137,6 +130,9 @@ data class Checkout(
             ForeignKey(entity = ShoppingList::class,
                     parentColumns = ["rowid"],
                     childColumns = ["shopping_list_id"]),
+            ForeignKey(entity = Category::class,
+                    parentColumns = ["rowid"],
+                    childColumns = ["category_id"]),
             ForeignKey(entity = ShoppingListItemName::class,
                     parentColumns = ["rowid"],
                     childColumns = ["shopping_list_item_name_id"]),
@@ -149,6 +145,7 @@ data class Checkout(
         ],
         indices = [
             Index(value = ["shopping_list_id"]),
+            Index(value = ["category_id"]),
             Index(value = ["shopping_list_item_name_id"]),
             Index(value = ["brand_id"]),
             Index(value = ["measurement_id"]),
@@ -158,7 +155,8 @@ data class Checkout(
 data class ShoppingListItem(
         @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
         @ColumnInfo(name = "shopping_list_id") val shoppingListId: Int,
-        @ColumnInfo(name = "shopping_list_item_name_id") val shoppingListItemId: Int,
+        @ColumnInfo(name = "category_id") val shoppingCategoryId: Int,
+        @ColumnInfo(name = "shopping_list_item_name_id") val shoppingListItemNameId: Int,
         @ColumnInfo(name = "brand_id") val brandId: Int,
         @ColumnInfo(name = "measurement_id") val measurementId: Int,
         @ColumnInfo(name = "in_list") val inList: Boolean,
