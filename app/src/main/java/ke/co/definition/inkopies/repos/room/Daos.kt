@@ -15,13 +15,13 @@ interface ShoppingListDao : CrudDao<ShoppingList> {
 }
 
 @Dao
-interface CategoryDao : CrudDao<Category>
+interface CategoryDao : CrudWithIgnoreConflictDao<Category>
 
 @Dao
-interface ShoppingListItemNameDao : CrudDao<ShoppingListItemName>
+interface ShoppingListItemNameDao : CrudWithIgnoreConflictDao<ShoppingListItemName>
 
 @Dao
-interface BrandDao : CrudDao<Brand>
+interface BrandDao : CrudWithIgnoreConflictDao<Brand>
 
 @Dao
 interface StoreDao : CrudDao<Store>
@@ -30,16 +30,16 @@ interface StoreDao : CrudDao<Store>
 interface StoreBranchDao : CrudDao<StoreBranch>
 
 @Dao
-interface MeasurementDao : CrudDao<Measurement>
+interface MeasurementDao : CrudWithIgnoreConflictDao<Measurement>
 
 @Dao
-interface ItemBrandPriceDao : CrudDao<ItemBrandPrice>
+interface ItemBrandPriceDao : CrudWithReplaceOnConflictDao<ItemBrandPrice>
 
 @Dao
 interface CheckoutDao : CrudDao<Checkout>
 
 @Dao
-interface ShoppingListItemDao : CrudDao<ShoppingListItem>
+interface ShoppingListItemDao : CrudWithReplaceOnConflictDao<ShoppingListItem>
 
 @Dao
 interface CheckoutItemDao : CrudDao<CheckoutItem>
