@@ -23,7 +23,19 @@ class ShoppingModule {
     @Provides
     @Inject
     fun provideShoppingClient(db: ShoppingListDB):
-            ShoppingClient = RoomShoppingClient(db.ShoppingListDao())
+            ShoppingClient = RoomShoppingClient(
+            db.ShoppingListDao(),
+            db.MeasurementDao(),
+            db.CategoryDao(),
+            db.BrandDao(),
+            db.StoreDao(),
+            db.ShoppingListItemNameDao(),
+            db.StoreBranchDao(),
+            db.PriceDao(),
+            db.CheckoutDao(),
+            db.ShoppingListItemDao(),
+            db.CheckoutItemDao()
+    )
 
     @Provides
     @Inject

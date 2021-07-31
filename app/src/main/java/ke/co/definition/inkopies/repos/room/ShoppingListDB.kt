@@ -21,4 +21,14 @@ import androidx.room.RoomDatabase
 )
 abstract class ShoppingListDB : RoomDatabase() {
     abstract fun ShoppingListDao(): ShoppingListDao
+    abstract fun MeasurementDao(): MeasurementDao
+    abstract fun CategoryDao(): CategoryDao
+    abstract fun BrandDao(): BrandDao
+    abstract fun StoreDao(): StoreDao
+    abstract fun ShoppingListItemNameDao(): ShoppingListItemNameDao
+    abstract fun StoreBranchDao(): StoreBranchDao
+    abstract fun PriceDao(): PriceDao
+    abstract fun CheckoutDao(): CheckoutDao
+    abstract fun ShoppingListItemDao(): ShoppingListItemDao
+    abstract fun CheckoutItemDao(): CheckoutItemDao
 }
