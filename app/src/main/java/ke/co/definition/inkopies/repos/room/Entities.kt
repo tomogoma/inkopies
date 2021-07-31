@@ -7,9 +7,9 @@ import androidx.room.*
         indices = [Index(value = ["name"], unique = true)]
 )
 data class ShoppingList(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
         @ColumnInfo(name = "name") val name: String,
-        @ColumnInfo(name = "mode") val mode: String
+        @ColumnInfo(name = "mode") val mode: String,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -17,8 +17,8 @@ data class ShoppingList(
         indices = [Index(value = ["name"], unique = true)]
 )
 data class Category(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "name") val name: String
+        @ColumnInfo(name = "name") val name: String,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -26,8 +26,8 @@ data class Category(
         indices = [Index(value = ["name"], unique = true)]
 )
 data class ShoppingListItemName(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "name") val name: String
+        @ColumnInfo(name = "name") val name: String,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -35,8 +35,8 @@ data class ShoppingListItemName(
         indices = [Index(value = ["name"], unique = true)]
 )
 data class Brand(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "name") val name: String
+        @ColumnInfo(name = "name") val name: String,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -44,8 +44,8 @@ data class Brand(
         indices = [Index(value = ["name"])]
 )
 data class Store(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "name") val name: String
+        @ColumnInfo(name = "name") val name: String,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -59,9 +59,9 @@ data class Store(
             Index(value = ["name"])]
 )
 data class StoreBranch(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "store_id") val storeId: Int,
-        @ColumnInfo(name = "name") val name: String
+        @ColumnInfo(name = "store_id") val storeId: Long,
+        @ColumnInfo(name = "name") val name: String,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -69,8 +69,8 @@ data class StoreBranch(
         indices = [Index(value = ["name"], unique = true)]
 )
 data class Measurement(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "name") val name: String
+        @ColumnInfo(name = "name") val name: String,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -84,21 +84,25 @@ data class Measurement(
                     childColumns = ["brand_id"]),
             ForeignKey(entity = Measurement::class,
                     parentColumns = ["rowid"],
-                    childColumns = ["measurement_id"])
+                    childColumns = ["measurement_id"]),
+            ForeignKey(entity = Measurement::class,
+                    parentColumns = ["rowid"],
+                    childColumns = ["store_branch_id"])
         ],
         indices = [
             Index(value = ["item_name_id"]),
             Index(value = ["brand_id"]),
             Index(value = ["measurement_id"]),
-            Index(value = ["item_name_id", "brand_id", "measurement_id"], unique = true)
+            Index(value = ["store_branch_id"])
         ]
 )
-data class ItemBrandPrice(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "item_name_id") val itemNameId: Int,
-        @ColumnInfo(name = "brand_id") val brandId: Int,
-        @ColumnInfo(name = "measurement_id") val measurementId: Int,
-        @ColumnInfo(name = "unit_price") val name: String
+data class Price(
+        @ColumnInfo(name = "item_name_id") val itemNameId: Long,
+        @ColumnInfo(name = "unit_price") val unitPrice: Float,
+        @ColumnInfo(name = "brand_id") val brandId: Long? = null,
+        @ColumnInfo(name = "measurement_id") val measurementId: Long? = null,
+        @ColumnInfo(name = "store_branch_id") val storeBranchId: Long? = null,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -118,10 +122,10 @@ data class ItemBrandPrice(
         ]
 )
 data class Checkout(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "store_branch_id") val storeBranchId: Int,
-        @ColumnInfo(name = "shopping_list_id") val shoppingListId: Int,
-        @ColumnInfo(name = "date_time") val dateTime: Long
+        @ColumnInfo(name = "store_branch_id") val storeBranchId: Long,
+        @ColumnInfo(name = "shopping_list_id") val shoppingListId: Long,
+        @ColumnInfo(name = "date_time") val dateTime: Long,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -153,15 +157,15 @@ data class Checkout(
         ]
 )
 data class ShoppingListItem(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "shopping_list_id") val shoppingListId: Int,
-        @ColumnInfo(name = "category_id") val shoppingCategoryId: Int,
-        @ColumnInfo(name = "shopping_list_item_name_id") val shoppingListItemNameId: Int,
-        @ColumnInfo(name = "brand_id") val brandId: Int,
-        @ColumnInfo(name = "measurement_id") val measurementId: Int,
+        @ColumnInfo(name = "shopping_list_id") val shoppingListId: Long,
+        @ColumnInfo(name = "shopping_list_item_name_id") val shoppingListItemNameId: Long,
         @ColumnInfo(name = "in_list") val inList: Boolean,
         @ColumnInfo(name = "in_cart") val inCart: Boolean,
-        @ColumnInfo(name = "quantity") val quantity: Int
+        @ColumnInfo(name = "quantity") val quantity: Int?,
+        @ColumnInfo(name = "category_id") val shoppingCategoryId: Long? = null,
+        @ColumnInfo(name = "brand_id") val brandId: Long? = null,
+        @ColumnInfo(name = "measurement_id") val measurementId: Long? = null,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 @Entity(
@@ -188,16 +192,16 @@ data class ShoppingListItem(
         ]
 )
 data class CheckoutItem(
-        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int,
-        @ColumnInfo(name = "checkout_id") val checkoutId: Int,
-        @ColumnInfo(name = "shopping_list_item_name_id") val shoppingListItemId: Int,
-        @ColumnInfo(name = "brand_id") val brandId: Int,
-        @ColumnInfo(name = "measurement_id") val measurementId: Int,
+        @ColumnInfo(name = "checkout_id") val checkoutId: Long,
+        @ColumnInfo(name = "shopping_list_item_name_id") val shoppingListItemId: Long,
+        @ColumnInfo(name = "brand_id") val brandId: Long,
+        @ColumnInfo(name = "measurement_id") val measurementId: Long,
         @ColumnInfo(name = "quantity") val quantity: Int,
         @ColumnInfo(name = "effective_item_name") val effectiveItemName: Int,
         @ColumnInfo(name = "effective_brand_name") val effectiveBrandName: Int,
         @ColumnInfo(name = "effective_measurement") val effectiveMeasurement: Int,
-        @ColumnInfo(name = "effective_unit_price") val unitPrice: Int
+        @ColumnInfo(name = "effective_unit_price") val unitPrice: Int,
+        @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "rowid") val id: Int? = null
 )
 
 

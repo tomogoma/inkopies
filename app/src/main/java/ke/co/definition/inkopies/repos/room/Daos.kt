@@ -33,7 +33,7 @@ interface StoreBranchDao : CrudDao<StoreBranch>
 interface MeasurementDao : CrudWithIgnoreConflictDao<Measurement>
 
 @Dao
-interface ItemBrandPriceDao : CrudWithReplaceOnConflictDao<ItemBrandPrice>
+interface PriceDao : CrudWithReplaceOnConflictDao<Price>
 
 @Dao
 interface CheckoutDao : CrudDao<Checkout>

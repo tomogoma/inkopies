@@ -13,7 +13,7 @@ import androidx.room.RoomDatabase
             Store::class,
             StoreBranch::class,
             Measurement::class,
-            ItemBrandPrice::class,
+            Price::class,
             Checkout::class,
             CheckoutItem::class,
             ShoppingListItem::class
