@@ -31,8 +31,10 @@ interface InsertWithReplaceOnConflictDao<T> {
 }
 
 interface InsertDao<T> {
+    @Insert()
     fun insert(it: T): Single<Long>
 
+    @Insert()
     fun insertAll(vararg its: T): Single<LongArray>
 }
 
